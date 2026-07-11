@@ -6,10 +6,10 @@
    2. Under "Your apps" add a Web app → copy the firebaseConfig values here
    ============================================================ */
 window.FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBZejVuAGfWWkijDjZRhLyZ-LuVHLx10gk",
-  authDomain: "creator-scout-braimah.firebaseapp.com",
-  projectId: "creator-scout-braimah",
-  storageBucket: "creator-scout-braimah.firebasestorage.app",
-  messagingSenderId: "466697464004",
-  appId: "1:466697464004:web:2bc52bd8d5c5d5e5c18191"
+  apiKey: "AIzaSyBKiCsNvm1NdCWZ-ovoAbM2D76nDUdxdZs",
+  authDomain: "scoutviral-abc1f.firebaseapp.com",
+  projectId: "scoutviral",
+  storageBucket: "scoutviral.firebasestorage.app",
+  messagingSenderId: "341581212283",
+  appId: "1:341581212283:web:605904210b5f04c1e090de"
 };
