@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScoutViral — find creators the algorithm never shows you</title>
+<meta name="description" content="Scout short-form creators in any country and niche, rank any channel's most viral Shorts, and build your remake pipeline. Bring your own free YouTube API key.">
+<style>
+:root{
+  --bg:#f7f7f5; --card:#ffffff; --ink:#161616; --ink2:#5f5e5a; --ink3:#8a8983;
+  --line:#e4e3de; --accent:#1d6ef2; --accent-bg:#e9f1fe; --warn:#9a6700; --warn-bg:#fff3d6;
+  --ok:#0d7a4f; --ok-bg:#e2f5ec; --danger:#c0392b; --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#141414; --card:#1e1e1e; --ink:#f0efec; --ink2:#b6b5ae; --ink3:#84837d;
+  --line:#333330; --accent:#5b96f5; --accent-bg:#16273f; --warn:#e0a93e; --warn-bg:#33290f;
+  --ok:#4cc08c; --ok-bg:#0f2b1f; }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:16px;font-weight:700;cursor:pointer}
+nav{display:flex;gap:2px;flex-wrap:wrap}
+nav button{border:1px solid transparent;background:transparent;color:var(--ink2);padding:6px 11px;border-radius:8px;font-size:13.5px;cursor:pointer}
+nav button.on{background:var(--card);border-color:var(--line);color:var(--ink);font-weight:600}
+#authbox{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px}
+#authbox img{width:26px;height:26px;border-radius:50%}
+main{max-width:1100px;margin:0 auto;padding:18px 16px 90px}
+h2{font-size:18px;font-weight:600;margin:4px 0 12px}
+h3{font-size:13.5px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;margin:20px 0 8px}
+.muted{color:var(--ink3);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=password],input[type=number],select{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;min-width:0}
+input[type=text]{flex:1}
+button.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;font-weight:600}
+button.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+button.btn.small{padding:5px 10px;font-size:12.5px}
+button.btn:disabled{opacity:.5;cursor:default}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--accent-bg);color:var(--accent);margin:2px 3px 0 0}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.plain{background:var(--bg);color:var(--ink3);border:1px solid var(--line);cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.creator{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;cursor:pointer;position:relative;transition:border-color .12s}
+.creator:hover{border-color:var(--accent)}
+.creator .nm{font-weight:600;font-size:14px;padding-right:20px}
+.creator .hd{font-size:12px;color:var(--ink3);word-break:break-all}
+.creator .x{position:absolute;top:8px;right:10px;color:var(--ink3);font-size:15px;background:none;border:none;cursor:pointer;padding:2px 4px}
+.creator .x:hover{color:var(--danger)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.vid{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.vid img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer;background:#000}
+.vid .b{padding:9px 10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.vid .t{font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
+.vid .m{font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+.vid .views{font-weight:700;color:var(--ink);font-size:13px}
+.star{background:none;border:none;font-size:17px;cursor:pointer;color:var(--ink3);padding:0 2px}
+.star.on{color:#e6a800}
+.rank{position:absolute;background:rgba(0,0,0,.75);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:0 0 8px 0;z-index:1}
+.thumbwrap{position:relative}
+.dur{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;padding:1px 6px;border-radius:4px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.player{width:min(400px,94vw);aspect-ratio:9/16;background:#000;border-radius:12px;overflow:hidden;position:relative}
+.player iframe{width:100%;height:100%;border:0}
+.closex{position:absolute;top:-4px;right:0;transform:translateY(-110%);background:none;border:none;color:#fff;font-size:26px;cursor:pointer}
+.statusbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding:9px 16px;font-size:13px;display:none;align-items:center;gap:12px;z-index:30}
+.statusbar.show{display:flex}
+.bar{flex:1;height:6px;background:var(--bg);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0%}
+.qchip{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:13px;margin:3px 4px 3px 0;cursor:pointer}
+.qchip:hover{border-color:var(--accent);color:var(--accent)}
+.qchip small{color:var(--ink3);font-size:11px;margin-left:5px}
+.notice{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px}
+.crumb{font-size:13px;color:var(--accent);cursor:pointer;background:none;border:none;padding:0;margin-bottom:10px;display:inline-block}
+.chead{display:flex;gap:14px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.chead img{width:64px;height:64px;border-radius:50%;background:var(--bg)}
+.chead .nm{font-size:19px;font-weight:700}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+a{color:var(--accent)}
+.empty{padding:34px 10px;text-align:center;color:var(--ink3);font-size:14px}
+.bk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
+.bk summary{cursor:pointer;font-weight:600;font-size:14px}
+.bk .in{margin-top:10px;font-size:13.5px;color:var(--ink2)}
+.bk .in ol{padding-left:20px;display:flex;flex-direction:column;gap:5px}
+/* landing */
+.hero{padding:52px 8px 34px;text-align:center;max-width:720px;margin:0 auto}
+.hero h2{font-size:clamp(26px,5vw,40px);line-height:1.15;font-weight:800;margin-bottom:14px}
+.hero p{font-size:16px;color:var(--ink2);margin-bottom:22px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:26px auto 0;max-width:900px}
+.feat .card{text-align:left}
+.feat .card b{display:block;margin-bottom:5px;font-size:14.5px}
+.feat .card span{font-size:13px;color:var(--ink2)}
+footer{max-width:1100px;margin:40px auto 0;padding:14px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<header>
+  <h1 onclick="go('home')">🎬 ScoutViral</h1>
+  <nav>
+    <button data-v="disc" onclick="go('disc')">Discover</button>
+    <button data-v="dir" onclick="go('dir')">My directory</button>
+    <button data-v="remake" onclick="go('remake')">Remake list</button>
+    <button data-v="set" onclick="go('set')">Settings</button>
+  </nav>
+  <div id="authbox"></div>
+</header>
+<main id="view"></main>
+<footer>
+  Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a>. This site uses YouTube API Services with an API key you provide; your use is subject to the
+  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a> and
+  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
+  Your API key stays in your browser and is sent only to Google. Video caches stay on your device.
+</footer>
+<div class="statusbar" id="sbar">
+  <span id="stext"></span>
+  <div class="bar"><i id="sfill"></i></div>
+  <button class="btn small sec" onclick="cancelScan()">Cancel</button>
+</div>
+<div id="modal"></div>
+
+<script src="config.js"></script>
+<script>
+/* =========================================================
+   ScoutViral — deployable edition
+   BYOK: every user brings their own YouTube Data API v3 key.
+   No custom backend. Firebase Auth + Firestore sync optional.
+========================================================= */
+const SCAN_CAP = 6000;
+
+/* ---------- optional starter pack (verified creators, loaded on demand only) ---------- */
+const SEED = [
+ {name:"Khaby Lame",handle:"khabylame",country:"Italy / Senegal",tag:"silent reaction"},
+ {name:"Daniel LaBelle",handle:"daniellabelle1",country:"USA",tag:"physical comedy"},
+ {name:"Zach King",handle:"zachking",country:"USA",tag:"visual magic"},
+ {name:"Alan Chikin Chow",handle:"alanchikinchow",country:"USA",tag:"expressive skits"},
+ {name:"CalebCity",handle:"CalebCity",country:"USA",tag:"face-driven skits"},
+ {name:"Luke Davidson",handle:"LukeDavidson",country:"USA",tag:"expressive skits"},
+ {name:"Dylan Lemay",handle:"DylanLemay",country:"USA",tag:"silent process"},
+ {name:"Argenby",handle:"argenby",country:"Kyrgyzstan",tag:"deadpan face"},
+ {name:"Tibo InShape",handle:"tiboinshape",country:"France",tag:"fitness humor"},
+ {name:"Muromeroo",handle:"muromeroo",country:"Turkey",tag:"parody, face"},
+ {name:"Orkun Işıtmak",handle:"orkunisitmak",country:"Turkey",tag:"challenges"},
+ {name:"Las Ocurrencias de Victor",handle:"lasocurrenciasdevictor",country:"Dominican Republic",tag:"couple face skits",verify:true},
+ {name:"Juan de Montreal",handle:"juandemontreal",country:"Dominican Republic",tag:"daily visual humor"},
+ {name:"Ahmad Hossam",handle:"ahmadhossam456",country:"Egypt",tag:"relatable expression"},
+ {name:"Abraz Khan",handle:"abrazkhan91",country:"Pakistan",tag:"team skits",verify:true},
+ {name:"William Last KRM",handle:"williamlast_krm1998",country:"Botswana",tag:"music comedy",verify:true},
+ {name:"Junya1gou",handle:"junya1gou",country:"Japan",tag:"silent stunts"},
+ {name:"Sagawa",handle:"sagawa1gou",country:"Japan",tag:"silent stunts"},
+ {name:"Bayashi",handle:"bayashi.tv",country:"Japan",tag:"food expression",verify:true},
+ {name:"Saito さいとう",handle:"saito01",country:"Japan",tag:"silent recreations",verify:true},
+ {name:"김프로 KIMPRO",handle:"kimpro",country:"South Korea",tag:"nonverbal challenges",verify:true},
+ {name:"Whindersson Nunes",handle:"whinderssonnunes",country:"Brazil",tag:"expressive comedy"},
+ {name:"Enaldinho",handle:"Enaldinho",country:"Brazil",tag:"physical skits"},
+ {name:"Natan por Aí",handle:"NatanporAi",country:"Brazil",tag:"challenges",verify:true},
+ {name:"Neagle",handle:"Neagle",country:"Brazil",tag:"stunts",verify:true},
+ {name:"KL BRO Biju Rithvik",handle:"KLBRO",country:"India",tag:"silent family skits",verify:true},
+ {name:"Ashish Chanchlani",handle:"ashishchanchlanivines",country:"India",tag:"expressive sketches"},
+ {name:"Amit Bhadana",handle:"TheAmitBhadana",country:"India",tag:"relatable skits"},
+ {name:"Harsh Beniwal",handle:"HarshBeniwal",country:"India",tag:"multi-role skits"},
+ {name:"Mythpat",handle:"Mythpat",country:"India",tag:"reactions"},
+ {name:"Round2hell",handle:"Round2hell",country:"India",tag:"high-concept skits"},
+ {name:"Mark Angel Comedy",handle:"MarkAngelComedy",country:"Nigeria",tag:"reaction skits"},
+ {name:"Lasisi Elenu",handle:"lasisielenu",country:"Nigeria",tag:"exaggerated face",verify:true},
+ {name:"AboFlah",handle:"AboFlah",country:"Kuwait",tag:"challenges"},
+];
+
+/* ---------- Discover: countries (regionCode + language + optional local silent-comedy queries) ---------- */
+const COUNTRIES = [
+ {n:"Worldwide",rc:"",lang:""},
+ {n:"United States",rc:"US",lang:"en"},
+ {n:"United Kingdom",rc:"GB",lang:"en"},
+ {n:"Hungary",rc:"HU",lang:"hu",local:[["Funny videos","vicces videók"],["Humor without words","humor beszéd nélkül"]]},
+ {n:"Japan",rc:"JP",lang:"ja",local:[["Funny-face comedy","顔芸"],["Silent comedy","無言 コメディ"]]},
+ {n:"South Korea",rc:"KR",lang:"ko",local:[["Physical gag comedy","몸개그"],["Facial-expression gags","표정 개그"]]},
+ {n:"Taiwan / Chinese",rc:"TW",lang:"zh-Hant",local:[["Funny no-dialogue clips","搞笑 无对白"],["Silent comedy","无声喜剧"]]},
+ {n:"India",rc:"IN",lang:"hi",local:[["Comedy without speaking","बिना बोले कॉमेडी"],["No-dialogue funny","बिना डायलॉग funny"]]},
+ {n:"Pakistan",rc:"PK",lang:"ur",local:[["Silent comedy","خاموش کامیڈی"]]},
+ {n:"Turkey",rc:"TR",lang:"tr",local:[["Silent comedy","sessiz komedi"],["Funny facial expressions","yüz ifadesi komik"]]},
+ {n:"Russia",rc:"RU",lang:"ru",local:[["Jokes without words","без слов приколы"],["Facial-expression humor","мимика юмор"]]},
+ {n:"Kazakhstan",rc:"KZ",lang:"ru",local:[["Jokes without words","без слов приколы"]]},
+ {n:"Brazil",rc:"BR",lang:"pt",local:[["Comedy without talking","comédia sem falar"],["Humor without words","humor sem palavras"]]},
+ {n:"Mexico",rc:"MX",lang:"es",local:[["Comedy without talking","comedia sin hablar"],["Humor without words","humor sin palabras"]]},
+ {n:"Spain",rc:"ES",lang:"es",local:[["Comedy without talking","comedia sin hablar"]]},
+ {n:"Argentina",rc:"AR",lang:"es",local:[["Funny gestures","gestos graciosos"]]},
+ {n:"Colombia",rc:"CO",lang:"es",local:[["Comedy without talking","comedia sin hablar"]]},
+ {n:"Dominican Republic",rc:"DO",lang:"es",local:[["Humor without words","humor sin palabras"]]},
+ {n:"Egypt",rc:"EG",lang:"ar",local:[["Comedy without words","كوميديا بدون كلام"],["Silent comedy","كوميديا صامتة"]]},
+ {n:"Saudi Arabia",rc:"SA",lang:"ar",local:[["Silent pranks","مقالب صامتة"]]},
+ {n:"Morocco",rc:"MA",lang:"ar",local:[["Comedy without words","كوميديا بدون كلام"]]},
+ {n:"Ethiopia",rc:"ET",lang:"am",local:[["Comedy shorts (Amharic)","ኮሜዲ shorts"],["Ethiopian silent comedy","ethiopian silent comedy"]]},
+ {n:"Nigeria",rc:"NG",lang:"en",local:[["No-talking comedy","no talking comedy nigeria"]]},
+ {n:"Kenya",rc:"KE",lang:"sw",local:[["Comedy (Swahili)","vichekesho"]]},
+ {n:"South Africa",rc:"ZA",lang:"en"},
+ {n:"Indonesia",rc:"ID",lang:"id",local:[["Comedy without words","komedi tanpa kata"]]},
+ {n:"Vietnam",rc:"VN",lang:"vi",local:[["Comedy without words","hài không lời"]]},
+ {n:"Thailand",rc:"TH",lang:"th",local:[["Comedy without talking","ตลกไม่พูด"]]},
+ {n:"Philippines",rc:"PH",lang:"tl",local:[["Comedy without words","komedya walang salita"]]},
+ {n:"France",rc:"FR",lang:"fr",local:[["Comedy without words","comédie sans paroles"]]},
+ {n:"Germany",rc:"DE",lang:"de",local:[["Comedy without words","Comedy ohne Worte"]]},
+ {n:"Italy",rc:"IT",lang:"it",local:[["Comedy without words","commedia senza parole"]]},
+ {n:"Poland",rc:"PL",lang:"pl",local:[["Comedy without words","komedia bez słów"]]},
+ {n:"Netherlands",rc:"NL",lang:"nl"},
+ {n:"Sweden",rc:"SE",lang:"sv"},
+ {n:"Australia",rc:"AU",lang:"en"},
+ {n:"Canada",rc:"CA",lang:"en"},
+ {n:"New Zealand",rc:"NZ",lang:"en"},
+];
+
+/* ---------- Discover: niches (English label -> base query; silent comedy uses local packs when available) ---------- */
+const NICHES = [
+ {n:"Silent / no-language comedy",q:"silent comedy shorts",localizable:true},
+ {n:"Funny face reactions",q:"funny face reaction shorts"},
+ {n:"Physical comedy & pranks",q:"physical comedy prank"},
+ {n:"Skits & sketches",q:"comedy skit shorts"},
+ {n:"Lifestyle & vlogs",q:"lifestyle vlog shorts"},
+ {n:"Fashion & outfits",q:"fashion outfit style"},
+ {n:"Beauty & makeup",q:"makeup tutorial shorts"},
+ {n:"Food & cooking",q:"street food cooking"},
+ {n:"Fitness & gym",q:"fitness workout shorts"},
+ {n:"Travel",q:"travel destinations shorts"},
+ {n:"Tech & gadgets",q:"tech gadgets shorts"},
+ {n:"Gaming",q:"gaming funny moments shorts"},
+ {n:"Dance",q:"dance challenge shorts"},
+ {n:"Music & covers",q:"music cover shorts"},
+ {n:"DIY & crafts",q:"diy crafts shorts"},
+ {n:"Pets & animals",q:"funny pets shorts"},
+ {n:"Sports skills",q:"sports skills shorts"},
+];
+
+/* ---------- storage ---------- */
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }
+    catch(e){ pruneCaches(); try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e2){ alert("Local storage is full — clear cached channels in Settings."); return false; } } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+function pruneCaches(){
+  const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("ss_vids_")) keys.push(k); }
+  keys.slice(0, Math.ceil(keys.length/2)).forEach(k=>localStorage.removeItem(k));
+}
+
+let creators = store.get("ss_creators", []);
+let remakes  = store.get("ss_remakes", []);
+let apiKey   = store.get("ss_key","");
+
+/* ---------- optional Firebase sync ---------- */
+let fb = null, user = null, cloudTimer = null, applyingCloud = false;
+window.onFirebaseReady = function(api){
+  fb = api;
+  renderAuth();
+  if(fb){ fb.onUser(async u=>{
+    user = u; renderAuth();
+    if(u){
+      try{
+        const data = await fb.load(u.uid);
+        if(data && (data.creators||data.remakes)){
+          applyingCloud = true;
+          if(data.creators){ creators = data.creators; store.set("ss_creators",creators); }
+          if(data.remakes){ remakes = data.remakes; store.set("ss_remakes",remakes); }
+          applyingCloud = false;
+          render();
+        } else { cloudSave(); }
+      }catch(e){ console.warn("cloud load:",e.message); }
+    }
+  }); }
+};
+function cloudSave(){
+  if(!fb || !user || applyingCloud) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,remakes,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
+}
+function persist(){ store.set("ss_creators",creators); store.set("ss_remakes",remakes); cloudSave(); }
+function renderAuth(){
+  const box = document.getElementById("authbox");
+  if(!fb){ box.innerHTML = `<span class="muted" title="Add your Firebase config to enable sign-in">local mode</span>`; return; }
+  if(user){ box.innerHTML = `${user.photoURL?`<img src="${esc(user.photoURL)}" alt="">`:""}<span>${esc(user.displayName||"")}</span>
+    <button class="btn small sec" onclick="fb.signOut()">Sign out</button>`; }
+  else{ box.innerHTML = `<button class="btn small" onclick="fb.signIn().catch(e=>alert(e.message))">Sign in to sync</button>`; }
+}
+
+/* ---------- YouTube API ---------- */
+async function yt(endpoint, params){
+  if(!apiKey) throw new Error("No API key set. Open Settings — creating your own free key takes 2 minutes, and all usage is billed to your own free Google quota, not this site.");
+  const u = new URL("https://www.googleapis.com/youtube/v3/"+endpoint);
+  Object.entries(params).forEach(([k,v])=>{ if(v!=="" && v!==undefined && v!==null) u.searchParams.set(k,v); });
+  u.searchParams.set("key",apiKey);
+  let r;
+  try{ r = await fetch(u); }
+  catch(e){ throw new Error("Network error reaching YouTube API. Check your connection."); }
+  const d = await r.json();
+  if(d.error){
+    let m = d.error.message || "YouTube API error";
+    if(/quota/i.test(m)) m = "Your daily API quota is used up (resets midnight Pacific). Discover searches cost the most — channel scans are cheap.";
+    if(/referer|referrer|blocked/i.test(m)) m += " — Tip: in Google Cloud → Credentials, restrict your key to this website's address (recommended), or set restrictions to None.";
+    throw new Error(m);
+  }
+  return d;
+}
+function parseDur(iso){
+  const m=/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso||""); if(!m) return 0;
+  return (+m[1]||0)*3600 + (+m[2]||0)*60 + (+m[3]||0);
+}
+const fmtN = n => new Intl.NumberFormat("en",{notation:"compact",maximumFractionDigits:1}).format(n);
+const fmtD = s => new Date(s).toLocaleDateString(undefined,{year:"numeric",month:"short"});
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function resolveChannel(c){
+  let d;
+  if(c.id){ d = await yt("channels",{part:"snippet,statistics,contentDetails", id:c.id}); }
+  else{ d = await yt("channels",{part:"snippet,statistics,contentDetails", forHandle:(c.handle||"").replace(/^@/,"")}); }
+  if(!d.items || !d.items.length) throw new Error("Channel not found for @"+c.handle+" — check the handle on youtube.com, then edit it here.");
+  const it = d.items[0];
+  return { id:it.id, title:it.snippet.title, thumb:(it.snippet.thumbnails.medium||it.snippet.thumbnails.default||{}).url||"",
+           subs:+(it.statistics.subscriberCount||0), uploads:it.contentDetails.relatedPlaylists.uploads,
+           videoCount:+(it.statistics.videoCount||0) };
+}
+function parseChannelInput(str){
+  str = str.trim();
+  const ch = str.match(/channel\/(UC[\w-]{10,})/); if(ch) return {id:ch[1]};
+  const at = str.match(/@([\w.\-]+)/); if(at) return {handle:at[1]};
+  if(/^UC[\w-]{10,}$/.test(str)) return {id:str};
+  return {handle:str.replace(/^@/,"")};
+}
+
+/* ---------- scanning ---------- */
+let scan = {active:false, cancelled:false};
+function cancelScan(){ scan.cancelled = true; }
+function sbar(show,text,pct){
+  const el=document.getElementById("sbar");
+  el.classList.toggle("show",!!show);
+  if(text!==undefined) document.getElementById("stext").textContent=text;
+  if(pct!==undefined) document.getElementById("sfill").style.width=Math.min(100,pct)+"%";
+}
+async function scanChannel(meta, depth){
+  scan={active:true,cancelled:false};
+  const target = Math.min(depth||SCAN_CAP, meta.videoCount||SCAN_CAP, SCAN_CAP);
+  let ids=[], page="";
+  sbar(true, "Scanning uploads of "+meta.title+"…", 0);
+  try{
+    do{
+      const d = await yt("playlistItems",{part:"contentDetails", playlistId:meta.uploads, maxResults:50, pageToken:page});
+      ids = ids.concat((d.items||[]).map(i=>i.contentDetails.videoId));
+      page = d.nextPageToken||"";
+      sbar(true, "Scanning uploads: "+ids.length.toLocaleString()+" / ~"+target.toLocaleString(), (ids.length/target)*50);
+      if(scan.cancelled || ids.length>=target) break;
+    }while(page);
+    ids = ids.slice(0, target);
+    const vids=[];
+    for(let i=0;i<ids.length;i+=50){
+      if(scan.cancelled) break;
+      const d = await yt("videos",{part:"snippet,contentDetails,statistics", id:ids.slice(i,i+50).join(",")});
+      (d.items||[]).forEach(it=>{
+        vids.push({ id:it.id, title:it.snippet.title, at:it.snippet.publishedAt,
+          dur:parseDur(it.contentDetails.duration),
+          views:+((it.statistics||{}).viewCount||0), likes:+((it.statistics||{}).likeCount||0),
+          thumb:(it.snippet.thumbnails.medium||it.snippet.thumbnails.default||{url:""}).url });
+      });
+      sbar(true, "Fetching stats: "+Math.min(i+50,ids.length).toLocaleString()+" / "+ids.length.toLocaleString(), 50+(i/ids.length)*50);
+    }
+    return vids;
+  } finally { scan.active=false; sbar(false); }
+}
+
+/* ---------- routing ---------- */
+let route = {v:"home"};
+function go(v,extra){ route={v,...(extra||{})};
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  render(); window.scrollTo(0,0); }
+const view = ()=>document.getElementById("view");
+function render(){
+  if(route.v==="home") renderHome();
+  else if(route.v==="dir") renderDir();
+  else if(route.v==="creator") renderCreator(route.c);
+  else if(route.v==="disc") renderDisc();
+  else if(route.v==="remake") renderRemake();
+  else renderSet();
+}
+
+/* ---------- Landing ---------- */
+function renderHome(){
+  view().innerHTML = `
+  <div class="hero">
+    <h2>Find creators the algorithm never shows you.</h2>
+    <p>Scout short-form creators in any country and any niche, rank any channel's most viral Shorts, and build your remake pipeline — powered by your own free YouTube API key.</p>
+    <button class="btn" style="font-size:15px;padding:11px 22px" onclick="go('disc')">Start discovering →</button>
+  </div>
+  <div class="feat">
+    <div class="card"><b>🌍 Discover worldwide</b><span>Pick a country and a niche — Hungary × silent comedy, Brazil × food, Japan × funny faces. Local-language search packs dig where English search can't reach.</span></div>
+    <div class="card"><b>📊 Rank any channel's top Shorts</b><span>Scan a channel's history and rank its most viral Shorts — you choose how many (top 10, 25, 100…) and how deep, so you control your API cost.</span></div>
+    <div class="card"><b>⭐ Build your remake pipeline</b><span>Watch inside the app, star the concepts you want to re-film in your own style, and sign in to keep your directory synced.</span></div>
+  </div>`;
+}
+
+/* ---------- Discover ---------- */
+function countryOpts(sel){ return COUNTRIES.map((c,i)=>`<option value="${i}" ${i===sel?"selected":""}>${esc(c.n)}</option>`).join(""); }
+function nicheOpts(sel){ return NICHES.map((n,i)=>`<option value="${i}" ${i===sel?"selected":""}>${esc(n.n)}</option>`).join(""); }
+let disc = store.get("ss_disc",{c:0,n:0,max:10,order:"viewCount",when:""});
+
+function renderDisc(){
+  const c = COUNTRIES[disc.c]||COUNTRIES[0], ni = NICHES[disc.n]||NICHES[0];
+  let chips = "";
+  if(ni.localizable && c.local){
+    chips = c.local.map(([label,q])=>`<span class="qchip" onclick="discSearch('${esc(q).replace(/'/g,"&#39;")}')">${esc(label)}<small>${esc(q)}</small></span>`).join("");
+  }
+  view().innerHTML = `<h2>Discover</h2>
+  <div class="muted" style="margin-bottom:12px">Pick a country and niche. For silent comedy, searches run in the <b>local language</b> (shown small on each chip) — that's what surfaces creators English search never finds.</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="row" style="margin-bottom:8px">
+      <select onchange="disc.c=+this.value;store.set('ss_disc',disc);renderDisc()">${countryOpts(disc.c)}</select>
+      <select onchange="disc.n=+this.value;store.set('ss_disc',disc);renderDisc()">${nicheOpts(disc.n)}</select>
+      <select onchange="disc.max=+this.value;store.set('ss_disc',disc)">
+        <option value="10" ${disc.max===10?"selected":""}>10 results</option>
+        <option value="25" ${disc.max===25?"selected":""}>25 results</option>
+        <option value="50" ${disc.max===50?"selected":""}>50 results</option>
+      </select>
+      <select onchange="disc.order=this.value;store.set('ss_disc',disc)">
+        <option value="viewCount" ${disc.order==="viewCount"?"selected":""}>Most viewed</option>
+        <option value="relevance" ${disc.order==="relevance"?"selected":""}>Most relevant</option>
+        <option value="date" ${disc.order==="date"?"selected":""}>Newest</option>
+      </select>
+      <select onchange="disc.when=this.value;store.set('ss_disc',disc)">
+        <option value="" ${disc.when===""?"selected":""}>Any time</option>
+        <option value="365" ${disc.when==="365"?"selected":""}>Past year</option>
+        <option value="90" ${disc.when==="90"?"selected":""}>Past 90 days</option>
+      </select>
+    </div>
+    <div class="row">
+      <input type="text" id="dq" placeholder="Or type your own search (any language)…">
+      <button class="btn" onclick="discSearch(document.getElementById('dq').value || null)">Search</button>
+    </div>
+    ${chips?`<div style="margin-top:10px">${chips}</div>`:""}
+    <div class="muted" style="margin-top:8px">Each search costs ~100 units of your free 10,000/day quota. Channel scans are far cheaper.</div>
+  </div>
+  <div id="dres"></div>`;
+}
+async function discSearch(customQ){
+  const c = COUNTRIES[disc.c]||COUNTRIES[0], ni = NICHES[disc.n]||NICHES[0];
+  let q = customQ;
+  if(!q){
+    if(ni.localizable && c.local) q = c.local[0][1];
+    else q = ni.q + (c.rc && !ni.localizable ? "" : "");
+  }
+  const box = document.getElementById("dres");
+  box.innerHTML = `<div class="muted" style="padding:14px 2px">Searching “${esc(q)}” ${c.rc?("in "+esc(c.n)):"worldwide"}…</div>`;
+  try{
+    const params = {part:"snippet", q, type:"video", videoDuration:"short", order:disc.order, maxResults:disc.max};
+    if(c.rc) params.regionCode = c.rc;
+    if(c.lang) params.relevanceLanguage = c.lang;
+    if(disc.when) params.publishedAfter = new Date(Date.now()-(+disc.when)*864e5).toISOString();
+    const s = await yt("search",params);
+    const ids = (s.items||[]).map(i=>i.id.videoId).filter(Boolean);
+    if(!ids.length){ box.innerHTML=`<div class="empty">No results — try another niche, country, or your own query.</div>`; return; }
+    const d = await yt("videos",{part:"snippet,contentDetails,statistics", id:ids.join(",")});
+    const vids = (d.items||[]).map(it=>({ id:it.id, title:it.snippet.title, ch:it.snippet.channelTitle, chId:it.snippet.channelId,
+      at:it.snippet.publishedAt, dur:parseDur(it.contentDetails.duration), views:+((it.statistics||{}).viewCount||0),
+      thumb:(it.snippet.thumbnails.medium||{url:""}).url })).filter(v=>v.dur>0 && v.dur<=183).sort((a,b)=>b.views-a.views);
+    /* channel aggregation — the "creators you didn't know" layer */
+    const chans = {};
+    vids.forEach(v=>{ (chans[v.chId]=chans[v.chId]||{name:v.ch,hits:0,top:0}).hits++; chans[v.chId].top=Math.max(chans[v.chId].top,v.views); });
+    const chanRow = Object.entries(chans).sort((a,b)=>b[1].top-a[1].top).map(([id,c])=>
+      `<span class="qchip" title="Top result: ${fmtN(c.top)} views" onclick="addFromDisc('${id}','${esc(c.name).replace(/'/g,"&#39;")}')">＋ ${esc(c.name)}<small>${c.hits} hit${c.hits>1?"s":""}</small></span>`).join("");
+    box.innerHTML = `<h3>Channels in these results — tap to add to your directory</h3><div>${chanRow}</div>
+      <h3>Videos</h3><div class="vgrid">` + vids.map(v=>`
+      <div class="vid">
+        <div class="thumbwrap"><img loading="lazy" src="${esc(v.thumb)}" alt="" onclick="playVid('${v.id}')"><span class="dur">${v.dur}s</span></div>
+        <div class="b">
+          <div class="t">${esc(v.title)}</div>
+          <div class="muted" style="font-size:12px">${esc(v.ch)}</div>
+          <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span>
+          <button class="star ${remakes.some(r=>r.id===v.id)?"on":""}" title="Save to remake list"
+            onclick="toggleRemake({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}'},this)">★</button></div>
+        </div>
+      </div>`).join("") + `</div>`;
+  }catch(e){ box.innerHTML = `<div class="notice">${esc(e.message)}</div>`; }
+}
+async function addFromDisc(chId, chName){
+  if(creators.some(c=>c.id===chId)){ alert(chName+" is already in your directory."); return; }
+  const country = prompt("Which country/region should "+chName+" be filed under?", (COUNTRIES[disc.c]||{}).n||"");
+  if(country===null) return;
+  try{
+    sbar(true,"Verifying channel…",30);
+    const meta = await resolveChannel({id:chId});
+    creators.push({name:meta.title, handle:chId, id:meta.id, country:country.trim()||"Uncategorized", tag:(NICHES[disc.n]||{}).n||"", meta});
+    persist(); sbar(false);
+    alert("Added "+meta.title+" ✓ — it's in My directory.");
+  }catch(e){ sbar(false); alert(e.message); }
+}
+
+/* ---------- My directory ---------- */
+let dirF = {q:"",country:"",tag:""};
+function renderDir(){
+  const countries = [...new Set(creators.map(c=>c.country))].sort();
+  const tags = [...new Set(creators.flatMap(c=>(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean)))].sort();
+  let list = creators.map((c,i)=>({...c,_i:i}));
+  if(dirF.q){ const q=dirF.q.toLowerCase(); list=list.filter(c=>(c.name+" "+(c.handle||"")+" "+(c.tag||"")).toLowerCase().includes(q)); }
+  if(dirF.country) list=list.filter(c=>c.country===dirF.country);
+  if(dirF.tag) list=list.filter(c=>(c.tag||"").toLowerCase().includes(dirF.tag.toLowerCase()));
+  const byC={}; list.forEach(c=>{ (byC[c.country]=byC[c.country]||[]).push(c); });
+
+  let h = `<h2>My directory</h2>
+  <div class="card" style="margin-bottom:12px">
+    <div class="row">
+      <input type="text" id="addIn" placeholder="Add creator: @handle or channel URL">
+      <input type="text" id="addCountry" placeholder="Country" style="max-width:150px">
+      <button class="btn" onclick="addCreator()">Add + verify</button>
+    </div>
+    <div class="muted" style="margin-top:7px">Every creator is verified live against YouTube before saving. Don't know names yet? That's what <a onclick="go('disc')" style="cursor:pointer">Discover</a> is for.</div>
+  </div>`;
+  if(!creators.length){
+    h += `<div class="card" style="text-align:center;padding:30px">
+      <b>Your directory is empty.</b>
+      <div class="muted" style="margin:8px 0 14px">Start from Discover, add channels by handle, or load the starter pack — 34 verified silent-comedy creators across 15+ countries.</div>
+      <button class="btn" onclick="loadSeed()">Load starter pack</button></div>`;
+    view().innerHTML = h; return;
+  }
+  h += `<div class="filters">
+    <input type="text" placeholder="Filter…" value="${esc(dirF.q)}" oninput="dirF.q=this.value;renderDir()" style="max-width:180px">
+    <select onchange="dirF.country=this.value;renderDir()"><option value="">All countries</option>${countries.map(c=>`<option ${dirF.country===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <select onchange="dirF.tag=this.value;renderDir()"><option value="">All styles</option>${tags.map(t=>`<option ${dirF.tag===t?"selected":""}>${esc(t)}</option>`).join("")}</select>
+    <span class="muted">${list.length} creator${list.length!==1?"s":""}</span>
+  </div>`;
+  Object.keys(byC).sort().forEach(cn=>{
+    h += `<h3>${esc(cn)} <span class="muted">(${byC[cn].length})</span></h3><div class="grid">`;
+    byC[cn].forEach(c=>{
+      h += `<div class="creator" onclick="go('creator',{c:${c._i}})">
+        <button class="x" title="Remove" onclick="event.stopPropagation();removeCreator(${c._i})">×</button>
+        <div class="nm">${esc(c.name)}</div>
+        <div class="hd">@${esc(c.handle||"")}${c.id?" ✓":""}</div>
+        <div>${(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag plain" onclick="event.stopPropagation();dirF.tag='${esc(t).replace(/'/g,"&#39;")}';renderDir()">${esc(t)}</span>`).join("")}
+        ${c.verify&&!c.id?`<span class="tag warn">verify handle</span>`:""}
+        <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">✎ tags</span></div>
+      </div>`;
+    });
+    h += `</div>`;
+  });
+  view().innerHTML = h;
+}
+function loadSeed(){
+  creators = SEED.map(s=>({...s, id:null, seed:true}));
+  persist(); renderDir();
+}
+function editTags(i){
+  const t = prompt("Style tags for "+creators[i].name+" (comma separated):", creators[i].tag||"");
+  if(t===null) return;
+  creators[i].tag = t; persist(); renderDir();
+}
+async function addCreator(){
+  const inp = document.getElementById("addIn").value.trim();
+  const country = document.getElementById("addCountry").value.trim() || "Uncategorized";
+  if(!inp) return;
+  const parsed = parseChannelInput(inp);
+  try{
+    sbar(true,"Verifying channel…",30);
+    const meta = await resolveChannel(parsed);
+    if(creators.some(c=>c.id===meta.id)){ alert("Already in your directory: "+meta.title); sbar(false); return; }
+    creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta});
+    persist(); sbar(false); renderDir();
+  }catch(e){ sbar(false); alert(e.message); }
+}
+function removeCreator(i){
+  if(!confirm("Remove "+creators[i].name+" from your directory?")) return;
+  const c = creators.splice(i,1)[0];
+  if(c.id) store.del("ss_vids_"+c.id);
+  persist(); renderDir();
+}
+
+/* ---------- Creator page (custom topN + scan depth + cost estimate) ---------- */
+async function renderCreator(i){
+  const c = creators[i];
+  if(!c){ go("dir"); return; }
+  let h = `<button class="crumb" onclick="go('dir')">← My directory</button>`;
+  view().innerHTML = h + `<div class="muted">Loading channel…</div>`;
+  let meta = c.meta;
+  if(!meta || !c.id){
+    try{
+      meta = await resolveChannel(c);
+      creators[i] = {...c, id:meta.id, name:meta.title, meta, verify:false};
+      persist();
+    }catch(e){
+      view().innerHTML = h + `<div class="card"><b>${esc(c.name)}</b><div class="muted" style="margin:8px 0">${esc(e.message)}</div>
+      <div class="row"><input type="text" id="fixH" value="${esc(c.handle)}" placeholder="correct @handle or channel URL">
+      <button class="btn" onclick="fixHandle(${i})">Retry</button></div></div>`;
+      return;
+    }
+  }
+  const cached = store.get("ss_vids_"+meta.id, null);
+  h += `<div class="chead">
+    ${meta.thumb?`<img src="${esc(meta.thumb)}" alt="">`:""}
+    <div><div class="nm">${esc(meta.title)}</div>
+    <div class="muted">${fmtN(meta.subs)} subscribers · ${(meta.videoCount||0).toLocaleString()} uploads · ${esc(c.country)}</div>
+    <a href="https://www.youtube.com/channel/${meta.id}" target="_blank" rel="noopener" style="font-size:13px">Open channel on YouTube ↗</a></div>
+  </div>`;
+  h += scanConfigUI(i, meta, cached);
+  if(cached) h += shortsUI(i, cached);
+  view().innerHTML = h;
+  updateCost(i, meta);
+}
+function scanConfigUI(i, meta, cached){
+  const cfg = store.get("ss_scancfg",{n:25,depth:500});
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="row">
+      <label class="muted">Top</label>
+      <input type="number" id="topN" min="1" max="1000" value="${cfg.n}" style="width:84px" oninput="updateCost(${i})">
+      <label class="muted">Shorts, scanning</label>
+      <select id="depth" onchange="updateCost(${i})">
+        <option value="500" ${cfg.depth===500?"selected":""}>most recent 500 uploads (fast)</option>
+        <option value="1500" ${cfg.depth===1500?"selected":""}>most recent 1,500 uploads</option>
+        <option value="${SCAN_CAP}" ${cfg.depth===SCAN_CAP?"selected":""}>full history (up to ${SCAN_CAP.toLocaleString()})</option>
+      </select>
+      <button class="btn" onclick="doScan(${i})">${cached?"Rescan":"Scan"}</button>
+      ${cached?`<button class="btn sec" onclick="exportCSV(${i})">⬇ CSV</button>`:""}
+    </div>
+    <div class="muted" id="costLine" style="margin-top:7px"></div>
+  </div>`;
+}
+function updateCost(i, meta){
+  meta = meta || (creators[i]&&creators[i].meta); if(!meta) return;
+  const nEl=document.getElementById("topN"), dEl=document.getElementById("depth"), out=document.getElementById("costLine");
+  if(!nEl||!dEl||!out) return;
+  const n=+nEl.value||0, depth=Math.min(+dEl.value, meta.videoCount||SCAN_CAP);
+  if(n<1){ out.innerHTML=`<span style="color:var(--danger)">Enter at least 1.</span>`; return; }
+  if(n>(meta.videoCount||0)){ out.innerHTML=`<span style="color:var(--danger)">This channel only has ${(meta.videoCount||0).toLocaleString()} uploads — lower your number.</span>`; return; }
+  const cost = Math.ceil(depth/50)*2;
+  out.textContent = `Estimated cost: ~${cost} units of your 10,000 daily quota (${Math.ceil(depth).toLocaleString()} uploads scanned). Deeper scan = truer all-time ranking.`;
+}
+async function fixHandle(i){
+  creators[i].handle = document.getElementById("fixH").value.trim().replace(/^@/,"");
+  creators[i].id = null; creators[i].meta = null;
+  persist(); renderCreator(i);
+}
+async function doScan(i){
+  const c = creators[i];
+  const n = +(document.getElementById("topN")||{}).value || 25;
+  const depth = +(document.getElementById("depth")||{}).value || 500;
+  if(n<1){ alert("Top N must be at least 1."); return; }
+  if(n>(c.meta.videoCount||0)){ alert("This channel only has "+(c.meta.videoCount||0).toLocaleString()+" uploads — choose a smaller number."); return; }
+  store.set("ss_scancfg",{n,depth});
+  try{
+    const vids = await scanChannel(c.meta, depth);
+    if(!vids.length){ alert("No videos found (or scan cancelled early)."); return; }
+    store.set("ss_vids_"+c.meta.id, {at:Date.now(), depth, vids});
+    renderCreator(i);
+  }catch(e){ alert(e.message); }
+}
+function shortsUI(i, cached){
+  const c = creators[i];
+  const cfg = store.get("ss_scancfg",{n:25,depth:500});
+  const maxDur = store.get("ss_maxdur",183);
+  const all = cached.vids.filter(v=>v.dur>0 && v.dur<=maxDur).sort((a,b)=>b.views-a.views);
+  const shorts = all.slice(0, cfg.n);
+  let h = `<div class="filters">
+    <span class="muted">Scanned ${cached.vids.length.toLocaleString()} uploads on ${new Date(cached.at).toLocaleDateString()} · ${all.length.toLocaleString()} Shorts found · showing top ${shorts.length}</span>
+    <select onchange="store.set('ss_maxdur',+this.value);renderCreator(${i})">
+      <option value="183" ${maxDur===183?"selected":""}>Shorts ≤ 3 min</option>
+      <option value="60" ${maxDur===60?"selected":""}>Classic ≤ 60s</option>
+    </select>
+  </div>`;
+  if(!shorts.length) return h + `<div class="empty">No Shorts found at this duration/depth — try a deeper scan.</div>`;
+  if(cfg.n > all.length) h += `<div class="muted" style="margin-bottom:10px">Only ${all.length} Shorts exist in the scanned range — showing all of them.</div>`;
+  h += `<div class="vgrid">` + shorts.map((v,r)=>vidCard(v,r+1,c.meta.title)).join("") + `</div>`;
+  return h;
+}
+function vidCard(v, rank, channelTitle){
+  const starred = remakes.some(r=>r.id===v.id);
+  return `<div class="vid">
+    <div class="thumbwrap">
+      ${rank?`<span class="rank">#${rank}</span>`:""}
+      <img loading="lazy" src="${esc(v.thumb)}" alt="" onclick="playVid('${v.id}')">
+      <span class="dur">${v.dur}s</span>
+    </div>
+    <div class="b">
+      <div class="t">${esc(v.title)}</div>
+      <div class="m">
+        <span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span>
+        <button class="star ${starred?"on":""}" title="Save to remake list"
+          onclick="toggleRemake({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(channelTitle).replace(/'/g,"&#39;")}'},this)">★</button>
+      </div>
+    </div>
+  </div>`;
+}
+function exportCSV(i){
+  const c=creators[i]; const cached=store.get("ss_vids_"+c.meta.id,null); if(!cached) return;
+  const cfg = store.get("ss_scancfg",{n:25});
+  const maxDur = store.get("ss_maxdur",183);
+  const shorts = cached.vids.filter(v=>v.dur>0&&v.dur<=maxDur).sort((a,b)=>b.views-a.views).slice(0,cfg.n);
+  const q = s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const rows = [["rank","title","url","views","likes","published","duration_s"].join(",")]
+    .concat(shorts.map((v,r)=>[r+1,q(v.title),"https://www.youtube.com/shorts/"+v.id,v.views,v.likes,v.at,v.dur].join(",")));
+  const blob = new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=c.meta.title.replace(/[^\w\- ]+/g,"")+"-top-shorts.csv"; a.click();
+}
+
+/* ---------- Remake list ---------- */
+function toggleRemake(v, btn){
+  const ix = remakes.findIndex(r=>r.id===v.id);
+  if(ix>=0){ remakes.splice(ix,1); if(btn) btn.classList.remove("on"); }
+  else{ remakes.unshift({...v, added:Date.now()}); if(btn) btn.classList.add("on"); }
+  persist();
+  if(route.v==="remake") renderRemake();
+}
+function renderRemake(){
+  let h = `<h2>Remake list</h2><div class="muted" style="margin-bottom:12px">Concepts you've starred to re-film in your own style. ${fb&&!user?'<b>Sign in</b> (top right) to keep this list synced across devices.':""}</div>`;
+  if(!remakes.length){ view().innerHTML = h + `<div class="empty">Nothing saved yet — hit the ★ on any video.</div>`; return; }
+  h += `<div class="vgrid">` + remakes.map(v=>`
+    <div class="vid">
+      <div class="thumbwrap"><img loading="lazy" src="${esc(v.thumb)}" alt="" onclick="playVid('${v.id}')"></div>
+      <div class="b">
+        <div class="t">${esc(v.title)}</div>
+        <div class="muted" style="font-size:12px">${esc(v.ch||"")}</div>
+        <div class="m"><span><span class="views">${fmtN(v.views||0)}</span> views</span>
+          <button class="star on" onclick="toggleRemake({id:'${v.id}'})">★</button></div>
+      </div>
+    </div>`).join("") + `</div>`;
+  view().innerHTML = h;
+}
+
+/* ---------- player ---------- */
+function playVid(id){
+  document.getElementById("modal").innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeVid()">
+    <div class="player">
+      <button class="closex" onclick="closeVid()">×</button>
+      <iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>`;
+}
+function closeVid(){ document.getElementById("modal").innerHTML=""; }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeVid(); });
+
+/* ---------- Settings ---------- */
+function renderSet(){
+  const nCache = (()=>{ let n=0; for(let i=0;i<localStorage.length;i++){ if((localStorage.key(i)||"").startsWith("ss_vids_")) n++; } return n; })();
+  view().innerHTML = `<h2>Settings</h2>
+  <div class="card" style="margin-bottom:12px">
+    <b>Your YouTube Data API v3 key</b>
+    <div class="row" style="margin-top:8px">
+      <input type="password" id="keyIn" value="${esc(apiKey)}" placeholder="Paste your API key">
+      <button class="btn" onclick="saveKey()">Save</button>
+    </div>
+    <div class="muted" style="margin-top:7px">Your key is stored only in this browser and sent only to Google's YouTube API — never to this site's servers. All usage counts against your own free Google quota.</div>
+  </div>
+  <div class="bk"><details ${apiKey?"":"open"}><summary>Get a free API key (2 minutes)</summary><div class="in"><ol>
+    <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> and create a project (or reuse one).</li>
+    <li>APIs &amp; Services → <b>Library</b> → search “YouTube Data API v3” → <b>Enable</b>.</li>
+    <li>APIs &amp; Services → <b>Credentials</b> → Create credentials → <b>API key</b>.</li>
+    <li><b>Recommended:</b> click the key → Application restrictions → Websites → add this site's address. That locks your key so it only works here.</li>
+    <li>Paste it above. Free quota: 10,000 units/day — Discover searches cost ~100, channel scans ~2 per 100 videos.</li>
+  </ol></div></details></div>
+  <div class="card" style="margin-bottom:12px">
+    <b>Data</b>
+    <div class="muted" style="margin:6px 0 10px">${creators.length} creators · ${remakes.length} remake saves · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
+    <div class="row">
+      <button class="btn sec" onclick="exportAll()">⬇ Backup (JSON)</button>
+      <button class="btn sec" onclick="document.getElementById('impF').click()">⬆ Restore backup</button>
+      <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
+      <button class="btn sec" onclick="clearCaches()">Clear video caches</button>
+    </div>
+  </div>
+  <div class="muted">Videos play through YouTube's official embedded player — the views you generate count for the creators. There's deliberately no downloader: ripping videos breaks YouTube's terms, and re-uploaded footage gets demonetized as reused content anyway. The play is re-filming the <i>concept</i> in your own style.</div>`;
+}
+function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); alert(apiKey?"Key saved ✓":"Key cleared"); }
+function clearCaches(){
+  const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("ss_vids_")) keys.push(k); }
+  keys.forEach(k=>localStorage.removeItem(k)); renderSet();
+}
+function exportAll(){
+  const data = {creators, remakes, exported:new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="creator-scout-backup.json"; a.click();
+}
+function importAll(inp){
+  const f = inp.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{ try{
+    const d = JSON.parse(r.result);
+    if(d.creators) creators = d.creators;
+    if(d.remakes) remakes = d.remakes;
+    persist(); alert("Backup restored ✓"); render();
+  }catch(e){ alert("Couldn't read that file."); } };
+  r.readAsText(f);
+}
+
+/* ---------- init ---------- */
+render();
+</script>
+<script type="module">
+/* Optional Firebase layer — activates only when config.js is filled in */
+try{
+  const cfg = window.FIREBASE_CONFIG;
+  if(!cfg || !cfg.apiKey || cfg.apiKey.startsWith("PASTE")){ window.onFirebaseReady(null); }
+  else{
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getFirestore, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const app = initializeApp(cfg);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    window.onFirebaseReady({
+      signIn: ()=>signInWithPopup(auth, new GoogleAuthProvider()),
+      signOut: ()=>signOut(auth),
+      onUser: (cb)=>onAuthStateChanged(auth, cb),
+      load: async(uid)=>{ const s = await getDoc(doc(db,"users",uid)); return s.exists()? s.data() : null; },
+      save: (uid,data)=>setDoc(doc(db,"users",uid), data, {merge:true}),
+    });
+  }
+}catch(e){ console.warn("Firebase init failed:", e.message); window.onFirebaseReady(null); }
+</script>
+</body>
+</html>
