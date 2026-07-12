@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ScoutViral — find creators the algorithm never shows you</title>
-<meta name="description" content="Scout short-form creators in any country and niche, rank any channel's most viral Shorts, and build your remake pipeline. Bring your own free YouTube API key.">
+<title>ScoutViral — find your next video idea</title>
+<meta name="description" content="Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral, and save the ones worth re-filming in your own style.">
 <style>
 :root{
   --bg:#f7f7f5; --card:#ffffff; --ink:#161616; --ink2:#5f5e5a; --ink3:#8a8983;
@@ -277,7 +277,7 @@ function renderAuth(){
   if(!fb){ box.innerHTML = `<span class="muted" title="Add your Firebase config to enable sign-in">local mode</span>`; return; }
   if(user){ box.innerHTML = `${user.photoURL?`<img src="${esc(user.photoURL)}" alt="">`:""}<span>${esc(user.displayName||"")}</span>
     <button class="btn small sec" onclick="fb.signOut()">Sign out</button>`; }
-  else{ box.innerHTML = `<button class="btn small" onclick="fb.signIn().catch(e=>alert(e.message))">Sign in to sync</button>`; }
+  else{ box.innerHTML = `<button class="btn small" onclick="openAuthModal()">Sign in to sync</button>`; }
 }
 
 /* ---------- YouTube API ---------- */
@@ -382,14 +382,14 @@ function render(){
 function renderHome(){
   view().innerHTML = `
   <div class="hero">
-    <h2>Find creators the algorithm never shows you.</h2>
-    <p>Scout short-form creators in any country and any niche, rank any channel's most viral Shorts, and build your remake pipeline — powered by your own free YouTube API key.</p>
+    <h2>Find your next video idea — proven, not guessed.</h2>
+    <p>Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral for real channels, and save the ones worth re-filming in your own style.</p>
     <button class="btn" style="font-size:15px;padding:11px 22px" onclick="go('disc')">Start discovering →</button>
   </div>
   <div class="feat">
     <div class="card"><b>🌍 Discover worldwide</b><span>Pick a country and a niche — Hungary × silent comedy, Brazil × food, Japan × funny faces. Local-language search packs dig where English search can't reach.</span></div>
-    <div class="card"><b>📊 Rank any channel's top Shorts</b><span>Scan a channel's history and rank its most viral Shorts — you choose how many (top 10, 25, 100…) and how deep, so you control your API cost.</span></div>
-    <div class="card"><b>⭐ Build your remake pipeline</b><span>Watch inside the app, star the concepts you want to re-film in your own style, and sign in to keep your directory synced.</span></div>
+    <div class="card"><b>📊 Rank any channel's top Shorts</b><span>Scan a channel's history and see its most-viewed Shorts ranked — top 10, 25, 100, however many you want.</span></div>
+    <div class="card"><b>⭐ Build your remake list</b><span>Watch inside the app, star the ideas you want to re-film in your own style, and sign in to keep your list synced everywhere.</span></div>
   </div>`;
 }
 
@@ -429,11 +429,19 @@ function renderDisc(){
     <div class="row">
       <input type="text" id="dq" placeholder="Or type your own search (any language)…">
       <button class="btn" onclick="discSearch(document.getElementById('dq').value || null)">Search</button>
+      <button class="btn sec" title="Jump to a random country + niche" onclick="randomDiscover()">🎲 Random</button>
     </div>
     ${chips?`<div style="margin-top:10px">${chips}</div>`:""}
     <div class="muted" style="margin-top:8px">Each search costs ~100 units of your free 10,000/day quota. Channel scans are far cheaper.</div>
   </div>
   <div id="dres"></div>`;
+}
+function randomDiscover(){
+  disc.c = 1 + Math.floor(Math.random()*(COUNTRIES.length-1)); // skip "Worldwide"
+  disc.n = Math.floor(Math.random()*NICHES.length);
+  store.set("ss_disc",disc);
+  renderDisc();
+  discSearch(null);
 }
 async function discSearch(customQ){
   const c = COUNTRIES[disc.c]||COUNTRIES[0], ni = NICHES[disc.n]||NICHES[0];
@@ -728,7 +736,62 @@ function playVid(id){
   </div>`;
 }
 function closeVid(){ document.getElementById("modal").innerHTML=""; }
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeVid(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeVid(); closeAuthModal(); } });
+
+/* ---------- Sign-in modal (Google + email/password) ---------- */
+function openAuthModal(){
+  document.getElementById("modal").innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeAuthModal()">
+    <div class="card" style="width:min(340px,92vw)">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <b style="font-size:16px">Sign in to sync</b>
+        <button onclick="closeAuthModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">×</button>
+      </div>
+      <button class="btn" style="width:100%;margin-bottom:12px" onclick="doGoogleSignIn()">Continue with Google</button>
+      <div class="muted" style="text-align:center;margin:4px 0 10px">or use email</div>
+      <input type="text" id="authEmail" placeholder="Email" style="width:100%;margin-bottom:8px">
+      <input type="password" id="authPass" placeholder="Password (6+ characters)" style="width:100%;margin-bottom:8px">
+      <div id="authMsg" class="muted" style="margin-bottom:8px"></div>
+      <div class="row">
+        <button class="btn sec" style="flex:1" onclick="doEmailSignIn()">Sign in</button>
+        <button class="btn sec" style="flex:1" onclick="doEmailSignUp()">Create account</button>
+      </div>
+      <button class="crumb" style="margin-top:10px" onclick="doResetPassword()">Forgot password?</button>
+    </div>
+  </div>`;
+}
+function closeAuthModal(){ const m=document.getElementById("modal"); if(m) m.innerHTML=""; }
+function authMsg(t,isErr){ const el=document.getElementById("authMsg"); if(el){ el.textContent=t; el.style.color = isErr?"var(--danger)":"var(--ok)"; } }
+function niceAuthErr(msg){
+  const m = /auth\/([a-z-]+)/.exec(msg||"");
+  const map = {
+    "wrong-password":"Wrong password.",
+    "invalid-credential":"Wrong email or password.",
+    "user-not-found":"No account with that email — try Create account.",
+    "email-already-in-use":"That email already has an account — try Sign in instead.",
+    "weak-password":"Password must be at least 6 characters.",
+    "invalid-email":"That doesn't look like a valid email.",
+    "too-many-requests":"Too many attempts — wait a bit and try again.",
+  };
+  return (m && map[m[1]]) || msg;
+}
+async function doGoogleSignIn(){ try{ await fb.signInGoogle(); closeAuthModal(); }catch(e){ authMsg(niceAuthErr(e.message),true); } }
+async function doEmailSignIn(){
+  const email=document.getElementById("authEmail").value.trim(), pass=document.getElementById("authPass").value;
+  if(!email||!pass){ authMsg("Enter email and password.",true); return; }
+  try{ await fb.signInEmail(email,pass); closeAuthModal(); }catch(e){ authMsg(niceAuthErr(e.message),true); }
+}
+async function doEmailSignUp(){
+  const email=document.getElementById("authEmail").value.trim(), pass=document.getElementById("authPass").value;
+  if(!email||!pass){ authMsg("Enter email and password.",true); return; }
+  if(pass.length<6){ authMsg("Password must be at least 6 characters.",true); return; }
+  try{ await fb.signUpEmail(email,pass); closeAuthModal(); }catch(e){ authMsg(niceAuthErr(e.message),true); }
+}
+async function doResetPassword(){
+  const email=document.getElementById("authEmail").value.trim();
+  if(!email){ authMsg("Enter your email above first.",true); return; }
+  try{ await fb.resetPassword(email); authMsg("Reset email sent — check your inbox.",false); }catch(e){ authMsg(niceAuthErr(e.message),true); }
+}
 
 /* ---------- Settings ---------- */
 function renderSet(){
@@ -793,13 +856,17 @@ try{
   if(!cfg || !cfg.apiKey || cfg.apiKey.startsWith("PASTE")){ window.onFirebaseReady(null); }
   else{
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+      createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
     const { getFirestore, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const app = initializeApp(cfg);
     const auth = getAuth(app);
     const db = getFirestore(app);
     window.onFirebaseReady({
-      signIn: ()=>signInWithPopup(auth, new GoogleAuthProvider()),
+      signInGoogle: ()=>signInWithPopup(auth, new GoogleAuthProvider()),
+      signInEmail: (email,pass)=>signInWithEmailAndPassword(auth,email,pass),
+      signUpEmail: (email,pass)=>createUserWithEmailAndPassword(auth,email,pass),
+      resetPassword: (email)=>sendPasswordResetEmail(auth,email),
       signOut: ()=>signOut(auth),
       onUser: (cb)=>onAuthStateChanged(auth, cb),
       load: async(uid)=>{ const s = await getDoc(doc(db,"users",uid)); return s.exists()? s.data() : null; },
