@@ -48,18 +48,22 @@ button.btn:disabled{opacity:.5;cursor:default}
 .creator .hd{font-size:12px;color:var(--ink3);word-break:break-all}
 .creator .x{position:absolute;top:8px;right:10px;color:var(--ink3);font-size:15px;background:none;border:none;cursor:pointer;padding:2px 4px}
 .creator .x:hover{color:var(--danger)}
-.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
 .vid{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
-.vid img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer;background:#000}
-.vid .b{padding:9px 10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.vid img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;cursor:pointer;background:#000}
+.vid iframe{width:100%;aspect-ratio:9/16;display:block;border:0;background:#000;pointer-events:none}
+.vid .b{padding:9px 10px;display:flex;flex-direction:column;gap:6px;flex:1}
 .vid .t{font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
 .vid .m{font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;align-items:center;margin-top:auto}
 .vid .views{font-weight:700;color:var(--ink);font-size:13px}
+.vid .cp{width:100%;background:var(--bg);color:var(--ink2);border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:12px;cursor:pointer}
+.vid .cp:hover{border-color:var(--accent);color:var(--accent)}
 .star{background:none;border:none;font-size:17px;cursor:pointer;color:var(--ink3);padding:0 2px}
 .star.on{color:#e6a800}
 .rank{position:absolute;background:rgba(0,0,0,.75);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:0 0 8px 0;z-index:1}
 .thumbwrap{position:relative}
 .dur{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;padding:1px 6px;border-radius:4px}
+.expand{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;border:none;border-radius:6px;font-size:12px;padding:4px 7px;cursor:pointer;z-index:1}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
 .player{width:min(400px,94vw);aspect-ratio:9/16;background:#000;border-radius:12px;overflow:hidden;position:relative}
 .player iframe{width:100%;height:100%;border:0}
@@ -410,11 +414,15 @@ function renderDisc(){
     <div class="row" style="margin-bottom:8px">
       <select onchange="disc.c=+this.value;store.set('ss_disc',disc);renderDisc()">${countryOpts(disc.c)}</select>
       <select onchange="disc.n=+this.value;store.set('ss_disc',disc);renderDisc()">${nicheOpts(disc.n)}</select>
-      <select onchange="disc.max=+this.value;store.set('ss_disc',disc)">
+      <select id="maxSel" onchange="onMaxChange(this.value)">
         <option value="10" ${disc.max===10?"selected":""}>10 results</option>
         <option value="25" ${disc.max===25?"selected":""}>25 results</option>
         <option value="50" ${disc.max===50?"selected":""}>50 results</option>
+        <option value="custom" ${![10,25,50].includes(disc.max)?"selected":""}>Custom…</option>
       </select>
+      <input type="number" id="maxCustom" min="1" max="500" value="${disc.max}" placeholder="# results"
+        style="width:90px;display:${[10,25,50].includes(disc.max)?"none":"inline-block"}"
+        oninput="disc.max=Math.max(1,Math.min(500,+this.value||1));store.set('ss_disc',disc);updateCostNote()">
       <select onchange="disc.order=this.value;store.set('ss_disc',disc)">
         <option value="viewCount" ${disc.order==="viewCount"?"selected":""}>Most viewed</option>
         <option value="relevance" ${disc.order==="relevance"?"selected":""}>Most relevant</option>
@@ -432,9 +440,23 @@ function renderDisc(){
       <button class="btn sec" title="Jump to a random country + niche" onclick="randomDiscover()">🎲 Random</button>
     </div>
     ${chips?`<div style="margin-top:10px">${chips}</div>`:""}
-    <div class="muted" style="margin-top:8px">Each search costs ~100 units of your free 10,000/day quota. Channel scans are far cheaper.</div>
+    <div class="muted" style="margin-top:8px" id="costNote"></div>
   </div>
   <div id="dres"></div>`;
+  updateCostNote();
+}
+function onMaxChange(v){
+  if(v==="custom"){ disc.max = [10,25,50].includes(disc.max) ? 100 : disc.max; }
+  else disc.max = +v;
+  store.set("ss_disc",disc);
+  renderDisc();
+}
+function updateCostNote(){
+  const el = document.getElementById("costNote"); if(!el) return;
+  const calls = Math.max(1, Math.ceil(disc.max/50));
+  el.textContent = calls>1
+    ? `${disc.max} results needs ${calls} search calls (~${calls*100} units of your free 10,000/day quota). Channel scans are far cheaper.`
+    : `Each search costs ~100 units of your free 10,000/day quota. Channel scans are far cheaper.`;
 }
 function randomDiscover(){
   disc.c = 1 + Math.floor(Math.random()*(COUNTRIES.length-1)); // skip "Worldwide"
@@ -453,15 +475,14 @@ async function discSearch(customQ){
   const box = document.getElementById("dres");
   box.innerHTML = `<div class="muted" style="padding:14px 2px">Searching “${esc(q)}” ${c.rc?("in "+esc(c.n)):"worldwide"}…</div>`;
   try{
-    const params = {part:"snippet", q, type:"video", videoDuration:"short", order:disc.order, maxResults:disc.max};
-    if(c.rc) params.regionCode = c.rc;
-    if(c.lang) params.relevanceLanguage = c.lang;
-    if(disc.when) params.publishedAfter = new Date(Date.now()-(+disc.when)*864e5).toISOString();
-    const s = await yt("search",params);
-    const ids = (s.items||[]).map(i=>i.id.videoId).filter(Boolean);
+    const baseParams = {part:"snippet", q, type:"video", videoDuration:"short", order:disc.order};
+    if(c.rc) baseParams.regionCode = c.rc;
+    if(c.lang) baseParams.relevanceLanguage = c.lang;
+    if(disc.when) baseParams.publishedAfter = new Date(Date.now()-(+disc.when)*864e5).toISOString();
+    const ids = await pagedSearchIds(baseParams, disc.max);
     if(!ids.length){ box.innerHTML=`<div class="empty">No results — try another niche, country, or your own query.</div>`; return; }
-    const d = await yt("videos",{part:"snippet,contentDetails,statistics", id:ids.join(",")});
-    const vids = (d.items||[]).map(it=>({ id:it.id, title:it.snippet.title, ch:it.snippet.channelTitle, chId:it.snippet.channelId,
+    const items = await batchVideoDetails(ids);
+    const vids = items.map(it=>({ id:it.id, title:it.snippet.title, ch:it.snippet.channelTitle, chId:it.snippet.channelId,
       at:it.snippet.publishedAt, dur:parseDur(it.contentDetails.duration), views:+((it.statistics||{}).viewCount||0),
       thumb:(it.snippet.thumbnails.medium||{url:""}).url })).filter(v=>v.dur>0 && v.dur<=183).sort((a,b)=>b.views-a.views);
     /* channel aggregation — the "creators you didn't know" layer */
@@ -470,18 +491,51 @@ async function discSearch(customQ){
     const chanRow = Object.entries(chans).sort((a,b)=>b[1].top-a[1].top).map(([id,c])=>
       `<span class="qchip" title="Top result: ${fmtN(c.top)} views" onclick="addFromDisc('${id}','${esc(c.name).replace(/'/g,"&#39;")}')">＋ ${esc(c.name)}<small>${c.hits} hit${c.hits>1?"s":""}</small></span>`).join("");
     box.innerHTML = `<h3>Channels in these results — tap to add to your directory</h3><div>${chanRow}</div>
-      <h3>Videos</h3><div class="vgrid">` + vids.map(v=>`
+      <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— playing muted, tap ⤢ for sound</span></h3><div class="vgrid">` + vids.map(v=>`
       <div class="vid">
-        <div class="thumbwrap"><img loading="lazy" src="${esc(v.thumb)}" alt="" onclick="playVid('${v.id}')"><span class="dur">${v.dur}s</span></div>
+        <div class="thumbwrap">
+          <iframe loading="lazy" src="https://www.youtube.com/embed/${v.id}?autoplay=1&mute=1&loop=1&playlist=${v.id}&controls=0&modestbranding=1&rel=0&playsinline=1" title="${esc(v.title)}" allow="autoplay; encrypted-media"></iframe>
+          <span class="dur">${v.dur}s</span>
+          <button class="expand" title="Open with sound" onclick="playVid('${v.id}')">⤢</button>
+        </div>
         <div class="b">
           <div class="t">${esc(v.title)}</div>
           <div class="muted" style="font-size:12px">${esc(v.ch)}</div>
           <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span>
           <button class="star ${remakes.some(r=>r.id===v.id)?"on":""}" title="Save to remake list"
             onclick="toggleRemake({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}'},this)">★</button></div>
+          <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
         </div>
       </div>`).join("") + `</div>`;
   }catch(e){ box.innerHTML = `<div class="notice">${esc(e.message)}</div>`; }
+}
+async function pagedSearchIds(baseParams, total){
+  let ids = [], pageToken = "";
+  while(ids.length < total){
+    const params = {...baseParams, maxResults:Math.min(50, total-ids.length)};
+    if(pageToken) params.pageToken = pageToken;
+    const s = await yt("search", params);
+    const pageIds = (s.items||[]).map(i=>i.id.videoId).filter(Boolean);
+    ids = ids.concat(pageIds);
+    pageToken = s.nextPageToken || "";
+    if(!pageToken || !pageIds.length) break;
+  }
+  return ids;
+}
+async function batchVideoDetails(ids){
+  const out = [];
+  for(let i=0;i<ids.length;i+=50){
+    const batch = ids.slice(i,i+50);
+    const d = await yt("videos",{part:"snippet,contentDetails,statistics", id:batch.join(",")});
+    out.push(...(d.items||[]));
+  }
+  return out;
+}
+function copyLink(id, btn){
+  const url = "https://www.youtube.com/shorts/"+id;
+  const done = ok=>{ const orig=btn.textContent; btn.textContent = ok?"✓ Copied":"Copy failed"; setTimeout(()=>{ btn.textContent=orig; },1500); };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(()=>done(true)).catch(()=>done(false));
+  else done(false);
 }
 async function addFromDisc(chId, chName){
   if(creators.some(c=>c.id===chId)){ alert(chName+" is already in your directory."); return; }
@@ -685,6 +739,7 @@ function vidCard(v, rank, channelTitle){
         <button class="star ${starred?"on":""}" title="Save to remake list"
           onclick="toggleRemake({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(channelTitle).replace(/'/g,"&#39;")}'},this)">★</button>
       </div>
+      <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
     </div>
   </div>`;
 }
@@ -720,6 +775,7 @@ function renderRemake(){
         <div class="muted" style="font-size:12px">${esc(v.ch||"")}</div>
         <div class="m"><span><span class="views">${fmtN(v.views||0)}</span> views</span>
           <button class="star on" onclick="toggleRemake({id:'${v.id}'})">★</button></div>
+        <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
       </div>
     </div>`).join("") + `</div>`;
   view().innerHTML = h;
