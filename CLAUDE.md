@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-12 (latest commit: `bd483c7`)
+**Last updated:** 2026-07-13 (dark-mode UI refresh + branded dialogs)
 
 ---
 
@@ -55,14 +55,30 @@ to the live site. Pull requests get their own preview URL first. **You normally 
 NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
 `firebase deploy --only hosting` still works for quick local checks.)
 
+## Look & feel (redesigned 2026-07-13)
+
+- **Dark theme by default** (deep charcoal `#101012`), light theme under
+  `prefers-color-scheme: light`. **One accent: red** (`--accent` #f2555a dark /
+  #e5333a light) used sparingly. **Inter** font (Google Fonts `<link>` in `<head>`
+  — the app's only external dependency; falls back to `system-ui`).
+- **Bottom tab bar on mobile** (Discover/Directory/Remakes/Settings), inline top
+  nav on desktop — driven by CSS media query on the single `<nav>`; `go()`/`data-v`
+  unchanged. Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
+- **Branded dialogs** replace native `alert/confirm/prompt` — `uiAlert`/`uiConfirm`/
+  `uiPrompt` (Promise-based) render into `#dialog`; destructive confirms use a red
+  button. Escape = cancel, Enter = confirm.
+
 ## Features currently live
 
 - **Discover:** country + niche pickers (local-language search for silent comedy),
-  result count 10/25/50 **+ Custom (up to 500, paginated)**, sort/time filters,
-  free-text search, **🎲 Random** button, per-search quota-cost estimate.
-- **Video cards:** taller shorts-style ratio. On Discover they **autoplay muted +
-  looped inline** (lazy-loaded); ⤢ button opens focused player with sound.
-  **🔗 Copy link** button on every card (Discover, channel Top Shorts, Remake list).
+  **result count = a number stepper (default 10, 1–500, arrows or type)** like the
+  channel Top-N control; counts >50 paginate. Sort/time filters, free-text search,
+  **🎲 Random** button, per-search quota-cost estimate.
+- **Video cards:** taller shorts-style ratio. On Discover they **preview muted +
+  looped inline on hover (desktop) / touch (mobile)** — no autoplay-on-load; one
+  preview plays at a time (`startPreview`/`stopPreview`). ⤢ opens focused player
+  with sound. **🔗 Copy link** button on every card (Discover, channel Top Shorts,
+  Remake list).
 - **My directory:** add creators by @handle/URL (verified live against YouTube),
   or load a 34-creator silent-comedy starter pack.
 - **Channel view:** scan a channel's history, rank its top Shorts, export CSV.

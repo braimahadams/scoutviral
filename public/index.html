@@ -5,107 +5,170 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ScoutViral — find your next video idea</title>
 <meta name="description" content="Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral, and save the ones worth re-filming in your own style.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ===== ScoutViral design system — dark by default, red accent ===== */
 :root{
-  --bg:#f7f7f5; --card:#ffffff; --ink:#161616; --ink2:#5f5e5a; --ink3:#8a8983;
-  --line:#e4e3de; --accent:#1d6ef2; --accent-bg:#e9f1fe; --warn:#9a6700; --warn-bg:#fff3d6;
-  --ok:#0d7a4f; --ok-bg:#e2f5ec; --danger:#c0392b; --radius:10px;
+  --bg:#101012; --bg2:#17171b; --card:#1a1a1f; --card2:#232329;
+  --ink:#f4f4f5; --ink2:#a1a1aa; --ink3:#71717a;
+  --line:#2a2a31;
+  --accent:#f2555a; --accent-h:#ff6b6f; --accent-bg:rgba(242,85,90,.15);
+  --warn:#e0a93e; --warn-bg:#332a12; --ok:#4cc08c; --ok-bg:#102b1f;
+  --danger:#f2555a; --gold:#eab13e;
+  --radius:16px; --radius-sm:11px; --navh:62px;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.32);
 }
-@media (prefers-color-scheme: dark){
-  :root{ --bg:#141414; --card:#1e1e1e; --ink:#f0efec; --ink2:#b6b5ae; --ink3:#84837d;
-  --line:#333330; --accent:#5b96f5; --accent-bg:#16273f; --warn:#e0a93e; --warn-bg:#33290f;
-  --ok:#4cc08c; --ok-bg:#0f2b1f; }
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#f6f6f7; --bg2:#ededf0; --card:#ffffff; --card2:#f4f4f5;
+    --ink:#18181b; --ink2:#52525b; --ink3:#8a8a92;
+    --line:#e5e5e9;
+    --accent:#e5333a; --accent-h:#c92a30; --accent-bg:rgba(229,51,58,.09);
+    --warn:#9a6700; --warn-bg:#fff3d6; --ok:#0d7a4f; --ok-bg:#e2f5ec;
+    --danger:#e5333a; --gold:#d69700;
+    --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.05);
+  }
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
-header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-header h1{font-size:16px;font-weight:700;cursor:pointer}
-nav{display:flex;gap:2px;flex-wrap:wrap}
-nav button{border:1px solid transparent;background:transparent;color:var(--ink2);padding:6px 11px;border-radius:8px;font-size:13.5px;cursor:pointer}
-nav button.on{background:var(--card);border-color:var(--line);color:var(--ink);font-weight:600}
-#authbox{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px}
-#authbox img{width:26px;height:26px;border-radius:50%}
-main{max-width:1100px;margin:0 auto;padding:18px 16px 90px}
-h2{font-size:18px;font-weight:600;margin:4px 0 12px}
-h3{font-size:13.5px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;margin:20px 0 8px}
+body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:var(--accent-bg);color:var(--ink)}
+/* header + nav */
+header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line);padding:11px 18px;display:flex;align-items:center;gap:16px}
+header h1{font-size:18px;font-weight:800;letter-spacing:-.02em;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
+header h1 .vv{color:var(--accent)}
+nav{display:flex;gap:4px}
+nav button{display:flex;align-items:center;gap:7px;border:none;background:transparent;color:var(--ink2);padding:8px 14px;border-radius:11px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;transition:background .12s,color .12s}
+nav button .ico{font-size:16px;line-height:1}
+nav button:hover{color:var(--ink);background:var(--card2)}
+nav button.on{color:var(--accent);background:var(--accent-bg);font-weight:600}
+#authbox{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+#authbox img{width:28px;height:28px;border-radius:50%;border:1px solid var(--line)}
+main{max-width:1180px;margin:0 auto;padding:24px 18px 48px}
+h2{font-size:23px;font-weight:700;letter-spacing:-.02em;margin:2px 0 6px}
+h3{font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin:26px 0 11px}
 .muted{color:var(--ink3);font-size:13px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-input[type=text],input[type=password],input[type=number],select{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=password],input[type=number],select{background:var(--bg2);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;font-size:14px;font-family:inherit;min-width:0;transition:border-color .12s,box-shadow .12s}
 input[type=text]{flex:1}
-button.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;font-weight:600}
-button.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
-button.btn.small{padding:5px 10px;font-size:12.5px}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+select{cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:32px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2388888f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
+button.btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px 18px;font-size:14px;cursor:pointer;font-weight:600;font-family:inherit;transition:background .12s,transform .05s}
+button.btn:hover{background:var(--accent-h)}
+button.btn:active{transform:translateY(1px)}
+button.btn.sec{background:var(--bg2);color:var(--ink);border:1px solid var(--line);font-weight:500}
+button.btn.sec:hover{background:var(--card2);border-color:var(--ink3)}
+button.btn.small{padding:7px 12px;font-size:13px}
 button.btn:disabled{opacity:.5;cursor:default}
-.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--accent-bg);color:var(--accent);margin:2px 3px 0 0}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;background:var(--accent-bg);color:var(--accent);margin:2px 3px 0 0}
 .tag.warn{background:var(--warn-bg);color:var(--warn)}
 .tag.ok{background:var(--ok-bg);color:var(--ok)}
-.tag.plain{background:var(--bg);color:var(--ink3);border:1px solid var(--line);cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
-.creator{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;cursor:pointer;position:relative;transition:border-color .12s}
-.creator:hover{border-color:var(--accent)}
-.creator .nm{font-weight:600;font-size:14px;padding-right:20px}
-.creator .hd{font-size:12px;color:var(--ink3);word-break:break-all}
-.creator .x{position:absolute;top:8px;right:10px;color:var(--ink3);font-size:15px;background:none;border:none;cursor:pointer;padding:2px 4px}
+.tag.plain{background:var(--bg2);color:var(--ink3);border:1px solid var(--line);cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.creator{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px;cursor:pointer;position:relative;box-shadow:var(--shadow);transition:border-color .12s,transform .12s}
+.creator:hover{border-color:var(--accent);transform:translateY(-2px)}
+.creator .nm{font-weight:600;font-size:14.5px;padding-right:20px}
+.creator .hd{font-size:12px;color:var(--ink3);word-break:break-all;margin-top:1px}
+.creator .x{position:absolute;top:9px;right:11px;color:var(--ink3);font-size:16px;background:none;border:none;cursor:pointer;padding:2px 4px;line-height:1}
 .creator .x:hover{color:var(--danger)}
-.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
-.vid{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+/* video cards — the hero */
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:16px}
+.vid{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:transform .14s,border-color .14s,box-shadow .14s}
+.vid:hover{transform:translateY(-3px);box-shadow:0 10px 34px rgba(0,0,0,.45)}
 .vid img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;cursor:pointer;background:#000}
 .vid iframe{width:100%;aspect-ratio:9/16;display:block;border:0;background:#000;pointer-events:none}
-.vid .b{padding:9px 10px;display:flex;flex-direction:column;gap:6px;flex:1}
-.vid .t{font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
+.vid .b{padding:12px 13px 13px;display:flex;flex-direction:column;gap:8px;flex:1}
+.vid .t{font-size:13.5px;font-weight:500;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em}
 .vid .m{font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;align-items:center;margin-top:auto}
-.vid .views{font-weight:700;color:var(--ink);font-size:13px}
-.vid .cp{width:100%;background:var(--bg);color:var(--ink2);border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:12px;cursor:pointer}
-.vid .cp:hover{border-color:var(--accent);color:var(--accent)}
-.star{background:none;border:none;font-size:17px;cursor:pointer;color:var(--ink3);padding:0 2px}
-.star.on{color:#e6a800}
-.rank{position:absolute;background:rgba(0,0,0,.75);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:0 0 8px 0;z-index:1}
-.thumbwrap{position:relative}
-.dur{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;padding:1px 6px;border-radius:4px}
-.expand{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;border:none;border-radius:6px;font-size:12px;padding:4px 7px;cursor:pointer;z-index:1}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
-.player{width:min(400px,94vw);aspect-ratio:9/16;background:#000;border-radius:12px;overflow:hidden;position:relative}
+.vid .views{font-weight:700;color:var(--ink);font-size:14.5px}
+.vid .cp{width:100%;background:var(--bg2);color:var(--ink2);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:12.5px;font-weight:500;cursor:pointer;transition:.12s}
+.vid .cp:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.star{background:none;border:none;font-size:19px;cursor:pointer;color:var(--ink3);padding:0 2px;line-height:1;transition:transform .1s,color .12s}
+.star:hover{color:var(--gold);transform:scale(1.18)}
+.star.on{color:var(--gold)}
+.rank{position:absolute;top:0;left:0;background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:0 0 12px 0;z-index:2}
+.thumbwrap{position:relative;overflow:hidden}
+.dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px}
+.expand{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:9px;font-size:14px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;transition:background .12s}
+.expand:hover{background:var(--accent)}
+.vid.tall .thumbwrap{aspect-ratio:9/16;background:#000;cursor:pointer}
+.vid.tall .thumbwrap img{width:100%;height:100%;object-fit:cover}
+.thumbwrap iframe.prev{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;pointer-events:none;z-index:1}
+.vid.tall .thumbwrap::after{content:"\25B6";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:19px;padding-left:3px;color:#fff;background:rgba(0,0,0,.5);border-radius:50%;pointer-events:none;transition:opacity .15s;z-index:2}
+.vid.tall .thumbwrap.playing::after{opacity:0}
+.numfield{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
+.player{width:min(420px,94vw);aspect-ratio:9/16;background:#000;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.6)}
 .player iframe{width:100%;height:100%;border:0}
-.closex{position:absolute;top:-4px;right:0;transform:translateY(-110%);background:none;border:none;color:#fff;font-size:26px;cursor:pointer}
-.statusbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding:9px 16px;font-size:13px;display:none;align-items:center;gap:12px;z-index:30}
+.closex{position:absolute;top:-4px;right:0;transform:translateY(-110%);background:none;border:none;color:#fff;font-size:28px;cursor:pointer}
+.dlg{z-index:90}
+.dlgbox{width:min(400px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.5);animation:dlgpop .13s ease-out}
+@keyframes dlgpop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.dlgtitle{font-size:16.5px;font-weight:700;margin-bottom:7px}
+.dlgmsg{font-size:14px;color:var(--ink2);line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.statusbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding:12px 18px;font-size:13px;display:none;align-items:center;gap:14px;z-index:50}
 .statusbar.show{display:flex}
-.bar{flex:1;height:6px;background:var(--bg);border-radius:4px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--accent);width:0%}
-.qchip{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:13px;margin:3px 4px 3px 0;cursor:pointer}
-.qchip:hover{border-color:var(--accent);color:var(--accent)}
-.qchip small{color:var(--ink3);font-size:11px;margin-left:5px}
-.notice{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px}
-.crumb{font-size:13px;color:var(--accent);cursor:pointer;background:none;border:none;padding:0;margin-bottom:10px;display:inline-block}
-.chead{display:flex;gap:14px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-.chead img{width:64px;height:64px;border-radius:50%;background:var(--bg)}
-.chead .nm{font-size:19px;font-weight:700}
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-a{color:var(--accent)}
-.empty{padding:34px 10px;text-align:center;color:var(--ink3);font-size:14px}
-.bk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
+.bar{flex:1;height:6px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0%;transition:width .2s}
+.qchip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;margin:0 6px 6px 0;cursor:pointer;transition:.12s}
+.qchip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.qchip small{color:var(--ink3);font-size:11px}
+.qchip:hover small{color:var(--accent)}
+.notice{background:var(--warn-bg);color:var(--warn);border-radius:var(--radius-sm);padding:12px 14px;font-size:13.5px;margin-bottom:14px}
+.crumb{font-size:13px;color:var(--ink2);cursor:pointer;background:var(--bg2);border:1px solid var(--line);padding:7px 13px;border-radius:9px;margin-bottom:16px;display:inline-flex;align-items:center;gap:5px;font-weight:500;transition:.12s}
+.crumb:hover{color:var(--ink);border-color:var(--ink3)}
+.chead{display:flex;gap:16px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.chead img{width:72px;height:72px;border-radius:50%;background:var(--bg2);border:2px solid var(--line)}
+.chead .nm{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.filters input[type=text]{flex:1 1 140px;min-width:140px}
+.filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+a{color:var(--accent);text-decoration-color:var(--accent-bg)}
+.empty{padding:48px 18px;text-align:center;color:var(--ink3);font-size:14.5px;background:var(--card);border:1px dashed var(--line);border-radius:var(--radius)}
+.bk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
 .bk summary{cursor:pointer;font-weight:600;font-size:14px}
-.bk .in{margin-top:10px;font-size:13.5px;color:var(--ink2)}
-.bk .in ol{padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.bk .in{margin-top:12px;font-size:13.5px;color:var(--ink2)}
+.bk .in ol{padding-left:20px;display:flex;flex-direction:column;gap:6px}
 /* landing */
-.hero{padding:52px 8px 34px;text-align:center;max-width:720px;margin:0 auto}
-.hero h2{font-size:clamp(26px,5vw,40px);line-height:1.15;font-weight:800;margin-bottom:14px}
-.hero p{font-size:16px;color:var(--ink2);margin-bottom:22px}
-.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:26px auto 0;max-width:900px}
+.hero{padding:64px 12px 40px;text-align:center;max-width:660px;margin:0 auto}
+.hero h2{font-size:clamp(28px,5.5vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.03em;margin-bottom:16px}
+.hero p{font-size:16px;color:var(--ink2);margin-bottom:26px;line-height:1.6}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:34px auto 0;max-width:940px}
 .feat .card{text-align:left}
-.feat .card b{display:block;margin-bottom:5px;font-size:14.5px}
-.feat .card span{font-size:13px;color:var(--ink2)}
-footer{max-width:1100px;margin:40px auto 0;padding:14px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3)}
+.feat .card b{display:block;margin-bottom:6px;font-size:15px}
+.feat .card span{font-size:13.5px;color:var(--ink2);line-height:1.55}
+footer{max-width:1180px;margin:48px auto 0;padding:20px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.6}
+/* mobile: bottom tab bar */
+@media (max-width:720px){
+  header{padding:11px 15px}
+  main{padding:18px 14px calc(84px + env(safe-area-inset-bottom))}
+  #authbox span{display:none}
+  nav{position:fixed;bottom:0;left:0;right:0;z-index:45;gap:0;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;box-shadow:0 -2px 18px rgba(0,0,0,.28)}
+  nav button{flex-direction:column;gap:3px;flex:1;padding:6px 2px;border-radius:11px;font-size:10.5px;font-weight:500}
+  nav button .ico{font-size:21px}
+  nav button:hover{background:transparent}
+  nav button.on{background:transparent;color:var(--accent)}
+  .statusbar{bottom:calc(var(--navh) + env(safe-area-inset-bottom))}
+  footer{margin-bottom:calc(var(--navh) + env(safe-area-inset-bottom))}
+}
+@media (max-width:600px){
+  .filterbar{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .filterbar::-webkit-scrollbar{display:none}
+  .filterbar select,.filterbar input[type=number]{flex:0 0 auto}
+}
+@media (max-width:520px){ .vgrid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
 <header>
-  <h1 onclick="go('home')">🎬 ScoutViral</h1>
+  <h1 onclick="go('home')">🎬 Scout<span class="vv">Viral</span></h1>
   <nav>
-    <button data-v="disc" onclick="go('disc')">Discover</button>
-    <button data-v="dir" onclick="go('dir')">My directory</button>
-    <button data-v="remake" onclick="go('remake')">Remake list</button>
-    <button data-v="set" onclick="go('set')">Settings</button>
+    <button data-v="disc" onclick="go('disc')"><span class="ico">🔍</span><span class="lbl">Discover</span></button>
+    <button data-v="dir" onclick="go('dir')"><span class="ico">📁</span><span class="lbl">Directory</span></button>
+    <button data-v="remake" onclick="go('remake')"><span class="ico">★</span><span class="lbl">Remakes</span></button>
+    <button data-v="set" onclick="go('set')"><span class="ico">⚙</span><span class="lbl">Settings</span></button>
   </nav>
   <div id="authbox"></div>
 </header>
@@ -122,6 +185,7 @@ footer{max-width:1100px;margin:40px auto 0;padding:14px 16px;border-top:1px soli
   <button class="btn small sec" onclick="cancelScan()">Cancel</button>
 </div>
 <div id="modal"></div>
+<div id="dialog"></div>
 
 <script src="config.js"></script>
 <script>
@@ -237,7 +301,7 @@ const NICHES = [
 const store = {
   get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }
-    catch(e){ pruneCaches(); try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e2){ alert("Local storage is full — clear cached channels in Settings."); return false; } } },
+    catch(e){ pruneCaches(); try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e2){ uiAlert("Local storage is full — clear cached channels in Settings."); return false; } } },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 function pruneCaches(){
@@ -370,6 +434,7 @@ async function scanChannel(meta, depth){
 /* ---------- routing ---------- */
 let route = {v:"home"};
 function go(v,extra){ route={v,...(extra||{})};
+  if(typeof stopPreview==="function") stopPreview();
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   render(); window.scrollTo(0,0); }
 const view = ()=>document.getElementById("view");
@@ -411,18 +476,13 @@ function renderDisc(){
   view().innerHTML = `<h2>Discover</h2>
   <div class="muted" style="margin-bottom:12px">Pick a country and niche. For silent comedy, searches run in the <b>local language</b> (shown small on each chip) — that's what surfaces creators English search never finds.</div>
   <div class="card" style="margin-bottom:12px">
-    <div class="row" style="margin-bottom:8px">
+    <div class="filterbar">
       <select onchange="disc.c=+this.value;store.set('ss_disc',disc);renderDisc()">${countryOpts(disc.c)}</select>
       <select onchange="disc.n=+this.value;store.set('ss_disc',disc);renderDisc()">${nicheOpts(disc.n)}</select>
-      <select id="maxSel" onchange="onMaxChange(this.value)">
-        <option value="10" ${disc.max===10?"selected":""}>10 results</option>
-        <option value="25" ${disc.max===25?"selected":""}>25 results</option>
-        <option value="50" ${disc.max===50?"selected":""}>50 results</option>
-        <option value="custom" ${![10,25,50].includes(disc.max)?"selected":""}>Custom…</option>
-      </select>
-      <input type="number" id="maxCustom" min="1" max="500" value="${disc.max}" placeholder="# results"
-        style="width:90px;display:${[10,25,50].includes(disc.max)?"none":"inline-block"}"
-        oninput="disc.max=Math.max(1,Math.min(500,+this.value||1));store.set('ss_disc',disc);updateCostNote()">
+      <span class="numfield"><label class="muted">Show</label>
+        <input type="number" id="maxN" min="1" max="500" value="${disc.max}" style="width:76px"
+          oninput="disc.max=Math.max(1,Math.min(500,+this.value||1));store.set('ss_disc',disc);updateCostNote()">
+        <label class="muted">results</label></span>
       <select onchange="disc.order=this.value;store.set('ss_disc',disc)">
         <option value="viewCount" ${disc.order==="viewCount"?"selected":""}>Most viewed</option>
         <option value="relevance" ${disc.order==="relevance"?"selected":""}>Most relevant</option>
@@ -444,12 +504,6 @@ function renderDisc(){
   </div>
   <div id="dres"></div>`;
   updateCostNote();
-}
-function onMaxChange(v){
-  if(v==="custom"){ disc.max = [10,25,50].includes(disc.max) ? 100 : disc.max; }
-  else disc.max = +v;
-  store.set("ss_disc",disc);
-  renderDisc();
 }
 function updateCostNote(){
   const el = document.getElementById("costNote"); if(!el) return;
@@ -479,7 +533,7 @@ async function discSearch(customQ){
     if(c.rc) baseParams.regionCode = c.rc;
     if(c.lang) baseParams.relevanceLanguage = c.lang;
     if(disc.when) baseParams.publishedAfter = new Date(Date.now()-(+disc.when)*864e5).toISOString();
-    const ids = await pagedSearchIds(baseParams, disc.max);
+    const ids = await pagedSearchIds(baseParams, Math.max(1,Math.min(500,disc.max||10)));
     if(!ids.length){ box.innerHTML=`<div class="empty">No results — try another niche, country, or your own query.</div>`; return; }
     const items = await batchVideoDetails(ids);
     const vids = items.map(it=>({ id:it.id, title:it.snippet.title, ch:it.snippet.channelTitle, chId:it.snippet.channelId,
@@ -491,12 +545,12 @@ async function discSearch(customQ){
     const chanRow = Object.entries(chans).sort((a,b)=>b[1].top-a[1].top).map(([id,c])=>
       `<span class="qchip" title="Top result: ${fmtN(c.top)} views" onclick="addFromDisc('${id}','${esc(c.name).replace(/'/g,"&#39;")}')">＋ ${esc(c.name)}<small>${c.hits} hit${c.hits>1?"s":""}</small></span>`).join("");
     box.innerHTML = `<h3>Channels in these results — tap to add to your directory</h3><div>${chanRow}</div>
-      <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— playing muted, tap ⤢ for sound</span></h3><div class="vgrid">` + vids.map(v=>`
-      <div class="vid">
-        <div class="thumbwrap">
-          <iframe loading="lazy" src="https://www.youtube.com/embed/${v.id}?autoplay=1&mute=1&loop=1&playlist=${v.id}&controls=0&modestbranding=1&rel=0&playsinline=1" title="${esc(v.title)}" allow="autoplay; encrypted-media"></iframe>
+      <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— hover or tap to preview, ⤢ for sound</span></h3><div class="vgrid">` + vids.map(v=>`
+      <div class="vid tall">
+        <div class="thumbwrap" onmouseenter="startPreview(this,'${v.id}')" onmouseleave="stopPreview()" ontouchstart="startPreview(this,'${v.id}')">
+          <img loading="lazy" src="${esc(v.thumb)}" alt="${esc(v.title)}" onclick="playVid('${v.id}')">
           <span class="dur">${v.dur}s</span>
-          <button class="expand" title="Open with sound" onclick="playVid('${v.id}')">⤢</button>
+          <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">⤢</button>
         </div>
         <div class="b">
           <div class="t">${esc(v.title)}</div>
@@ -538,16 +592,16 @@ function copyLink(id, btn){
   else done(false);
 }
 async function addFromDisc(chId, chName){
-  if(creators.some(c=>c.id===chId)){ alert(chName+" is already in your directory."); return; }
-  const country = prompt("Which country/region should "+chName+" be filed under?", (COUNTRIES[disc.c]||{}).n||"");
+  if(creators.some(c=>c.id===chId)){ await uiAlert(chName+" is already in your directory."); return; }
+  const country = await uiPrompt("Which country/region should "+chName+" be filed under?", (COUNTRIES[disc.c]||{}).n||"", {title:"Add creator", placeholder:"Country / region"});
   if(country===null) return;
   try{
     sbar(true,"Verifying channel…",30);
     const meta = await resolveChannel({id:chId});
     creators.push({name:meta.title, handle:chId, id:meta.id, country:country.trim()||"Uncategorized", tag:(NICHES[disc.n]||{}).n||"", meta});
     persist(); sbar(false);
-    alert("Added "+meta.title+" ✓ — it's in My directory.");
-  }catch(e){ sbar(false); alert(e.message); }
+    uiAlert("Added "+meta.title+" ✓ — it's in My directory.", {title:"Added"});
+  }catch(e){ sbar(false); uiAlert(e.message, {title:"Couldn't add creator"}); }
 }
 
 /* ---------- My directory ---------- */
@@ -603,8 +657,8 @@ function loadSeed(){
   creators = SEED.map(s=>({...s, id:null, seed:true}));
   persist(); renderDir();
 }
-function editTags(i){
-  const t = prompt("Style tags for "+creators[i].name+" (comma separated):", creators[i].tag||"");
+async function editTags(i){
+  const t = await uiPrompt("Style tags for "+creators[i].name+" (comma separated):", creators[i].tag||"", {title:"Edit style tags", placeholder:"e.g. silent comedy, prank"});
   if(t===null) return;
   creators[i].tag = t; persist(); renderDir();
 }
@@ -616,13 +670,13 @@ async function addCreator(){
   try{
     sbar(true,"Verifying channel…",30);
     const meta = await resolveChannel(parsed);
-    if(creators.some(c=>c.id===meta.id)){ alert("Already in your directory: "+meta.title); sbar(false); return; }
+    if(creators.some(c=>c.id===meta.id)){ sbar(false); await uiAlert("Already in your directory: "+meta.title); return; }
     creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta});
     persist(); sbar(false); renderDir();
-  }catch(e){ sbar(false); alert(e.message); }
+  }catch(e){ sbar(false); uiAlert(e.message, {title:"Couldn't add creator"}); }
 }
-function removeCreator(i){
-  if(!confirm("Remove "+creators[i].name+" from your directory?")) return;
+async function removeCreator(i){
+  if(!(await uiConfirm("Remove "+creators[i].name+" from your directory?", {title:"Remove creator", okText:"Remove", danger:true}))) return;
   const c = creators.splice(i,1)[0];
   if(c.id) store.del("ss_vids_"+c.id);
   persist(); renderDir();
@@ -696,15 +750,15 @@ async function doScan(i){
   const c = creators[i];
   const n = +(document.getElementById("topN")||{}).value || 25;
   const depth = +(document.getElementById("depth")||{}).value || 500;
-  if(n<1){ alert("Top N must be at least 1."); return; }
-  if(n>(c.meta.videoCount||0)){ alert("This channel only has "+(c.meta.videoCount||0).toLocaleString()+" uploads — choose a smaller number."); return; }
+  if(n<1){ await uiAlert("Top N must be at least 1."); return; }
+  if(n>(c.meta.videoCount||0)){ await uiAlert("This channel only has "+(c.meta.videoCount||0).toLocaleString()+" uploads — choose a smaller number."); return; }
   store.set("ss_scancfg",{n,depth});
   try{
     const vids = await scanChannel(c.meta, depth);
-    if(!vids.length){ alert("No videos found (or scan cancelled early)."); return; }
+    if(!vids.length){ await uiAlert("No videos found (or scan cancelled early)."); return; }
     store.set("ss_vids_"+c.meta.id, {at:Date.now(), depth, vids});
     renderCreator(i);
-  }catch(e){ alert(e.message); }
+  }catch(e){ uiAlert(e.message, {title:"Scan failed"}); }
 }
 function shortsUI(i, cached){
   const c = creators[i];
@@ -781,8 +835,25 @@ function renderRemake(){
   view().innerHTML = h;
 }
 
+/* ---------- inline hover / touch preview (muted, one at a time) ---------- */
+let _preview = null;
+function startPreview(el, id){
+  if(_preview === el) return;
+  stopPreview();
+  _preview = el;
+  el.classList.add("playing");
+  el.insertAdjacentHTML("beforeend", `<iframe class="prev" src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&modestbranding=1&rel=0&playsinline=1" allow="autoplay; encrypted-media"></iframe>`);
+}
+function stopPreview(){
+  if(!_preview) return;
+  const f = _preview.querySelector("iframe.prev"); if(f) f.remove();
+  _preview.classList.remove("playing");
+  _preview = null;
+}
+
 /* ---------- player ---------- */
 function playVid(id){
+  stopPreview();
   document.getElementById("modal").innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeVid()">
     <div class="player">
@@ -792,7 +863,46 @@ function playVid(id){
   </div>`;
 }
 function closeVid(){ document.getElementById("modal").innerHTML=""; }
-document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeVid(); closeAuthModal(); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ if(_dlgState){ _dlgCancel(); return; } closeVid(); closeAuthModal(); } });
+
+/* ---------- Custom dialogs (branded replacements for alert/confirm/prompt) ---------- */
+let _dlgState = null;
+function _dlgFinish(val){
+  const st = _dlgState; _dlgState = null;
+  document.getElementById("dialog").innerHTML = "";
+  if(st) st.resolve(val);
+}
+function _dlgOk(){ const st=_dlgState; if(!st) return; _dlgFinish(st.input ? (document.getElementById("dlgInput")?.value ?? "") : true); }
+function _dlgCancel(){ const st=_dlgState; if(!st) return; _dlgFinish(st.input ? null : false); }
+function _showDlg(cfg){
+  return new Promise(resolve=>{
+    if(_dlgState) _dlgFinish(_dlgState.input ? null : false); // resolve any prior dialog as cancel
+    _dlgState = {resolve, input:!!cfg.input};
+    const okStyle = cfg.danger ? ' style="background:var(--danger)"' : "";
+    document.getElementById("dialog").innerHTML = `
+    <div class="overlay dlg" onclick="if(event.target===this)_dlgCancel()">
+      <div class="card dlgbox" role="dialog" aria-modal="true">
+        ${cfg.title?`<div class="dlgtitle">${esc(cfg.title)}</div>`:""}
+        <div class="dlgmsg">${esc(cfg.msg)}</div>
+        ${cfg.input?`<input type="text" id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="width:100%;margin-top:12px">`:""}
+        <div class="row" style="justify-content:flex-end;margin-top:16px">
+          ${cfg.cancelText!==null?`<button class="btn sec" onclick="_dlgCancel()">${esc(cfg.cancelText||"Cancel")}</button>`:""}
+          <button class="btn"${okStyle} onclick="_dlgOk()">${esc(cfg.okText||"OK")}</button>
+        </div>
+      </div>
+    </div>`;
+    const inEl = document.getElementById("dlgInput");
+    if(inEl){
+      inEl.value = cfg.def||""; inEl.focus(); inEl.select();
+      inEl.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); _dlgOk(); } });
+    } else {
+      const btn = document.querySelector(".dlgbox .btn:last-child"); if(btn) btn.focus();
+    }
+  });
+}
+function uiAlert(msg,o={}){ return _showDlg({msg,title:o.title,okText:o.okText,cancelText:null}); }
+function uiConfirm(msg,o={}){ return _showDlg({msg,title:o.title,okText:o.okText||"OK",cancelText:o.cancelText||"Cancel",danger:o.danger}); }
+function uiPrompt(msg,def,o={}){ return _showDlg({msg,title:o.title,input:true,def,placeholder:o.placeholder,okText:o.okText||"OK",cancelText:o.cancelText||"Cancel"}); }
 
 /* ---------- Sign-in modal (Google + email/password) ---------- */
 function openAuthModal(){
@@ -880,7 +990,7 @@ function renderSet(){
   </div>
   <div class="muted">Videos play through YouTube's official embedded player — the views you generate count for the creators. There's deliberately no downloader: ripping videos breaks YouTube's terms, and re-uploaded footage gets demonetized as reused content anyway. The play is re-filming the <i>concept</i> in your own style.</div>`;
 }
-function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); alert(apiKey?"Key saved ✓":"Key cleared"); }
+function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); uiAlert(apiKey?"Key saved ✓":"Key cleared"); }
 function clearCaches(){
   const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("ss_vids_")) keys.push(k); }
   keys.forEach(k=>localStorage.removeItem(k)); renderSet();
@@ -897,8 +1007,8 @@ function importAll(inp){
     const d = JSON.parse(r.result);
     if(d.creators) creators = d.creators;
     if(d.remakes) remakes = d.remakes;
-    persist(); alert("Backup restored ✓"); render();
-  }catch(e){ alert("Couldn't read that file."); } };
+    persist(); uiAlert("Backup restored ✓"); render();
+  }catch(e){ uiAlert("Couldn't read that file.", {title:"Import failed"}); } };
   r.readAsText(f);
 }
 
