@@ -405,13 +405,13 @@ async function scanChannel(meta, depth){
   scan={active:true,cancelled:false};
   const target = Math.min(depth||SCAN_CAP, meta.videoCount||SCAN_CAP, SCAN_CAP);
   let ids=[], page="";
-  sbar(true, "Scanning uploads of "+meta.title+"…", 0);
+  sbar(true, "Scouting uploads of "+meta.title+"…", 0);
   try{
     do{
       const d = await yt("playlistItems",{part:"contentDetails", playlistId:meta.uploads, maxResults:50, pageToken:page});
       ids = ids.concat((d.items||[]).map(i=>i.contentDetails.videoId));
       page = d.nextPageToken||"";
-      sbar(true, "Scanning uploads: "+ids.length.toLocaleString()+" / ~"+target.toLocaleString(), (ids.length/target)*50);
+      sbar(true, "Scouting uploads: "+ids.length.toLocaleString()+" / ~"+target.toLocaleString(), (ids.length/target)*50);
       if(scan.cancelled || ids.length>=target) break;
     }while(page);
     ids = ids.slice(0, target);
@@ -434,7 +434,7 @@ async function scanChannel(meta, depth){
 /* ---------- routing ---------- */
 let route = {v:"home"};
 function go(v,extra){ route={v,...(extra||{})};
-  if(typeof stopPreview==="function") stopPreview();
+  if(typeof stopAllPreviews==="function") stopAllPreviews();
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   render(); window.scrollTo(0,0); }
 const view = ()=>document.getElementById("view");
@@ -457,7 +457,7 @@ function renderHome(){
   </div>
   <div class="feat">
     <div class="card"><b>🌍 Discover worldwide</b><span>Pick a country and a niche — Hungary × silent comedy, Brazil × food, Japan × funny faces. Local-language search packs dig where English search can't reach.</span></div>
-    <div class="card"><b>📊 Rank any channel's top Shorts</b><span>Scan a channel's history and see its most-viewed Shorts ranked — top 10, 25, 100, however many you want.</span></div>
+    <div class="card"><b>📊 Rank any channel's top Shorts</b><span>Scout a channel's history and see its most-viewed Shorts ranked — top 10, 25, 100, however many you want.</span></div>
     <div class="card"><b>⭐ Build your remake list</b><span>Watch inside the app, star the ideas you want to re-film in your own style, and sign in to keep your list synced everywhere.</span></div>
   </div>`;
 }
@@ -545,9 +545,9 @@ async function discSearch(customQ){
     const chanRow = Object.entries(chans).sort((a,b)=>b[1].top-a[1].top).map(([id,c])=>
       `<span class="qchip" title="Top result: ${fmtN(c.top)} views" onclick="addFromDisc('${id}','${esc(c.name).replace(/'/g,"&#39;")}')">＋ ${esc(c.name)}<small>${c.hits} hit${c.hits>1?"s":""}</small></span>`).join("");
     box.innerHTML = `<h3>Channels in these results — tap to add to your directory</h3><div>${chanRow}</div>
-      <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— hover or tap to preview, ⤢ for sound</span></h3><div class="vgrid">` + vids.map(v=>`
+      <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— playing muted, ⤢ for sound</span></h3><div class="vgrid">` + vids.map(v=>`
       <div class="vid tall">
-        <div class="thumbwrap" onmouseenter="startPreview(this,'${v.id}')" onmouseleave="stopPreview()" ontouchstart="startPreview(this,'${v.id}')">
+        <div class="thumbwrap" data-vid="${v.id}">
           <img loading="lazy" src="${esc(v.thumb)}" alt="${esc(v.title)}" onclick="playVid('${v.id}')">
           <span class="dur">${v.dur}s</span>
           <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">⤢</button>
@@ -561,6 +561,7 @@ async function discSearch(customQ){
           <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
         </div>
       </div>`).join("") + `</div>`;
+    observePreviews();
   }catch(e){ box.innerHTML = `<div class="notice">${esc(e.message)}</div>`; }
 }
 async function pagedSearchIds(baseParams, total){
@@ -713,33 +714,47 @@ async function renderCreator(i){
   view().innerHTML = h;
   updateCost(i, meta);
 }
+const DEPTH_PRESETS = [50,100,200,500,1000,SCAN_CAP];
 function scanConfigUI(i, meta, cached){
   const cfg = store.get("ss_scancfg",{n:25,depth:500});
+  const isPreset = DEPTH_PRESETS.includes(cfg.depth);
+  const opt = (val,label)=>`<option value="${val}" ${cfg.depth===val?"selected":""}>${label}</option>`;
   return `<div class="card" style="margin-bottom:14px">
     <div class="row">
-      <label class="muted">Top</label>
-      <input type="number" id="topN" min="1" max="1000" value="${cfg.n}" style="width:84px" oninput="updateCost(${i})">
-      <label class="muted">Shorts, scanning</label>
-      <select id="depth" onchange="updateCost(${i})">
-        <option value="500" ${cfg.depth===500?"selected":""}>most recent 500 uploads (fast)</option>
-        <option value="1500" ${cfg.depth===1500?"selected":""}>most recent 1,500 uploads</option>
-        <option value="${SCAN_CAP}" ${cfg.depth===SCAN_CAP?"selected":""}>full history (up to ${SCAN_CAP.toLocaleString()})</option>
-      </select>
-      <button class="btn" onclick="doScan(${i})">${cached?"Rescan":"Scan"}</button>
+      <span class="numfield"><label class="muted">Show top</label>
+        <input type="number" id="topN" min="1" max="1000" value="${cfg.n}" style="width:80px" oninput="updateCost(${i})">
+        <label class="muted">Shorts</label></span>
+      <span class="numfield"><label class="muted">Scout range</label>
+        <select id="depth" onchange="onDepthChange(${i})">
+          ${opt(50,"Last 50 uploads")}${opt(100,"Last 100 uploads")}${opt(200,"Last 200 uploads")}${opt(500,"Last 500 uploads")}${opt(1000,"Last 1,000 uploads")}${opt(SCAN_CAP,"Full history")}
+          <option value="custom" ${isPreset?"":"selected"}>Custom…</option>
+        </select>
+        <input type="number" id="depthCustom" min="1" max="${SCAN_CAP}" value="${isPreset?300:cfg.depth}" placeholder="# uploads" style="width:120px;display:${isPreset?"none":"inline-block"}" oninput="updateCost(${i})"></span>
+      <button class="btn" onclick="doScan(${i})">${cached?"Rescout":"Scout"}</button>
       ${cached?`<button class="btn sec" onclick="exportCSV(${i})">⬇ CSV</button>`:""}
     </div>
     <div class="muted" id="costLine" style="margin-top:7px"></div>
   </div>`;
 }
+function scanDepth(){
+  const s=document.getElementById("depth"); if(!s) return 500;
+  if(s.value==="custom"){ const c=document.getElementById("depthCustom"); return Math.max(1,Math.min(SCAN_CAP,+(c&&c.value)||500)); }
+  return +s.value||500;
+}
+function onDepthChange(i){
+  const s=document.getElementById("depth"), c=document.getElementById("depthCustom");
+  if(c) c.style.display = s.value==="custom" ? "inline-block" : "none";
+  updateCost(i);
+}
 function updateCost(i, meta){
   meta = meta || (creators[i]&&creators[i].meta); if(!meta) return;
   const nEl=document.getElementById("topN"), dEl=document.getElementById("depth"), out=document.getElementById("costLine");
   if(!nEl||!dEl||!out) return;
-  const n=+nEl.value||0, depth=Math.min(+dEl.value, meta.videoCount||SCAN_CAP);
+  const n=+nEl.value||0, depth=Math.min(scanDepth(), meta.videoCount||SCAN_CAP);
   if(n<1){ out.innerHTML=`<span style="color:var(--danger)">Enter at least 1.</span>`; return; }
   if(n>(meta.videoCount||0)){ out.innerHTML=`<span style="color:var(--danger)">This channel only has ${(meta.videoCount||0).toLocaleString()} uploads — lower your number.</span>`; return; }
   const cost = Math.ceil(depth/50)*2;
-  out.textContent = `Estimated cost: ~${cost} units of your 10,000 daily quota (${Math.ceil(depth).toLocaleString()} uploads scanned). Deeper scan = truer all-time ranking.`;
+  out.textContent = `Estimated cost: ~${cost} units of your 10,000 daily quota (${Math.ceil(depth).toLocaleString()} uploads scouted). A wider range = truer all-time ranking.`;
 }
 async function fixHandle(i){
   creators[i].handle = document.getElementById("fixH").value.trim().replace(/^@/,"");
@@ -749,16 +764,16 @@ async function fixHandle(i){
 async function doScan(i){
   const c = creators[i];
   const n = +(document.getElementById("topN")||{}).value || 25;
-  const depth = +(document.getElementById("depth")||{}).value || 500;
-  if(n<1){ await uiAlert("Top N must be at least 1."); return; }
+  const depth = scanDepth();
+  if(n<1){ await uiAlert("Enter at least 1 for “Show top”."); return; }
   if(n>(c.meta.videoCount||0)){ await uiAlert("This channel only has "+(c.meta.videoCount||0).toLocaleString()+" uploads — choose a smaller number."); return; }
   store.set("ss_scancfg",{n,depth});
   try{
     const vids = await scanChannel(c.meta, depth);
-    if(!vids.length){ await uiAlert("No videos found (or scan cancelled early)."); return; }
+    if(!vids.length){ await uiAlert("No videos found (or scouting was cancelled early)."); return; }
     store.set("ss_vids_"+c.meta.id, {at:Date.now(), depth, vids});
     renderCreator(i);
-  }catch(e){ uiAlert(e.message, {title:"Scan failed"}); }
+  }catch(e){ uiAlert(e.message, {title:"Scouting failed"}); }
 }
 function shortsUI(i, cached){
   const c = creators[i];
@@ -767,13 +782,13 @@ function shortsUI(i, cached){
   const all = cached.vids.filter(v=>v.dur>0 && v.dur<=maxDur).sort((a,b)=>b.views-a.views);
   const shorts = all.slice(0, cfg.n);
   let h = `<div class="filters">
-    <span class="muted">Scanned ${cached.vids.length.toLocaleString()} uploads on ${new Date(cached.at).toLocaleDateString()} · ${all.length.toLocaleString()} Shorts found · showing top ${shorts.length}</span>
+    <span class="muted">Scouted ${cached.vids.length.toLocaleString()} uploads on ${new Date(cached.at).toLocaleDateString()} · ${all.length.toLocaleString()} Shorts found · showing top ${shorts.length}</span>
     <select onchange="store.set('ss_maxdur',+this.value);renderCreator(${i})">
       <option value="183" ${maxDur===183?"selected":""}>Shorts ≤ 3 min</option>
       <option value="60" ${maxDur===60?"selected":""}>Classic ≤ 60s</option>
     </select>
   </div>`;
-  if(!shorts.length) return h + `<div class="empty">No Shorts found at this duration/depth — try a deeper scan.</div>`;
+  if(!shorts.length) return h + `<div class="empty">No Shorts found at this duration/range — try a wider Scout range.</div>`;
   if(cfg.n > all.length) h += `<div class="muted" style="margin-bottom:10px">Only ${all.length} Shorts exist in the scanned range — showing all of them.</div>`;
   h += `<div class="vgrid">` + shorts.map((v,r)=>vidCard(v,r+1,c.meta.title)).join("") + `</div>`;
   return h;
@@ -835,25 +850,37 @@ function renderRemake(){
   view().innerHTML = h;
 }
 
-/* ---------- inline hover / touch preview (muted, one at a time) ---------- */
-let _preview = null;
-function startPreview(el, id){
-  if(_preview === el) return;
-  stopPreview();
-  _preview = el;
+/* ---------- inline preview: muted autoplay while on-screen, stop when scrolled past ---------- */
+let _io = null;
+function startPreview(el){
+  if(!el || el.querySelector("iframe.prev")) return;
+  const id = el.dataset.vid; if(!id) return;
   el.classList.add("playing");
   el.insertAdjacentHTML("beforeend", `<iframe class="prev" src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&modestbranding=1&rel=0&playsinline=1" allow="autoplay; encrypted-media"></iframe>`);
 }
-function stopPreview(){
-  if(!_preview) return;
-  const f = _preview.querySelector("iframe.prev"); if(f) f.remove();
-  _preview.classList.remove("playing");
-  _preview = null;
+function stopPreview(el){
+  if(!el) return;
+  const f = el.querySelector("iframe.prev"); if(f) f.remove();
+  el.classList.remove("playing");
+}
+function observePreviews(){
+  stopAllPreviews();
+  const cards = document.querySelectorAll(".vid.tall .thumbwrap[data-vid]");
+  if(!("IntersectionObserver" in window)){ cards.forEach(startPreview); return; } // fallback: play all
+  _io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting) startPreview(e.target); else stopPreview(e.target); });
+  }, {threshold:0.5});
+  cards.forEach(el=>_io.observe(el));
+}
+function stopAllPreviews(){
+  if(_io){ _io.disconnect(); _io = null; }
+  document.querySelectorAll("iframe.prev").forEach(f=>{
+    const w = f.closest(".thumbwrap"); f.remove(); if(w) w.classList.remove("playing");
+  });
 }
 
 /* ---------- player ---------- */
 function playVid(id){
-  stopPreview();
   document.getElementById("modal").innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeVid()">
     <div class="player">

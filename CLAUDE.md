@@ -74,14 +74,18 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   **result count = a number stepper (default 10, 1–500, arrows or type)** like the
   channel Top-N control; counts >50 paginate. Sort/time filters, free-text search,
   **🎲 Random** button, per-search quota-cost estimate.
-- **Video cards:** taller shorts-style ratio. On Discover they **preview muted +
-  looped inline on hover (desktop) / touch (mobile)** — no autoplay-on-load; one
-  preview plays at a time (`startPreview`/`stopPreview`). ⤢ opens focused player
-  with sound. **🔗 Copy link** button on every card (Discover, channel Top Shorts,
-  Remake list).
+- **Video cards:** taller shorts-style ratio. On Discover they **autoplay muted +
+  looped while on-screen and stop when scrolled out of view** — driven by an
+  `IntersectionObserver` (`observePreviews`/`startPreview`/`stopPreview`/
+  `stopAllPreviews`, threshold 0.5). ⤢ opens focused player with sound.
+  **🔗 Copy link** button on every card (Discover, channel Top Shorts, Remake list).
 - **My directory:** add creators by @handle/URL (verified live against YouTube),
   or load a 34-creator silent-comedy starter pack.
-- **Channel view:** scan a channel's history, rank its top Shorts, export CSV.
+- **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
+  Full history, or Custom #) sets how deep to look; "Show top N" sets how many
+  ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing
+  copy says "scout", not "scan"; the internal functions are still `scanChannel`
+  etc.)
 - **Remake list:** starred ideas, synced to Firestore when signed in.
 - **Settings:** paste API key, backup/restore JSON, clear caches.
 
