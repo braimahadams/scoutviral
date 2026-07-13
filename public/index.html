@@ -378,7 +378,7 @@ async function resolveChannel(c){
   let d;
   if(c.id){ d = await yt("channels",{part:"snippet,statistics,contentDetails", id:c.id}); }
   else{ d = await yt("channels",{part:"snippet,statistics,contentDetails", forHandle:(c.handle||"").replace(/^@/,"")}); }
-  if(!d.items || !d.items.length) throw new Error("Channel not found for @"+c.handle+" — check the handle on youtube.com, then edit it here.");
+  if(!d.items || !d.items.length) throw new Error("We couldn't find @"+c.handle+" on YouTube.\n\nThe handle is the @name on their channel page — check the spelling and try again.");
   const it = d.items[0];
   return { id:it.id, title:it.snippet.title, thumb:(it.snippet.thumbnails.medium||it.snippet.thumbnails.default||{}).url||"",
            subs:+(it.statistics.subscriberCount||0), uploads:it.contentDetails.relatedPlaylists.uploads,
@@ -623,7 +623,7 @@ function renderDir(){
       <input type="text" id="addCountry" placeholder="Country" style="max-width:150px">
       <button class="btn" onclick="addCreator()">Add + verify</button>
     </div>
-    <div class="muted" style="margin-top:7px">Every creator is verified live against YouTube before saving. Don't know names yet? That's what <a onclick="go('disc')" style="cursor:pointer">Discover</a> is for.</div>
+    <div class="muted" style="margin-top:7px">We check every creator on YouTube before saving them. Don't know who to add yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
   </div>`;
   if(!creators.length){
     h += `<div class="card" style="text-align:center;padding:30px">
@@ -706,7 +706,7 @@ async function renderCreator(i){
   h += `<div class="chead">
     ${meta.thumb?`<img src="${esc(meta.thumb)}" alt="">`:""}
     <div><div class="nm">${esc(meta.title)}</div>
-    <div class="muted">${fmtN(meta.subs)} subscribers · ${(meta.videoCount||0).toLocaleString()} uploads · ${esc(c.country)}</div>
+    <div class="muted">${(meta.videoCount||0).toLocaleString()} uploads · ${esc(c.country)}</div>
     <a href="https://www.youtube.com/channel/${meta.id}" target="_blank" rel="noopener" style="font-size:13px">Open channel on YouTube ↗</a></div>
   </div>`;
   h += scanConfigUI(i, meta, cached);
