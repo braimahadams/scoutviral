@@ -109,6 +109,23 @@ button.btn:disabled{opacity:.5;cursor:default}
 .tier-low{color:var(--ink2)}
 .scorechip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid var(--line);background:var(--bg2)}
 .scorechip b{font-weight:800}
+/* video workflow */
+.vfilters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.vchip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--ink2);border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
+.vchip:hover{border-color:var(--ink3);color:var(--ink)}
+.vchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.vchip small{opacity:.7;font-size:11px;font-weight:700}
+.vchip.on small{opacity:.95}
+.acts{display:flex;gap:6px}
+.act{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:8px 0;font-size:15px;font-family:inherit;cursor:pointer;line-height:1;transition:.12s}
+.act:hover{border-color:var(--ink3)}
+.act.on{background:var(--accent-bg);border-color:var(--accent)}
+.vstat{position:absolute;bottom:8px;left:8px;z-index:2}
+.vbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;color:#fff;background:rgba(0,0,0,.72)}
+.b-saved{background:var(--gold);color:#1a1a1f}
+.b-remade{background:var(--ok);color:#08130d}
+.b-skip{background:rgba(0,0,0,.72)}
+.vid.leaving{opacity:0;transform:scale(.94);transition:opacity .2s ease,transform .2s ease}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
 .player{width:min(420px,94vw);aspect-ratio:9/16;background:#000;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.6)}
 .player iframe{width:100%;height:100%;border:0}
@@ -320,8 +337,24 @@ function pruneCaches(){
 }
 
 let creators = store.get("ss_creators", []);
-let remakes  = store.get("ss_remakes", []);
 let apiKey   = store.get("ss_key","");
+
+/* ---------- video library: one permanent status per video id ----------
+   library[id] = {s:"saved"|"remade"|"skipped", t,th,v,ch,at,d,u}; absent = "new". */
+let library = store.get("ss_library", null);
+if(!library || typeof library!=="object"){
+  library = {};
+  (store.get("ss_remakes", []) || []).forEach(r=>{ if(r && r.id) library[r.id] = {s:"saved", t:r.title, th:r.thumb, v:r.views, ch:r.ch, at:r.at, d:r.dur, u:r.added||Date.now()}; });
+  store.set("ss_library", library);
+}
+function migrateRemakes(arr){ const lib={}; (arr||[]).forEach(r=>{ if(r&&r.id) lib[r.id]={s:"saved",t:r.title,th:r.thumb,v:r.views,ch:r.ch,at:r.at,d:r.dur,u:r.added||Date.now()}; }); return lib; }
+function vStat(id){ const e=library[id]; return e?e.s:"new"; }
+function vSet(v, s){
+  const id=v.id; if(!id) return;
+  if(vStat(id)===s || s==="new"){ delete library[id]; }          // toggle back to New
+  else library[id]={s, t:v.title||"", th:v.thumb||"", v:+v.views||0, ch:v.ch||v.channelTitle||"", at:v.at||"", d:v.dur||0, u:Date.now()};
+  persist();
+}
 
 /* ---------- optional Firebase sync ---------- */
 let fb = null, user = null, cloudTimer = null, applyingCloud = false;
@@ -333,10 +366,11 @@ window.onFirebaseReady = function(api){
     if(u){
       try{
         const data = await fb.load(u.uid);
-        if(data && (data.creators||data.remakes)){
+        if(data && (data.creators||data.library||data.remakes)){
           applyingCloud = true;
           if(data.creators){ creators = data.creators; store.set("ss_creators",creators); }
-          if(data.remakes){ remakes = data.remakes; store.set("ss_remakes",remakes); }
+          if(data.library){ library = data.library; store.set("ss_library",library); }
+          else if(data.remakes){ library = migrateRemakes(data.remakes); store.set("ss_library",library); }
           applyingCloud = false;
           render();
         } else { cloudSave(); }
@@ -347,9 +381,9 @@ window.onFirebaseReady = function(api){
 function cloudSave(){
   if(!fb || !user || applyingCloud) return;
   clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,remakes,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
+  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
 }
-function persist(){ store.set("ss_creators",creators); store.set("ss_remakes",remakes); cloudSave(); }
+function persist(){ store.set("ss_creators",creators); store.set("ss_library",library); cloudSave(); }
 function renderAuth(){
   const box = document.getElementById("authbox");
   if(!fb){ box.innerHTML = `<span class="muted" title="Add your Firebase config to enable sign-in">local mode</span>`; return; }
@@ -566,8 +600,8 @@ async function discSearch(customQ){
           <div class="t">${esc(v.title)}</div>
           <div class="muted" style="font-size:12px">${esc(v.ch)}</div>
           <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span>
-          <button class="star ${remakes.some(r=>r.id===v.id)?"on":""}" title="Save to remake list"
-            onclick="toggleRemake({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}'},this)">★</button></div>
+          <button class="star ${vStat(v.id)==="saved"?"on":""}" title="Save to your board"
+            onclick="vSet({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}',at:'${v.at}',dur:${v.dur}},'saved');this.classList.toggle('on')">★</button></div>
           <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
         </div>
       </div>`).join("") + `</div>`;
@@ -615,22 +649,18 @@ async function addFromDisc(chId, chName){
   }catch(e){ sbar(false); uiAlert(e.message, {title:"Couldn't add creator"}); }
 }
 
-/* ---------- My directory ---------- */
-let dirF = {q:"",country:"",tag:""};
+/* ---------- My directory (creator workspace, ranked by Scout Score) ---------- */
+let dirF = {q:""};
 function renderDir(){
-  const countries = [...new Set(creators.map(c=>c.country))].sort();
-  const tags = [...new Set(creators.flatMap(c=>(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean)))].sort();
   let list = creators.map((c,i)=>({...c,_i:i}));
   if(dirF.q){ const q=dirF.q.toLowerCase(); list=list.filter(c=>(c.name+" "+(c.handle||"")+" "+(c.tag||"")).toLowerCase().includes(q)); }
-  if(dirF.country) list=list.filter(c=>c.country===dirF.country);
-  if(dirF.tag) list=list.filter(c=>(c.tag||"").toLowerCase().includes(dirF.tag.toLowerCase()));
-  const byC={}; list.forEach(c=>{ (byC[c.country]=byC[c.country]||[]).push(c); });
+  list.forEach(c=>{ const cs=c.id?store.get("ss_vids_"+c.id,null):null; c._sc = cs?scoutScore(cs.vids):null; });
+  list.sort((a,b)=> ((b._sc?b._sc.score:-1) - (a._sc?a._sc.score:-1)) || a.name.localeCompare(b.name));
 
   let h = `<h2>My directory</h2>
   <div class="card" style="margin-bottom:12px">
     <div class="row">
       <input type="text" id="addIn" placeholder="Add creator: @handle or channel URL">
-      <input type="text" id="addCountry" placeholder="Country" style="max-width:150px">
       <button class="btn" onclick="addCreator()">Add + verify</button>
     </div>
     <div class="muted" style="margin-top:7px">We check every creator on YouTube before saving them. Don't know who to add yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
@@ -638,33 +668,28 @@ function renderDir(){
   if(!creators.length){
     h += `<div class="card" style="text-align:center;padding:30px">
       <b>Your directory is empty.</b>
-      <div class="muted" style="margin:8px 0 14px">Start from Discover, add channels by handle, or load the starter pack — 34 verified silent-comedy creators across 15+ countries.</div>
+      <div class="muted" style="margin:8px 0 14px">Start from Discover, add channels by handle, or load the starter pack — 34 verified silent-comedy creators to get going.</div>
       <button class="btn" onclick="loadSeed()">Load starter pack</button></div>`;
     view().innerHTML = h; return;
   }
   h += `<div class="filters">
-    <input type="text" placeholder="Filter…" value="${esc(dirF.q)}" oninput="dirF.q=this.value;renderDir()" style="max-width:180px">
-    <select onchange="dirF.country=this.value;renderDir()"><option value="">All countries</option>${countries.map(c=>`<option ${dirF.country===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
-    <select onchange="dirF.tag=this.value;renderDir()"><option value="">All styles</option>${tags.map(t=>`<option ${dirF.tag===t?"selected":""}>${esc(t)}</option>`).join("")}</select>
+    <input type="text" placeholder="Search creators…" value="${esc(dirF.q)}" oninput="dirF.q=this.value;renderDir()" style="max-width:240px">
     <span class="muted">${list.length} creator${list.length!==1?"s":""}</span>
   </div>`;
-  Object.keys(byC).sort().forEach(cn=>{
-    h += `<h3>${esc(cn)} <span class="muted">(${byC[cn].length})</span></h3><div class="grid">`;
-    byC[cn].forEach(c=>{
-      const cs = c.id ? store.get("ss_vids_"+c.id, null) : null;
-      const sc = cs ? scoutScore(cs.vids) : null;
-      h += `<div class="creator" onclick="go('creator',{c:${c._i}})">
-        <button class="x" title="Remove" onclick="event.stopPropagation();removeCreator(${c._i})">×</button>
-        <div class="nm">${esc(c.name)}</div>
-        <div class="hd">@${esc(c.handle||"")}${c.id?" ✓":""}</div>
-        ${sc?`<div style="margin-top:6px"><span class="scorechip tier-${scoutTier(sc.score)}" title="Scout Score — how worth studying this creator is">⚡ Scout <b>${sc.score}</b></span></div>`:""}
-        <div>${(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag plain" onclick="event.stopPropagation();dirF.tag='${esc(t).replace(/'/g,"&#39;")}';renderDir()">${esc(t)}</span>`).join("")}
-        ${c.verify&&!c.id?`<span class="tag warn">verify handle</span>`:""}
-        <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">✎ tags</span></div>
-      </div>`;
-    });
-    h += `</div>`;
+  h += `<div class="grid">`;
+  list.forEach(c=>{
+    const sc = c._sc;
+    h += `<div class="creator" onclick="go('creator',{c:${c._i}})">
+      <button class="x" title="Remove" onclick="event.stopPropagation();removeCreator(${c._i})">×</button>
+      <div class="nm">${esc(c.name)}</div>
+      <div class="hd">@${esc(c.handle||"")}${c.id?" ✓":""}</div>
+      ${sc?`<div style="margin-top:6px"><span class="scorechip tier-${scoutTier(sc.score)}" title="Scout Score — how worth studying this creator is">⚡ Scout <b>${sc.score}</b></span></div>`:""}
+      <div>${(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag plain" style="cursor:default" onclick="event.stopPropagation()">${esc(t)}</span>`).join("")}
+      ${c.verify&&!c.id?`<span class="tag warn">verify handle</span>`:""}
+      <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">✎ tags</span></div>
+    </div>`;
   });
+  h += `</div>`;
   view().innerHTML = h;
 }
 function loadSeed(){
@@ -678,7 +703,7 @@ async function editTags(i){
 }
 async function addCreator(){
   const inp = document.getElementById("addIn").value.trim();
-  const country = document.getElementById("addCountry").value.trim() || "Uncategorized";
+  const country = "Uncategorized";
   if(!inp) return;
   const parsed = parseChannelInput(inp);
   try{
@@ -724,9 +749,10 @@ async function renderCreator(i){
   </div>`;
   if(cached) h += scoreCardUI(cached);
   h += scanConfigUI(i, meta, cached);
-  if(cached) h += shortsUI(i, cached);
+  h += `<div id="shortsBox">` + (cached ? shortsUI(i, cached) : "") + `</div>`;
   view().innerHTML = h;
   updateCost(i, meta);
+  if(cached) observePreviews();
 }
 
 /* ---------- Scout Score (background ranking: how worth studying a creator is) ---------- */
@@ -847,42 +873,107 @@ async function doScan(i){
     renderCreator(i);
   }catch(e){ uiAlert(e.message, {title:"Scouting failed"}); }
 }
+/* ---------- video workflow (New / Saved / Remade / Skipped) ---------- */
+let vFilter = store.get("ss_vfilter","active");   // active | all | new | saved | remade | skipped
+function vFilterMatch(f, s){
+  if(f==="active") return s==="new" || s==="saved";
+  if(f==="all") return true;
+  return s===f;
+}
+function setVFilter(f, i){ vFilter=f; store.set("ss_vfilter",f); refreshShorts(i); }
+function refreshShorts(i){
+  const box=document.getElementById("shortsBox"); if(!box){ renderCreator(i); return; }
+  const c=creators[i], cached=c&&c.meta?store.get("ss_vids_"+c.meta.id,null):null;
+  box.innerHTML = cached ? shortsUI(i,cached) : "";
+  observePreviews();
+}
+function vFilterBarHTML(i, counts, total){
+  const chip=(key,label,n)=>`<button class="vchip ${vFilter===key?"on":""}" onclick="setVFilter('${key}',${i})">${label} <small>${n}</small></button>`;
+  return `<div class="vfilters" id="vfilters">
+    ${chip("active","Active",counts.new+counts.saved)}
+    ${chip("new","New",counts.new)}
+    ${chip("saved","⭐ Saved",counts.saved)}
+    ${chip("remade","🎬 Remade",counts.remade)}
+    ${chip("skipped","🚫 Skipped",counts.skipped)}
+    ${chip("all","All",total)}
+  </div>`;
+}
 function shortsUI(i, cached){
   const c = creators[i];
   const cfg = store.get("ss_scancfg",{n:25,depth:500});
   const maxDur = store.get("ss_maxdur",183);
   const all = cached.vids.filter(v=>v.dur>0 && v.dur<=maxDur).sort((a,b)=>b.views-a.views);
-  const shorts = all.slice(0, cfg.n);
-  let h = `<div class="filters">
-    <span class="muted">Scouted ${cached.vids.length.toLocaleString()} uploads on ${new Date(cached.at).toLocaleDateString()} · ${all.length.toLocaleString()} Shorts found · showing top ${shorts.length}</span>
+  if(!all.length) return `<div class="empty">No Shorts at this length — try a wider Scout range, or switch to Shorts ≤ 3 min.</div>`;
+  const counts={new:0,saved:0,remade:0,skipped:0}; all.forEach(v=>counts[vStat(v.id)]++);
+  const shown = all.filter(v=>vFilterMatch(vFilter, vStat(v.id)));
+  const capped = (vFilter==="active"||vFilter==="new"||vFilter==="all");
+  const list = capped ? shown.slice(0, cfg.n) : shown;
+  const autoplay = !(vFilter==="remade"||vFilter==="skipped");
+  let h = vFilterBarHTML(i, counts, all.length);
+  h += `<div class="filters" style="margin-bottom:12px">
     <select onchange="store.set('ss_maxdur',+this.value);renderCreator(${i})">
       <option value="183" ${maxDur===183?"selected":""}>Shorts ≤ 3 min</option>
       <option value="60" ${maxDur===60?"selected":""}>Classic ≤ 60s</option>
     </select>
+    <span class="muted">${capped && shown.length>list.length ? `Top ${list.length} by views · ${shown.length} in this view` : `${list.length} video${list.length!==1?"s":""}`}</span>
   </div>`;
-  if(!shorts.length) return h + `<div class="empty">No Shorts found at this duration/range — try a wider Scout range.</div>`;
-  if(cfg.n > all.length) h += `<div class="muted" style="margin-bottom:10px">Only ${all.length} Shorts exist in the scanned range — showing all of them.</div>`;
-  h += `<div class="vgrid">` + shorts.map((v,r)=>vidCard(v,r+1,c.meta.title)).join("") + `</div>`;
+  if(!list.length) return h + `<div class="empty">${emptyMsg(vFilter)}</div>`;
+  h += `<div class="vgrid">` + list.map((v,r)=>statusVidCard(v,{status:vStat(v.id), rank:capped?r+1:0, autoplay, i})).join("") + `</div>`;
   return h;
 }
-function vidCard(v, rank, channelTitle){
-  const starred = remakes.some(r=>r.id===v.id);
-  return `<div class="vid">
-    <div class="thumbwrap">
-      ${rank?`<span class="rank">#${rank}</span>`:""}
-      <img loading="lazy" src="${esc(v.thumb)}" alt="" onclick="playVid('${v.id}')">
+function emptyMsg(f){
+  return f==="saved" ? "No saved ideas yet — hit ⭐ on a video to start your board."
+    : f==="remade" ? "Nothing remade yet. Finished re-filming one? Hit 🎬."
+    : f==="skipped" ? "Nothing skipped. 🚫 hides ideas you're not into."
+    : f==="new" ? "No new videos left here — you've been through them all."
+    : "Nothing here yet.";
+}
+const STATUS_BADGE = {saved:['⭐ Saved','b-saved'], remade:['🎬 Remade','b-remade'], skipped:['🚫 Skipped','b-skip']};
+function statusVidCard(v, o){
+  const s=o.status, b=STATUS_BADGE[s];
+  const twOpen = o.autoplay ? `<div class="thumbwrap" data-vid="${v.id}">` : `<div class="thumbwrap">`;
+  return `<div class="vid tall" data-card="${v.id}">
+    ${twOpen}
+      ${o.rank?`<span class="rank">#${o.rank}</span>`:""}
+      ${b?`<span class="vstat"><span class="vbadge ${b[1]}">${b[0]}</span></span>`:""}
+      <img loading="lazy" src="${esc(v.thumb)}" alt="${esc(v.title)}" onclick="playVid('${v.id}')">
       <span class="dur">${v.dur}s</span>
+      <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">⤢</button>
     </div>
     <div class="b">
       <div class="t">${esc(v.title)}</div>
-      <div class="m">
-        <span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span>
-        <button class="star ${starred?"on":""}" title="Save to remake list"
-          onclick="toggleRemake({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(channelTitle).replace(/'/g,"&#39;")}'},this)">★</button>
+      <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span></div>
+      <div class="acts">
+        <button class="act ${s==="saved"?"on":""}" title="Save to your board" onclick="vSetCreator(${o.i},'${v.id}','saved')">⭐</button>
+        <button class="act ${s==="remade"?"on":""}" title="Mark as remade" onclick="vSetCreator(${o.i},'${v.id}','remade')">🎬</button>
+        <button class="act ${s==="skipped"?"on":""}" title="Skip — hide from future scans" onclick="vSetCreator(${o.i},'${v.id}','skipped')">🚫</button>
       </div>
       <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
     </div>
   </div>`;
+}
+function vSetCreator(i, id, s){
+  const c=creators[i]; if(!c||!c.meta) return;
+  const cached=store.get("ss_vids_"+c.meta.id,null); if(!cached) return;
+  const v=cached.vids.find(x=>x.id===id); if(!v) return;
+  vSet({id:v.id,title:v.title,thumb:v.thumb,views:v.views,ch:c.meta.title,at:v.at,dur:v.dur}, s);
+  const ns=vStat(id);
+  const maxDur=store.get("ss_maxdur",183);
+  const all=cached.vids.filter(x=>x.dur>0&&x.dur<=maxDur);
+  const counts={new:0,saved:0,remade:0,skipped:0}; all.forEach(x=>counts[vStat(x.id)]++);
+  const bar=document.getElementById("vfilters"); if(bar) bar.outerHTML=vFilterBarHTML(i, counts, all.length);
+  const card=document.querySelector('.vid[data-card="'+id+'"]'); if(!card) return;
+  if(vFilterMatch(vFilter, ns)){
+    let old=card.querySelector(".vstat"); if(old) old.remove();
+    const b=STATUS_BADGE[ns], tw=card.querySelector(".thumbwrap");
+    if(b&&tw) tw.insertAdjacentHTML("beforeend", `<span class="vstat"><span class="vbadge ${b[1]}">${b[0]}</span></span>`);
+    const acts=card.querySelectorAll(".acts .act"), order=["saved","remade","skipped"];
+    acts.forEach((btn,ix)=>btn.classList.toggle("on", order[ix]===ns));
+  } else {
+    const tw=card.querySelector(".thumbwrap"); if(tw) stopPreview(tw);
+    card.classList.add("leaving");
+    setTimeout(()=>{ card.remove(); const g=document.querySelector("#shortsBox .vgrid"); if(g && !g.children.length) refreshShorts(i); }, 220);
+  }
 }
 function exportCSV(i){
   const c=creators[i]; const cached=store.get("ss_vids_"+c.meta.id,null); if(!cached) return;
@@ -897,29 +988,47 @@ function exportCSV(i){
   a.download=c.meta.title.replace(/[^\w\- ]+/g,"")+"-top-shorts.csv"; a.click();
 }
 
-/* ---------- Remake list ---------- */
-function toggleRemake(v, btn){
-  const ix = remakes.findIndex(r=>r.id===v.id);
-  if(ix>=0){ remakes.splice(ix,1); if(btn) btn.classList.remove("on"); }
-  else{ remakes.unshift({...v, added:Date.now()}); if(btn) btn.classList.add("on"); }
-  persist();
-  if(route.v==="remake") renderRemake();
+/* ---------- Saved board + Remade (global, from the library) ---------- */
+let libFilter = "saved";  // saved | remade
+function vSetById(id, s){
+  const e=library[id]; if(!e) return;
+  vSet({id, title:e.t, thumb:e.th, views:e.v, ch:e.ch, at:e.at, dur:e.d}, s);
+  renderRemake();
 }
 function renderRemake(){
-  let h = `<h2>Remake list</h2><div class="muted" style="margin-bottom:12px">Concepts you've starred to re-film in your own style. ${fb&&!user?'<b>Sign in</b> (top right) to keep this list synced across devices.':""}</div>`;
-  if(!remakes.length){ view().innerHTML = h + `<div class="empty">Nothing saved yet — hit the ★ on any video.</div>`; return; }
-  h += `<div class="vgrid">` + remakes.map(v=>`
-    <div class="vid">
-      <div class="thumbwrap"><img loading="lazy" src="${esc(v.thumb)}" alt="" onclick="playVid('${v.id}')"></div>
+  const saved  = Object.entries(library).filter(([id,e])=>e.s==="saved");
+  const remade = Object.entries(library).filter(([id,e])=>e.s==="remade");
+  const active = (libFilter==="remade"?remade:saved).map(([id,e])=>({id,...e})).sort((a,b)=>(b.u||0)-(a.u||0));
+  const autoplay = libFilter==="saved";
+  let h = `<h2>${libFilter==="remade"?"Remade":"Saved ideas"}</h2>
+  <div class="muted" style="margin-bottom:12px">${libFilter==="remade"?"Videos you've already remade — kept as references.":"Your inspiration board — ideas to re-film in your own style."} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
+  <div class="vfilters">
+    <button class="vchip ${libFilter==="saved"?"on":""}" onclick="libFilter='saved';renderRemake()">⭐ Saved <small>${saved.length}</small></button>
+    <button class="vchip ${libFilter==="remade"?"on":""}" onclick="libFilter='remade';renderRemake()">🎬 Remade <small>${remade.length}</small></button>
+  </div>`;
+  if(!active.length){ view().innerHTML = h + `<div class="empty">${libFilter==="remade"?"Nothing remade yet.":"Nothing saved yet — hit ⭐ on any video in Discover or on a creator's page."}</div>`; return; }
+  h += `<div class="vgrid">` + active.map(v=>{
+    const twOpen = autoplay ? `<div class="thumbwrap" data-vid="${v.id}">` : `<div class="thumbwrap">`;
+    return `<div class="vid tall" data-card="${v.id}">
+      ${twOpen}
+        <img loading="lazy" src="${esc(v.th)}" alt="${esc(v.t)}" onclick="playVid('${v.id}')">
+        ${v.d?`<span class="dur">${v.d}s</span>`:""}
+        <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">⤢</button>
+      </div>
       <div class="b">
-        <div class="t">${esc(v.title)}</div>
+        <div class="t">${esc(v.t)}</div>
         <div class="muted" style="font-size:12px">${esc(v.ch||"")}</div>
-        <div class="m"><span><span class="views">${fmtN(v.views||0)}</span> views</span>
-          <button class="star on" onclick="toggleRemake({id:'${v.id}'})">★</button></div>
+        <div class="acts">
+          ${v.s==="saved"
+            ? `<button class="act" title="Mark as remade" onclick="vSetById('${v.id}','remade')">🎬 Remade</button><button class="act" title="Remove from board" onclick="vSetById('${v.id}','saved')">✕ Remove</button>`
+            : `<button class="act" title="Move back to your board" onclick="vSetById('${v.id}','saved')">↩ Back to board</button>`}
+        </div>
         <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
       </div>
-    </div>`).join("") + `</div>`;
+    </div>`;
+  }).join("") + `</div>`;
   view().innerHTML = h;
+  if(autoplay) observePreviews();
 }
 
 /* ---------- inline preview: muted autoplay while on-screen, stop when scrolled past ---------- */
@@ -1079,7 +1188,7 @@ function renderSet(){
   </ol></div></details></div>
   <div class="card" style="margin-bottom:12px">
     <b>Data</b>
-    <div class="muted" style="margin:6px 0 10px">${creators.length} creators · ${remakes.length} remake saves · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
+    <div class="muted" style="margin:6px 0 10px">${creators.length} creators · ${Object.values(library).filter(e=>e.s==="saved").length} saved · ${Object.values(library).filter(e=>e.s==="remade").length} remade · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
     <div class="row">
       <button class="btn sec" onclick="exportAll()">⬇ Backup (JSON)</button>
       <button class="btn sec" onclick="document.getElementById('impF').click()">⬆ Restore backup</button>
@@ -1095,7 +1204,7 @@ function clearCaches(){
   keys.forEach(k=>localStorage.removeItem(k)); renderSet();
 }
 function exportAll(){
-  const data = {creators, remakes, exported:new Date().toISOString()};
+  const data = {creators, library, exported:new Date().toISOString()};
   const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="creator-scout-backup.json"; a.click();
 }
@@ -1105,7 +1214,8 @@ function importAll(inp){
   r.onload = ()=>{ try{
     const d = JSON.parse(r.result);
     if(d.creators) creators = d.creators;
-    if(d.remakes) remakes = d.remakes;
+    if(d.library) library = d.library;
+    else if(d.remakes) library = migrateRemakes(d.remakes);
     persist(); uiAlert("Backup restored ✓"); render();
   }catch(e){ uiAlert("Couldn't read that file.", {title:"Import failed"}); } };
   r.readAsText(f);

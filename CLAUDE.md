@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-13 (dark-mode UI refresh + branded dialogs)
+**Last updated:** 2026-07-14 (Directory workflow: per-video statuses + lean directory)
 
 ---
 
@@ -79,8 +79,20 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   `IntersectionObserver` (`observePreviews`/`startPreview`/`stopPreview`/
   `stopAllPreviews`, threshold 0.5). ⤢ opens focused player with sound.
   **🔗 Copy link** button on every card (Discover, channel Top Shorts, Remake list).
-- **My directory:** add creators by @handle/URL (verified live against YouTube),
-  or load a 34-creator silent-comedy starter pack.
+- **My directory (workspace):** add creators by @handle/URL (verified live against
+  YouTube) or load a 34-creator starter pack. Deliberately lean — no country input,
+  no country/style filter dropdowns, no country grouping; a single grid **ranked by
+  Scout Score** (scouted creators first) with a name search. `dirF = {q}` only.
+- **Video workflow (statuses):** every video has one permanent status keyed by its
+  YouTube id — **New / ⭐ Saved / 🎬 Remade / 🚫 Skipped** — stored in the `library`
+  map (`ss_library`, synced to Firestore; migrated from the old `ss_remakes`). On a
+  creator's page the scouted Shorts show status-filter chips (**Active** = New+Saved
+  is the default, plus New / Saved / Remade / Skipped / All); status survives
+  rescans. Save/Remade/Skip buttons update the card in place (`vSetCreator`,
+  `vStat`/`vSet`); skipped/remade leave the working view. Autoplay-in-view is on for
+  New/Saved/Active/All, **off for Remade + Skipped** (static references).
+- **Remakes tab = global board:** ⭐ Saved (inspiration board, autoplay) with a
+  🎬 Remade toggle (static). Built from `library`; `renderRemake`/`vSetById`.
 - **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
   Full history, or Custom #) sets how deep to look; "Show top N" sets how many
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing
@@ -95,8 +107,8 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   consistency 15% (Shorts/month), freshness 15% (still posting + recent Shorts
   still landing). Deliberately replaces subscriber count as the headline metric.
   Tiers: ≥75 green, ≥50 amber, else grey. Needs ≥3 Shorts or returns null.
-- **Remake list:** starred ideas, synced to Firestore when signed in.
-- **Settings:** paste API key, backup/restore JSON, clear caches.
+- **Settings:** paste API key, backup/restore JSON (now `{creators, library}`,
+  still imports old `remakes` backups), clear caches.
 
 ## Known constraints / gotchas
 
