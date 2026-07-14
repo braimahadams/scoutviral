@@ -86,6 +86,15 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing
   copy says "scout", not "scan"; the internal functions are still `scanChannel`
   etc.)
+- **Scout Score (`scoutScore` in index.html):** a 0–100 signal computed *client-
+  side from a channel's scanned Shorts* — shown big on the channel view (with a
+  plain-English verdict via `scoutVerdict`) and as a small `⚡ Scout NN` chip on
+  directory cards once a creator has been scouted. Weighted blend: hit rate 35%
+  (share of Shorts ≥2× the channel's own median = breakout ideas), reach 20%
+  (median views, log-scaled), engagement 15% (like/view, neutral if likes hidden),
+  consistency 15% (Shorts/month), freshness 15% (still posting + recent Shorts
+  still landing). Deliberately replaces subscriber count as the headline metric.
+  Tiers: ≥75 green, ≥50 amber, else grey. Needs ≥3 Shorts or returns null.
 - **Remake list:** starred ideas, synced to Firestore when signed in.
 - **Settings:** paste API key, backup/restore JSON, clear caches.
 

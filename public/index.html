@@ -99,6 +99,16 @@ button.btn:disabled{opacity:.5;cursor:default}
 .vid.tall .thumbwrap::after{content:"\25B6";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:19px;padding-left:3px;color:#fff;background:rgba(0,0,0,.5);border-radius:50%;pointer-events:none;transition:opacity .15s;z-index:2}
 .vid.tall .thumbwrap.playing::after{opacity:0}
 .numfield{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto}
+/* Scout Score */
+.scorecard{display:flex;align-items:center;gap:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.scoreval{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1;white-space:nowrap}
+.scoreval span{font-size:16px;font-weight:600;color:var(--ink3);margin-left:2px}
+.scorelabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:4px}
+.tier-good{color:var(--ok)}
+.tier-mid{color:var(--warn)}
+.tier-low{color:var(--ink2)}
+.scorechip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid var(--line);background:var(--bg2)}
+.scorechip b{font-weight:800}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
 .player{width:min(420px,94vw);aspect-ratio:9/16;background:#000;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.6)}
 .player iframe{width:100%;height:100%;border:0}
@@ -641,10 +651,13 @@ function renderDir(){
   Object.keys(byC).sort().forEach(cn=>{
     h += `<h3>${esc(cn)} <span class="muted">(${byC[cn].length})</span></h3><div class="grid">`;
     byC[cn].forEach(c=>{
+      const cs = c.id ? store.get("ss_vids_"+c.id, null) : null;
+      const sc = cs ? scoutScore(cs.vids) : null;
       h += `<div class="creator" onclick="go('creator',{c:${c._i}})">
         <button class="x" title="Remove" onclick="event.stopPropagation();removeCreator(${c._i})">×</button>
         <div class="nm">${esc(c.name)}</div>
         <div class="hd">@${esc(c.handle||"")}${c.id?" ✓":""}</div>
+        ${sc?`<div style="margin-top:6px"><span class="scorechip tier-${scoutTier(sc.score)}" title="Scout Score — how worth studying this creator is">⚡ Scout <b>${sc.score}</b></span></div>`:""}
         <div>${(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag plain" onclick="event.stopPropagation();dirF.tag='${esc(t).replace(/'/g,"&#39;")}';renderDir()">${esc(t)}</span>`).join("")}
         ${c.verify&&!c.id?`<span class="tag warn">verify handle</span>`:""}
         <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">✎ tags</span></div>
@@ -709,10 +722,69 @@ async function renderCreator(i){
     <div class="muted">${(meta.videoCount||0).toLocaleString()} uploads · ${esc(c.country)}</div>
     <a href="https://www.youtube.com/channel/${meta.id}" target="_blank" rel="noopener" style="font-size:13px">Open channel on YouTube ↗</a></div>
   </div>`;
+  if(cached) h += scoreCardUI(cached);
   h += scanConfigUI(i, meta, cached);
   if(cached) h += shortsUI(i, cached);
   view().innerHTML = h;
   updateCost(i, meta);
+}
+
+/* ---------- Scout Score (background ranking: how worth studying a creator is) ---------- */
+function _clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+function scoutScore(vids){
+  const maxDur = store.get("ss_maxdur",183);
+  const S = (vids||[]).filter(v=>v.dur>0 && v.dur<=maxDur && v.views>0);
+  const n = S.length;
+  if(n < 3) return null;                                   // too little data to judge
+  const sv = S.map(v=>v.views).sort((a,b)=>a-b);
+  const median = sv[Math.floor(sv.length/2)] || 1;
+  /* 1. Hit rate (most important) — share of Shorts that ≥2× their own median (breakout ideas) */
+  const hits = S.filter(v=>v.views >= 2*median).length;
+  const fHit = _clamp((hits/n)/0.30, 0, 1);
+  /* 2. Reach — median views on a log scale (~1K … 10M) */
+  const fReach = _clamp((Math.log10(median+1)-3)/4, 0, 1);
+  /* 3. Engagement — average like/view rate (neutral if a channel hides likes) */
+  const withLikes = S.filter(v=>v.likes>0);
+  let fEng = 0.5;
+  if(withLikes.length >= Math.max(3, n*0.3)){
+    const eng = withLikes.reduce((s,v)=>s + v.likes/v.views, 0) / withLikes.length;
+    fEng = _clamp(eng/0.06, 0, 1);
+  }
+  /* 4. Consistency — output cadence (Shorts per month across their active span) */
+  const t = S.map(v=>+new Date(v.at)).sort((a,b)=>a-b);
+  const spanMonths = Math.max(1, (t[t.length-1]-t[0]) / (30*864e5));
+  const fCons = _clamp((n/spanMonths)/6, 0, 1);
+  /* 5. Freshness — still posting, and recent Shorts still landing */
+  const now = Date.now();
+  const recency = _clamp(1 - ((now - t[t.length-1])/864e5)/180, 0, 1);
+  const recent = S.filter(v=> (now - +new Date(v.at))/864e5 <= 120);
+  let perf = recency;
+  if(recent.length){
+    const rv = recent.map(v=>v.views).sort((a,b)=>a-b);
+    perf = _clamp((rv[Math.floor(rv.length/2)]||0)/median, 0, 1);
+  }
+  const fFresh = 0.5*recency + 0.5*perf;
+  const score = Math.round(_clamp(100*(0.35*fHit + 0.20*fReach + 0.15*fEng + 0.15*fCons + 0.15*fFresh), 0, 100));
+  return { score, n };
+}
+function scoutTier(s){ return s>=75 ? "good" : s>=50 ? "mid" : "low"; }
+function scoutVerdict(s){
+  if(s>=85) return "Elite — study this one closely";
+  if(s>=70) return "Strong — plenty worth studying";
+  if(s>=55) return "Solid — real ideas to borrow";
+  if(s>=40) return "Mixed — dig for the standouts";
+  return "Low signal — a few gems at best";
+}
+function scoreCardUI(cached){
+  const s = scoutScore(cached.vids); if(!s) return "";
+  const t = scoutTier(s.score);
+  return `<div class="scorecard">
+    <div class="scoreval tier-${t}">${s.score}<span>/100</span></div>
+    <div class="scoremeta">
+      <div class="scorelabel">Scout Score</div>
+      <div class="muted">${scoutVerdict(s.score)} · from ${s.n.toLocaleString()} Shorts</div>
+    </div>
+  </div>`;
 }
 const DEPTH_PRESETS = [50,100,200,500,1000,SCAN_CAP];
 function scanConfigUI(i, meta, cached){
