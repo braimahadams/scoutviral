@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-14 (Directory workflow: per-video statuses + lean directory)
+**Last updated:** 2026-07-15 (SVG icons replace emojis, per-video notes, friendly copy pass)
 
 ---
 
@@ -66,7 +66,17 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   unchanged. Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
 - **Branded dialogs** replace native `alert/confirm/prompt` — `uiAlert`/`uiConfirm`/
   `uiPrompt` (Promise-based) render into `#dialog`; destructive confirms use a red
-  button. Escape = cancel, Enter = confirm.
+  button. Escape = cancel, Enter = confirm. `uiPrompt` supports `{multiline:true}`
+  (textarea, used for video notes).
+- **No emojis in the UI** — all icons are inline SVGs (Lucide-style strokes) from
+  the `ICONS` map + `ico(name)` helper in index.html; the static header/nav SVGs
+  are inlined directly. Zero network cost. Don't reintroduce emoji icons.
+- **Friendly copy rule:** never surface "cost", "quota units", or technical caps
+  to users — say things like "free, barely touches your daily limit" instead.
+  Plain simple English everywhere (worldwide, non-technical audience).
+- **No cookies/tracking** (stated in footer). Mistyped URLs: hosting rewrites all
+  paths to index.html; init shows a "Page not found — brought you home" dialog
+  and cleans the URL.
 
 ## Features currently live
 
@@ -91,8 +101,12 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   rescans. Save/Remade/Skip buttons update the card in place (`vSetCreator`,
   `vStat`/`vSet`); skipped/remade leave the working view. Autoplay-in-view is on for
   New/Saved/Active/All, **off for Remade + Skipped** (static references).
-- **Remakes tab = global board:** ⭐ Saved (inspiration board, autoplay) with a
-  🎬 Remade toggle (static). Built from `library`; `renderRemake`/`vSetById`.
+- **Remakes tab = global board:** Saved (inspiration board, autoplay) + Remade
+  (static) + **Notes** view (every video with a note — the "shopping list" for
+  props/gear). Built from `library`; `renderRemake`/`vSetById`.
+- **Per-video notes:** pencil button on any non-New video opens a multiline
+  dialog (`editNote`); note stored as `library[id].n`, survives status changes,
+  shown in a dashed `.vnote` box on the card. Aggregated in the board's Notes view.
 - **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
   Full history, or Custom #) sets how deep to look; "Show top N" sets how many
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing

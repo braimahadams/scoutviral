@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ScoutViral — find your next video idea</title>
 <meta name="description" content="Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral, and save the ones worth re-filming in your own style.">
+<meta name="theme-color" content="#101012" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f6f7" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-title" content="ScoutViral">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -126,6 +130,23 @@ button.btn:disabled{opacity:.5;cursor:default}
 .b-remade{background:var(--ok);color:#08130d}
 .b-skip{background:rgba(0,0,0,.72)}
 .vid.leaving{opacity:0;transform:scale(.94);transition:opacity .2s ease,transform .2s ease}
+/* icons */
+.i{width:1em;height:1em;display:inline-block;vertical-align:-.125em;flex:0 0 auto}
+nav button .ico{display:flex;align-items:center;justify-content:center}
+nav button .ico .i{width:17px;height:17px}
+header h1 .i{width:21px;height:21px;color:var(--accent);vertical-align:-.18em}
+.star .i{width:19px;height:19px}
+.star.on .i{fill:currentColor}
+.act .i{width:16px;height:16px}
+.act.on .i{fill:currentColor;color:var(--accent)}
+.vchip .i,.cp .i,.btn .i,.crumb .i,.scorechip .i{width:14px;height:14px;margin-right:2px}
+.feat .card .fico{width:38px;height:38px;border-radius:11px;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.feat .card .fico .i{width:19px;height:19px}
+/* per-video notes */
+.vnote{background:var(--bg2);border:1px dashed var(--line);border-radius:9px;padding:7px 9px;font-size:12.5px;color:var(--ink2);line-height:1.45;cursor:pointer;white-space:pre-wrap;word-break:break-word}
+.vnote:hover{border-color:var(--accent)}
+textarea{background:var(--bg2);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;font-size:14px;font-family:inherit;width:100%;min-height:90px;resize:vertical;line-height:1.5}
+textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
 .player{width:min(420px,94vw);aspect-ratio:9/16;background:#000;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.6)}
 .player iframe{width:100%;height:100%;border:0}
@@ -190,12 +211,12 @@ footer{max-width:1180px;margin:48px auto 0;padding:20px 18px;border-top:1px soli
 </head>
 <body>
 <header>
-  <h1 onclick="go('home')">🎬 Scout<span class="vv">Viral</span></h1>
+  <h1 onclick="go('home')"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg> Scout<span class="vv">Viral</span></h1>
   <nav>
-    <button data-v="disc" onclick="go('disc')"><span class="ico">🔍</span><span class="lbl">Discover</span></button>
-    <button data-v="dir" onclick="go('dir')"><span class="ico">📁</span><span class="lbl">Directory</span></button>
-    <button data-v="remake" onclick="go('remake')"><span class="ico">★</span><span class="lbl">Remakes</span></button>
-    <button data-v="set" onclick="go('set')"><span class="ico">⚙</span><span class="lbl">Settings</span></button>
+    <button data-v="disc" onclick="go('disc')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span><span class="lbl">Discover</span></button>
+    <button data-v="dir" onclick="go('dir')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span><span class="lbl">Directory</span></button>
+    <button data-v="remake" onclick="go('remake')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span class="lbl">Remakes</span></button>
+    <button data-v="set" onclick="go('set')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="lbl">Settings</span></button>
   </nav>
   <div id="authbox"></div>
 </header>
@@ -205,6 +226,7 @@ footer{max-width:1180px;margin:48px auto 0;padding:20px 18px;border-top:1px soli
   <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a> and
   <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
   Your API key stays in your browser and is sent only to Google. Video caches stay on your device.
+  No cookies, no tracking, no ads — everything you save lives on your device (and in your own account if you sign in).
 </footer>
 <div class="statusbar" id="sbar">
   <span id="stext"></span>
@@ -352,8 +374,26 @@ function vStat(id){ const e=library[id]; return e?e.s:"new"; }
 function vSet(v, s){
   const id=v.id; if(!id) return;
   if(vStat(id)===s || s==="new"){ delete library[id]; }          // toggle back to New
-  else library[id]={s, t:v.title||"", th:v.thumb||"", v:+v.views||0, ch:v.ch||v.channelTitle||"", at:v.at||"", d:v.dur||0, u:Date.now()};
+  else{
+    const note=(library[id]||{}).n;
+    library[id]={s, t:v.title||"", th:v.thumb||"", v:+v.views||0, ch:v.ch||v.channelTitle||"", at:v.at||"", d:v.dur||0, u:Date.now()};
+    if(note) library[id].n=note;                                 // keep your note through status changes
+  }
   persist();
+}
+async function editNote(id){
+  const e=library[id]; if(!e) return;
+  const txt = await uiPrompt("Your note for this idea — props to buy, how you'd film it, anything.", e.n||"", {title:"Note", multiline:true, placeholder:"e.g. need sunglasses + tripod, film at the market", okText:"Save note"});
+  if(txt===null) return;
+  if(txt.trim()) e.n=txt.trim(); else delete e.n;
+  persist();
+  // refresh the note shown on the card without a full re-render
+  const card=document.querySelector('.vid[data-card="'+id+'"]');
+  if(card){
+    const old=card.querySelector(".vnote"); if(old) old.remove();
+    const cp=card.querySelector(".cp");
+    if(e.n && cp) cp.insertAdjacentHTML("beforebegin", noteHTML(id));
+  }
 }
 
 /* ---------- optional Firebase sync ---------- */
@@ -394,7 +434,7 @@ function renderAuth(){
 
 /* ---------- YouTube API ---------- */
 async function yt(endpoint, params){
-  if(!apiKey) throw new Error("No API key set. Open Settings — creating your own free key takes 2 minutes, and all usage is billed to your own free Google quota, not this site.");
+  if(!apiKey) throw new Error("You need a free YouTube key first. Open Settings — it takes about 2 minutes to set up, and it costs nothing.");
   const u = new URL("https://www.googleapis.com/youtube/v3/"+endpoint);
   Object.entries(params).forEach(([k,v])=>{ if(v!=="" && v!==undefined && v!==null) u.searchParams.set(k,v); });
   u.searchParams.set("key",apiKey);
@@ -404,7 +444,7 @@ async function yt(endpoint, params){
   const d = await r.json();
   if(d.error){
     let m = d.error.message || "YouTube API error";
-    if(/quota/i.test(m)) m = "Your daily API quota is used up (resets midnight Pacific). Discover searches cost the most — channel scans are cheap.";
+    if(/quota/i.test(m)) m = "You've reached today's free limit — it resets at midnight (Pacific time). Scouting creators uses far less than searching, so that may still work.";
     if(/referer|referrer|blocked/i.test(m)) m += " — Tip: in Google Cloud → Credentials, restrict your key to this website's address (recommended), or set restrictions to None.";
     throw new Error(m);
   }
@@ -417,6 +457,31 @@ function parseDur(iso){
 const fmtN = n => new Intl.NumberFormat("en",{notation:"compact",maximumFractionDigits:1}).format(n);
 const fmtD = s => new Date(s).toLocaleDateString(undefined,{year:"numeric",month:"short"});
 const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- inline SVG icons (zero network cost — instant everywhere) ---------- */
+const ICONS = {
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>',
+  folder:'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  gear:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  clapper:'<path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  globe:'<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  dice:'<rect width="18" height="18" x="3" y="3" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  expand:'<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+  skip:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+  zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/>',
+  pencil:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  undo:'<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  note:'<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><path d="M15 3v6h6"/>',
+  plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+};
+function ico(name, cls){ return `<svg class="i${cls?" "+cls:""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||""}</svg>`; }
 
 async function resolveChannel(c){
   let d;
@@ -500,9 +565,9 @@ function renderHome(){
     <button class="btn" style="font-size:15px;padding:11px 22px" onclick="go('disc')">Start discovering →</button>
   </div>
   <div class="feat">
-    <div class="card"><b>🌍 Discover worldwide</b><span>Pick a country and a niche — Hungary × silent comedy, Brazil × food, Japan × funny faces. Local-language search packs dig where English search can't reach.</span></div>
-    <div class="card"><b>📊 Rank any channel's top Shorts</b><span>Scout a channel's history and see its most-viewed Shorts ranked — top 10, 25, 100, however many you want.</span></div>
-    <div class="card"><b>⭐ Build your remake list</b><span>Watch inside the app, star the ideas you want to re-film in your own style, and sign in to keep your list synced everywhere.</span></div>
+    <div class="card"><div class="fico">${ico("globe")}</div><b>Discover worldwide</b><span>Pick a country and a niche — Hungary × silent comedy, Brazil × food, Japan × funny faces. Local-language search finds creators English search never will.</span></div>
+    <div class="card"><div class="fico">${ico("chart")}</div><b>Rank any channel's top Shorts</b><span>Scout a channel's history and see its most-viewed Shorts ranked — top 10, 25, 100, however many you want.</span></div>
+    <div class="card"><div class="fico">${ico("star")}</div><b>Build your idea board</b><span>Watch inside the app, save the ideas you want to re-film in your own style, and sign in to keep your board synced everywhere.</span></div>
   </div>`;
 }
 
@@ -541,7 +606,7 @@ function renderDisc(){
     <div class="row">
       <input type="text" id="dq" placeholder="Or type your own search (any language)…">
       <button class="btn" onclick="discSearch(document.getElementById('dq').value || null)">Search</button>
-      <button class="btn sec" title="Jump to a random country + niche" onclick="randomDiscover()">🎲 Random</button>
+      <button class="btn sec" title="Jump to a random country + niche" onclick="randomDiscover()">${ico("dice")} Random</button>
     </div>
     ${chips?`<div style="margin-top:10px">${chips}</div>`:""}
     <div class="muted" style="margin-top:8px" id="costNote"></div>
@@ -552,9 +617,8 @@ function renderDisc(){
 function updateCostNote(){
   const el = document.getElementById("costNote"); if(!el) return;
   const calls = Math.max(1, Math.ceil(disc.max/50));
-  el.textContent = calls>1
-    ? `${disc.max} results needs ${calls} search calls (~${calls*100} units of your free 10,000/day quota). Channel scans are far cheaper.`
-    : `Each search costs ~100 units of your free 10,000/day quota. Channel scans are far cheaper.`;
+  const perDay = Math.floor(100/calls);
+  el.textContent = `Free to use — your key covers about ${perDay} searches like this every day.`;
 }
 function randomDiscover(){
   disc.c = 1 + Math.floor(Math.random()*(COUNTRIES.length-1)); // skip "Worldwide"
@@ -589,20 +653,20 @@ async function discSearch(customQ){
     const chanRow = Object.entries(chans).sort((a,b)=>b[1].top-a[1].top).map(([id,c])=>
       `<span class="qchip" title="Top result: ${fmtN(c.top)} views" onclick="addFromDisc('${id}','${esc(c.name).replace(/'/g,"&#39;")}')">＋ ${esc(c.name)}<small>${c.hits} hit${c.hits>1?"s":""}</small></span>`).join("");
     box.innerHTML = `<h3>Channels in these results — tap to add to your directory</h3><div>${chanRow}</div>
-      <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— playing muted, ⤢ for sound</span></h3><div class="vgrid">` + vids.map(v=>`
+      <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— they play muted as you scroll; tap the corner arrows for sound</span></h3><div class="vgrid">` + vids.map(v=>`
       <div class="vid tall">
         <div class="thumbwrap" data-vid="${v.id}">
           <img loading="lazy" src="${esc(v.thumb)}" alt="${esc(v.title)}" onclick="playVid('${v.id}')">
           <span class="dur">${v.dur}s</span>
-          <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">⤢</button>
+          <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">${ico("expand")}</button>
         </div>
         <div class="b">
           <div class="t">${esc(v.title)}</div>
           <div class="muted" style="font-size:12px">${esc(v.ch)}</div>
           <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span>
           <button class="star ${vStat(v.id)==="saved"?"on":""}" title="Save to your board"
-            onclick="vSet({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}',at:'${v.at}',dur:${v.dur}},'saved');this.classList.toggle('on')">★</button></div>
-          <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
+            onclick="vSet({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}',at:'${v.at}',dur:${v.dur}},'saved');this.classList.toggle('on')">${ico("star")}</button></div>
+          <button class="cp" onclick="copyLink('${v.id}',this)">${ico("link")} Copy link</button>
         </div>
       </div>`).join("") + `</div>`;
     observePreviews();
@@ -632,7 +696,7 @@ async function batchVideoDetails(ids){
 }
 function copyLink(id, btn){
   const url = "https://www.youtube.com/shorts/"+id;
-  const done = ok=>{ const orig=btn.textContent; btn.textContent = ok?"✓ Copied":"Copy failed"; setTimeout(()=>{ btn.textContent=orig; },1500); };
+  const done = ok=>{ const orig=btn.innerHTML; btn.innerHTML = ok?ico("check")+" Copied":"Copy failed"; setTimeout(()=>{ btn.innerHTML=orig; },1500); };
   if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(()=>done(true)).catch(()=>done(false));
   else done(false);
 }
@@ -683,10 +747,10 @@ function renderDir(){
       <button class="x" title="Remove" onclick="event.stopPropagation();removeCreator(${c._i})">×</button>
       <div class="nm">${esc(c.name)}</div>
       <div class="hd">@${esc(c.handle||"")}${c.id?" ✓":""}</div>
-      ${sc?`<div style="margin-top:6px"><span class="scorechip tier-${scoutTier(sc.score)}" title="Scout Score — how worth studying this creator is">⚡ Scout <b>${sc.score}</b></span></div>`:""}
+      ${sc?`<div style="margin-top:6px"><span class="scorechip tier-${scoutTier(sc.score)}" title="Scout Score — how worth studying this creator is">${ico("zap")} Scout <b>${sc.score}</b></span></div>`:""}
       <div>${(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag plain" style="cursor:default" onclick="event.stopPropagation()">${esc(t)}</span>`).join("")}
       ${c.verify&&!c.id?`<span class="tag warn">verify handle</span>`:""}
-      <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">✎ tags</span></div>
+      <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">${ico("pencil")} tags</span></div>
     </div>`;
   });
   h += `</div>`;
@@ -829,7 +893,7 @@ function scanConfigUI(i, meta, cached){
         </select>
         <input type="number" id="depthCustom" min="1" max="${SCAN_CAP}" value="${isPreset?300:cfg.depth}" placeholder="# uploads" style="width:120px;display:${isPreset?"none":"inline-block"}" oninput="updateCost(${i})"></span>
       <button class="btn" onclick="doScan(${i})">${cached?"Rescout":"Scout"}</button>
-      ${cached?`<button class="btn sec" onclick="exportCSV(${i})">⬇ CSV</button>`:""}
+      ${cached?`<button class="btn sec" onclick="exportCSV(${i})">${ico("download")} CSV</button>`:""}
     </div>
     <div class="muted" id="costLine" style="margin-top:7px"></div>
   </div>`;
@@ -851,8 +915,7 @@ function updateCost(i, meta){
   const n=+nEl.value||0, depth=Math.min(scanDepth(), meta.videoCount||SCAN_CAP);
   if(n<1){ out.innerHTML=`<span style="color:var(--danger)">Enter at least 1.</span>`; return; }
   if(n>(meta.videoCount||0)){ out.innerHTML=`<span style="color:var(--danger)">This channel only has ${(meta.videoCount||0).toLocaleString()} uploads — lower your number.</span>`; return; }
-  const cost = Math.ceil(depth/50)*2;
-  out.textContent = `Estimated cost: ~${cost} units of your 10,000 daily quota (${Math.ceil(depth).toLocaleString()} uploads scouted). A wider range = truer all-time ranking.`;
+  out.textContent = `Checks ${Math.ceil(depth).toLocaleString()} uploads — free, and barely touches your daily limit. A wider range gives a truer all-time ranking.`;
 }
 async function fixHandle(i){
   creators[i].handle = document.getElementById("fixH").value.trim().replace(/^@/,"");
@@ -892,9 +955,9 @@ function vFilterBarHTML(i, counts, total){
   return `<div class="vfilters" id="vfilters">
     ${chip("active","Active",counts.new+counts.saved)}
     ${chip("new","New",counts.new)}
-    ${chip("saved","⭐ Saved",counts.saved)}
-    ${chip("remade","🎬 Remade",counts.remade)}
-    ${chip("skipped","🚫 Skipped",counts.skipped)}
+    ${chip("saved",ico("star")+" Saved",counts.saved)}
+    ${chip("remade",ico("clapper")+" Remade",counts.remade)}
+    ${chip("skipped",ico("skip")+" Skipped",counts.skipped)}
     ${chip("all","All",total)}
   </div>`;
 }
@@ -922,33 +985,40 @@ function shortsUI(i, cached){
   return h;
 }
 function emptyMsg(f){
-  return f==="saved" ? "No saved ideas yet — hit ⭐ on a video to start your board."
-    : f==="remade" ? "Nothing remade yet. Finished re-filming one? Hit 🎬."
-    : f==="skipped" ? "Nothing skipped. 🚫 hides ideas you're not into."
+  return f==="saved" ? "No saved ideas yet — tap the star on a video to start your board."
+    : f==="remade" ? "Nothing remade yet. Finished re-filming one? Tap the clapper."
+    : f==="skipped" ? "Nothing skipped. The skip button hides ideas you're not into."
     : f==="new" ? "No new videos left here — you've been through them all."
     : "Nothing here yet.";
 }
-const STATUS_BADGE = {saved:['⭐ Saved','b-saved'], remade:['🎬 Remade','b-remade'], skipped:['🚫 Skipped','b-skip']};
+const STATUS_BADGE = {saved:['star','Saved','b-saved'], remade:['clapper','Remade','b-remade'], skipped:['skip','Skipped','b-skip']};
+function badgeHTML(s){ const b=STATUS_BADGE[s]; return b?`<span class="vstat"><span class="vbadge ${b[2]}">${ico(b[0])} ${b[1]}</span></span>`:""; }
+function noteHTML(id){
+  const e=library[id];
+  return e&&e.n ? `<div class="vnote" title="Tap to edit your note" onclick="editNote('${id}')">${ico("note")} ${esc(e.n)}</div>` : "";
+}
 function statusVidCard(v, o){
-  const s=o.status, b=STATUS_BADGE[s];
+  const s=o.status;
   const twOpen = o.autoplay ? `<div class="thumbwrap" data-vid="${v.id}">` : `<div class="thumbwrap">`;
   return `<div class="vid tall" data-card="${v.id}">
     ${twOpen}
       ${o.rank?`<span class="rank">#${o.rank}</span>`:""}
-      ${b?`<span class="vstat"><span class="vbadge ${b[1]}">${b[0]}</span></span>`:""}
+      ${badgeHTML(s)}
       <img loading="lazy" src="${esc(v.thumb)}" alt="${esc(v.title)}" onclick="playVid('${v.id}')">
       <span class="dur">${v.dur}s</span>
-      <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">⤢</button>
+      <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">${ico("expand")}</button>
     </div>
     <div class="b">
       <div class="t">${esc(v.title)}</div>
       <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span></div>
       <div class="acts">
-        <button class="act ${s==="saved"?"on":""}" title="Save to your board" onclick="vSetCreator(${o.i},'${v.id}','saved')">⭐</button>
-        <button class="act ${s==="remade"?"on":""}" title="Mark as remade" onclick="vSetCreator(${o.i},'${v.id}','remade')">🎬</button>
-        <button class="act ${s==="skipped"?"on":""}" title="Skip — hide from future scans" onclick="vSetCreator(${o.i},'${v.id}','skipped')">🚫</button>
+        <button class="act ${s==="saved"?"on":""}" title="Save to your board" onclick="vSetCreator(${o.i},'${v.id}','saved')">${ico("star")}</button>
+        <button class="act ${s==="remade"?"on":""}" title="Mark as remade" onclick="vSetCreator(${o.i},'${v.id}','remade')">${ico("clapper")}</button>
+        <button class="act ${s==="skipped"?"on":""}" title="Skip — hide this idea" onclick="vSetCreator(${o.i},'${v.id}','skipped')">${ico("skip")}</button>
+        ${s!=="new"?`<button class="act" title="Add a note (gear to buy, ideas, anything)" onclick="editNote('${v.id}')">${ico("pencil")}</button>`:""}
       </div>
-      <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
+      ${noteHTML(v.id)}
+      <button class="cp" onclick="copyLink('${v.id}',this)">${ico("link")} Copy link</button>
     </div>
   </div>`;
 }
@@ -965,10 +1035,13 @@ function vSetCreator(i, id, s){
   const card=document.querySelector('.vid[data-card="'+id+'"]'); if(!card) return;
   if(vFilterMatch(vFilter, ns)){
     let old=card.querySelector(".vstat"); if(old) old.remove();
-    const b=STATUS_BADGE[ns], tw=card.querySelector(".thumbwrap");
-    if(b&&tw) tw.insertAdjacentHTML("beforeend", `<span class="vstat"><span class="vbadge ${b[1]}">${b[0]}</span></span>`);
+    const tw=card.querySelector(".thumbwrap");
+    if(STATUS_BADGE[ns]&&tw) tw.insertAdjacentHTML("beforeend", badgeHTML(ns));
     const acts=card.querySelectorAll(".acts .act"), order=["saved","remade","skipped"];
     acts.forEach((btn,ix)=>btn.classList.toggle("on", order[ix]===ns));
+    const actsBox=card.querySelector(".acts");
+    if(ns!=="new" && acts.length<4 && actsBox) actsBox.insertAdjacentHTML("beforeend", `<button class="act" title="Add a note (gear to buy, ideas, anything)" onclick="editNote('${id}')">${ico("pencil")}</button>`);
+    if(ns==="new"){ if(acts[3]) acts[3].remove(); const nt=card.querySelector(".vnote"); if(nt) nt.remove(); }
   } else {
     const tw=card.querySelector(".thumbwrap"); if(tw) stopPreview(tw);
     card.classList.add("leaving");
@@ -998,32 +1071,41 @@ function vSetById(id, s){
 function renderRemake(){
   const saved  = Object.entries(library).filter(([id,e])=>e.s==="saved");
   const remade = Object.entries(library).filter(([id,e])=>e.s==="remade");
-  const active = (libFilter==="remade"?remade:saved).map(([id,e])=>({id,...e})).sort((a,b)=>(b.u||0)-(a.u||0));
+  const noted  = Object.entries(library).filter(([id,e])=>e.n);
+  const src = libFilter==="remade"?remade : libFilter==="notes"?noted : saved;
+  const active = src.map(([id,e])=>({id,...e})).sort((a,b)=>(b.u||0)-(a.u||0));
   const autoplay = libFilter==="saved";
-  let h = `<h2>${libFilter==="remade"?"Remade":"Saved ideas"}</h2>
-  <div class="muted" style="margin-bottom:12px">${libFilter==="remade"?"Videos you've already remade — kept as references.":"Your inspiration board — ideas to re-film in your own style."} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
+  let h = `<h2>${libFilter==="remade"?"Remade":libFilter==="notes"?"Your notes":"Saved ideas"}</h2>
+  <div class="muted" style="margin-bottom:12px">${libFilter==="remade"?"Videos you've already remade — kept as references."
+    :libFilter==="notes"?"Every idea you wrote a note on — handy when you're out buying props and gear."
+    :"Your inspiration board — ideas to re-film in your own style."} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
   <div class="vfilters">
-    <button class="vchip ${libFilter==="saved"?"on":""}" onclick="libFilter='saved';renderRemake()">⭐ Saved <small>${saved.length}</small></button>
-    <button class="vchip ${libFilter==="remade"?"on":""}" onclick="libFilter='remade';renderRemake()">🎬 Remade <small>${remade.length}</small></button>
+    <button class="vchip ${libFilter==="saved"?"on":""}" onclick="libFilter='saved';renderRemake()">${ico("star")} Saved <small>${saved.length}</small></button>
+    <button class="vchip ${libFilter==="remade"?"on":""}" onclick="libFilter='remade';renderRemake()">${ico("clapper")} Remade <small>${remade.length}</small></button>
+    <button class="vchip ${libFilter==="notes"?"on":""}" onclick="libFilter='notes';renderRemake()">${ico("note")} Notes <small>${noted.length}</small></button>
   </div>`;
-  if(!active.length){ view().innerHTML = h + `<div class="empty">${libFilter==="remade"?"Nothing remade yet.":"Nothing saved yet — hit ⭐ on any video in Discover or on a creator's page."}</div>`; return; }
+  if(!active.length){ view().innerHTML = h + `<div class="empty">${libFilter==="remade"?"Nothing remade yet."
+    :libFilter==="notes"?"No notes yet — open a saved idea and tap the pencil to write one."
+    :"Nothing saved yet — tap the star on any video in Discover or on a creator's page."}</div>`; return; }
   h += `<div class="vgrid">` + active.map(v=>{
     const twOpen = autoplay ? `<div class="thumbwrap" data-vid="${v.id}">` : `<div class="thumbwrap">`;
     return `<div class="vid tall" data-card="${v.id}">
       ${twOpen}
+        ${libFilter==="notes"?badgeHTML(v.s):""}
         <img loading="lazy" src="${esc(v.th)}" alt="${esc(v.t)}" onclick="playVid('${v.id}')">
         ${v.d?`<span class="dur">${v.d}s</span>`:""}
-        <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">⤢</button>
+        <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">${ico("expand")}</button>
       </div>
       <div class="b">
         <div class="t">${esc(v.t)}</div>
         <div class="muted" style="font-size:12px">${esc(v.ch||"")}</div>
         <div class="acts">
           ${v.s==="saved"
-            ? `<button class="act" title="Mark as remade" onclick="vSetById('${v.id}','remade')">🎬 Remade</button><button class="act" title="Remove from board" onclick="vSetById('${v.id}','saved')">✕ Remove</button>`
-            : `<button class="act" title="Move back to your board" onclick="vSetById('${v.id}','saved')">↩ Back to board</button>`}
+            ? `<button class="act" title="Mark as remade" onclick="vSetById('${v.id}','remade')">${ico("clapper")}</button><button class="act" title="Add a note" onclick="editNote('${v.id}')">${ico("pencil")}</button><button class="act" title="Remove from board" onclick="vSetById('${v.id}','saved')">${ico("x")}</button>`
+            : `<button class="act" title="Move back to your board" onclick="vSetById('${v.id}','saved')">${ico("undo")} Back to board</button><button class="act" title="Add a note" onclick="editNote('${v.id}')">${ico("pencil")}</button>`}
         </div>
-        <button class="cp" onclick="copyLink('${v.id}',this)">🔗 Copy link</button>
+        ${noteHTML(v.id)}
+        <button class="cp" onclick="copyLink('${v.id}',this)">${ico("link")} Copy link</button>
       </div>
     </div>`;
   }).join("") + `</div>`;
@@ -1092,7 +1174,9 @@ function _showDlg(cfg){
       <div class="card dlgbox" role="dialog" aria-modal="true">
         ${cfg.title?`<div class="dlgtitle">${esc(cfg.title)}</div>`:""}
         <div class="dlgmsg">${esc(cfg.msg)}</div>
-        ${cfg.input?`<input type="text" id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="width:100%;margin-top:12px">`:""}
+        ${cfg.input?(cfg.multiline
+          ?`<textarea id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="margin-top:12px"></textarea>`
+          :`<input type="text" id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="width:100%;margin-top:12px">`):""}
         <div class="row" style="justify-content:flex-end;margin-top:16px">
           ${cfg.cancelText!==null?`<button class="btn sec" onclick="_dlgCancel()">${esc(cfg.cancelText||"Cancel")}</button>`:""}
           <button class="btn"${okStyle} onclick="_dlgOk()">${esc(cfg.okText||"OK")}</button>
@@ -1101,8 +1185,8 @@ function _showDlg(cfg){
     </div>`;
     const inEl = document.getElementById("dlgInput");
     if(inEl){
-      inEl.value = cfg.def||""; inEl.focus(); inEl.select();
-      inEl.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); _dlgOk(); } });
+      inEl.value = cfg.def||""; inEl.focus(); if(!cfg.multiline) inEl.select();
+      if(!cfg.multiline) inEl.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); _dlgOk(); } });
     } else {
       const btn = document.querySelector(".dlgbox .btn:last-child"); if(btn) btn.focus();
     }
@@ -1110,7 +1194,7 @@ function _showDlg(cfg){
 }
 function uiAlert(msg,o={}){ return _showDlg({msg,title:o.title,okText:o.okText,cancelText:null}); }
 function uiConfirm(msg,o={}){ return _showDlg({msg,title:o.title,okText:o.okText||"OK",cancelText:o.cancelText||"Cancel",danger:o.danger}); }
-function uiPrompt(msg,def,o={}){ return _showDlg({msg,title:o.title,input:true,def,placeholder:o.placeholder,okText:o.okText||"OK",cancelText:o.cancelText||"Cancel"}); }
+function uiPrompt(msg,def,o={}){ return _showDlg({msg,title:o.title,input:true,multiline:o.multiline,def,placeholder:o.placeholder,okText:o.okText||"OK",cancelText:o.cancelText||"Cancel"}); }
 
 /* ---------- Sign-in modal (Google + email/password) ---------- */
 function openAuthModal(){
@@ -1177,21 +1261,21 @@ function renderSet(){
       <input type="password" id="keyIn" value="${esc(apiKey)}" placeholder="Paste your API key">
       <button class="btn" onclick="saveKey()">Save</button>
     </div>
-    <div class="muted" style="margin-top:7px">Your key is stored only in this browser and sent only to Google's YouTube API — never to this site's servers. All usage counts against your own free Google quota.</div>
+    <div class="muted" style="margin-top:7px">Your key stays in this browser and is only ever sent to Google — never to us. It's completely free to use.</div>
   </div>
   <div class="bk"><details ${apiKey?"":"open"}><summary>Get a free API key (2 minutes)</summary><div class="in"><ol>
     <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> and create a project (or reuse one).</li>
     <li>APIs &amp; Services → <b>Library</b> → search “YouTube Data API v3” → <b>Enable</b>.</li>
     <li>APIs &amp; Services → <b>Credentials</b> → Create credentials → <b>API key</b>.</li>
     <li><b>Recommended:</b> click the key → Application restrictions → Websites → add this site's address. That locks your key so it only works here.</li>
-    <li>Paste it above. Free quota: 10,000 units/day — Discover searches cost ~100, channel scans ~2 per 100 videos.</li>
+    <li>Paste it above. That's it — it's free, and your daily allowance covers around 100 searches plus plenty of creator scouting.</li>
   </ol></div></details></div>
   <div class="card" style="margin-bottom:12px">
     <b>Data</b>
     <div class="muted" style="margin:6px 0 10px">${creators.length} creators · ${Object.values(library).filter(e=>e.s==="saved").length} saved · ${Object.values(library).filter(e=>e.s==="remade").length} remade · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
     <div class="row">
-      <button class="btn sec" onclick="exportAll()">⬇ Backup (JSON)</button>
-      <button class="btn sec" onclick="document.getElementById('impF').click()">⬆ Restore backup</button>
+      <button class="btn sec" onclick="exportAll()">${ico("download")} Backup (JSON)</button>
+      <button class="btn sec" onclick="document.getElementById('impF').click()">${ico("upload")} Restore backup</button>
       <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
       <button class="btn sec" onclick="clearCaches()">Clear video caches</button>
     </div>
@@ -1222,7 +1306,14 @@ function importAll(inp){
 }
 
 /* ---------- init ---------- */
-render();
+/* Friendly landing for mistyped URLs (hosting sends every path here) */
+if(location.pathname !== "/" && !/index\.html$/.test(location.pathname)){
+  history.replaceState(null, "", "/");
+  render();
+  uiAlert("That page doesn't exist, so we brought you home.", {title:"Page not found"});
+} else {
+  render();
+}
 </script>
 <script type="module">
 /* Optional Firebase layer — activates only when config.js is filled in */
