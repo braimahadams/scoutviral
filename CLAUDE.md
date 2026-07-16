@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-16 (landing copy pass, monetization-ordered countries, 28 niches, cloud merge-not-overwrite, remade confirmation, key removal)
+**Last updated:** 2026-07-16 (landing copy polish, shared trial key + free-preview nudge, engagement ranking, sticky footer, directory no longer pushes a starter pack)
 
 ## Product ambition — read this first
 
@@ -48,6 +48,17 @@ no build step, no framework, no npm). This is deliberate. Edit it directly.
 - Everything is client-side. **BYOK**: each user pastes their own free YouTube
   Data API v3 key (stored in their browser's localStorage only, never sent to us).
   All API usage bills to the user's own free Google quota (10,000 units/day).
+- **Shared trial key (optional):** `window.TRIAL_YT_KEY` in config.js. When set (a
+  domain-restricted key from the `scoutviral` GCP project), first-time visitors get
+  `TRIAL_LIMIT` (5) free searches/scouts on it before being nudged to add their own.
+  `effectiveKey()` = personal key OR trial key while credits remain; `usingTrial()`,
+  `trialRemaining()`, `noteTrialUse()`, `ensureCanScout()` gate every live action
+  (discSearch/doScan/addCreator/addFromDisc/renderCreator-resolve). When credits run
+  out OR the shared daily quota is hit (yt() throws `__TRIAL_ENDED__`), `trialEndedPrompt()`
+  fires a warm, conversion-framed dialog → Settings. Subtle scarcity line on Discover
+  (`trialNoteHTML`) only appears on trial, nudging harder at ≤2 left. **Note: YouTube
+  Data API is FREE and hard-capped — no billing, no per-request charge, so the shared
+  key cannot cost money; worst case it returns quota-exceeded until midnight PT.**
 
 ## Architecture / accounts
 
@@ -133,8 +144,10 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   `IntersectionObserver` (`observePreviews`/`startPreview`/`stopPreview`/
   `stopAllPreviews`, threshold 0.5). ⤢ opens focused player with sound.
   **🔗 Copy link** button on every card (Discover, channel Top Shorts, Remake list).
-- **My directory (workspace):** add creators by @handle/URL (verified live against
-  YouTube) or load a 34-creator starter pack. Deliberately lean — no country input,
+- **My directory (workspace):** add creators by @handle/URL (confirmed live against
+  YouTube — button says "Add creator", not "verify"). **No starter pack** — we don't
+  push any creator (they don't pay for placement); the empty state invites you to add
+  creators you already admire or head to Discover. Deliberately lean — no country input,
   no country/style filter dropdowns, no country grouping; a single grid **ranked by
   Scout Score** (scouted creators first) with a name search. `dirF = {q}` only.
 - **Video workflow (statuses):** every video has one permanent status keyed by its
@@ -158,6 +171,15 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   card moves off the working list; the copy reassures that any note stays with it.
 - **Settings:** API key has Save + **Remove key** (confirm dialog); privacy line is
   the confident "Your privacy is protected…" copy. No quota talk anywhere.
+- **Top Shorts ranking:** a "Ranked by views / Ranked by engagement" select on the
+  creator page (`ss_rankby`, `rankVids`/`engRatio` = likes÷views; hidden-likes videos
+  sink to the bottom of an engagement ranking). Engagement mode shows "X% liked" on
+  each card and the CSV export gains an `engagement_pct` column. This is what makes the
+  landing's "ranked by views or engagement" true.
+- **Sticky footer:** the global `<footer>` sits at the page bottom on every view via
+  `main{min-height:calc(100vh - 162px)}` (NOT body flex — the trailing empty
+  #modal/#dialog/#sbar divs broke flex free-space distribution). If header/footer
+  height changes materially, retune the 162px reserve.
 - **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
   Full history, or Custom #) sets how deep to look; "Show top N" sets how many
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing

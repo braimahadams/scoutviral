@@ -49,7 +49,7 @@ nav button:hover{color:var(--ink);background:var(--card2)}
 nav button.on{color:var(--accent);background:var(--accent-bg);font-weight:600}
 #authbox{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
 #authbox img{width:28px;height:28px;border-radius:50%;border:1px solid var(--line)}
-main{max-width:1180px;margin:0 auto;padding:24px 18px 48px}
+main{max-width:1180px;width:100%;margin:0 auto;padding:24px 18px 48px;min-height:calc(100vh - 162px)}
 h2{font-size:23px;font-weight:700;letter-spacing:-.02em;margin:2px 0 6px}
 h3{font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin:26px 0 11px}
 .muted{color:var(--ink3);font-size:13px}
@@ -338,7 +338,7 @@ html{scroll-behavior:smooth}
   .lp-reveal{opacity:1!important;transform:none!important;transition:none}
   .lp-float,.lp-pin{animation:none!important}
 }
-footer{max-width:1180px;margin:48px auto 0;padding:20px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.6}
+footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.6}
 /* mobile: bottom tab bar */
 @media (max-width:720px){
   header{padding:11px 15px}
@@ -394,44 +394,6 @@ footer{max-width:1180px;margin:48px auto 0;padding:20px 18px;border-top:1px soli
    No custom backend. Firebase Auth + Firestore sync optional.
 ========================================================= */
 const SCAN_CAP = 6000;
-
-/* ---------- optional starter pack (verified creators, loaded on demand only) ---------- */
-const SEED = [
- {name:"Khaby Lame",handle:"khabylame",country:"Italy / Senegal",tag:"silent reaction"},
- {name:"Daniel LaBelle",handle:"daniellabelle1",country:"USA",tag:"physical comedy"},
- {name:"Zach King",handle:"zachking",country:"USA",tag:"visual magic"},
- {name:"Alan Chikin Chow",handle:"alanchikinchow",country:"USA",tag:"expressive skits"},
- {name:"CalebCity",handle:"CalebCity",country:"USA",tag:"face-driven skits"},
- {name:"Luke Davidson",handle:"LukeDavidson",country:"USA",tag:"expressive skits"},
- {name:"Dylan Lemay",handle:"DylanLemay",country:"USA",tag:"silent process"},
- {name:"Argenby",handle:"argenby",country:"Kyrgyzstan",tag:"deadpan face"},
- {name:"Tibo InShape",handle:"tiboinshape",country:"France",tag:"fitness humor"},
- {name:"Muromeroo",handle:"muromeroo",country:"Turkey",tag:"parody, face"},
- {name:"Orkun Işıtmak",handle:"orkunisitmak",country:"Turkey",tag:"challenges"},
- {name:"Las Ocurrencias de Victor",handle:"lasocurrenciasdevictor",country:"Dominican Republic",tag:"couple face skits",verify:true},
- {name:"Juan de Montreal",handle:"juandemontreal",country:"Dominican Republic",tag:"daily visual humor"},
- {name:"Ahmad Hossam",handle:"ahmadhossam456",country:"Egypt",tag:"relatable expression"},
- {name:"Abraz Khan",handle:"abrazkhan91",country:"Pakistan",tag:"team skits",verify:true},
- {name:"William Last KRM",handle:"williamlast_krm1998",country:"Botswana",tag:"music comedy",verify:true},
- {name:"Junya1gou",handle:"junya1gou",country:"Japan",tag:"silent stunts"},
- {name:"Sagawa",handle:"sagawa1gou",country:"Japan",tag:"silent stunts"},
- {name:"Bayashi",handle:"bayashi.tv",country:"Japan",tag:"food expression",verify:true},
- {name:"Saito さいとう",handle:"saito01",country:"Japan",tag:"silent recreations",verify:true},
- {name:"김프로 KIMPRO",handle:"kimpro",country:"South Korea",tag:"nonverbal challenges",verify:true},
- {name:"Whindersson Nunes",handle:"whinderssonnunes",country:"Brazil",tag:"expressive comedy"},
- {name:"Enaldinho",handle:"Enaldinho",country:"Brazil",tag:"physical skits"},
- {name:"Natan por Aí",handle:"NatanporAi",country:"Brazil",tag:"challenges",verify:true},
- {name:"Neagle",handle:"Neagle",country:"Brazil",tag:"stunts",verify:true},
- {name:"KL BRO Biju Rithvik",handle:"KLBRO",country:"India",tag:"silent family skits",verify:true},
- {name:"Ashish Chanchlani",handle:"ashishchanchlanivines",country:"India",tag:"expressive sketches"},
- {name:"Amit Bhadana",handle:"TheAmitBhadana",country:"India",tag:"relatable skits"},
- {name:"Harsh Beniwal",handle:"HarshBeniwal",country:"India",tag:"multi-role skits"},
- {name:"Mythpat",handle:"Mythpat",country:"India",tag:"reactions"},
- {name:"Round2hell",handle:"Round2hell",country:"India",tag:"high-concept skits"},
- {name:"Mark Angel Comedy",handle:"MarkAngelComedy",country:"Nigeria",tag:"reaction skits"},
- {name:"Lasisi Elenu",handle:"lasisielenu",country:"Nigeria",tag:"exaggerated face",verify:true},
- {name:"AboFlah",handle:"AboFlah",country:"Kuwait",tag:"challenges"},
-];
 
 /* ---------- Discover: countries (regionCode + language + optional local silent-comedy queries) ---------- */
 /* Ordered by how well creators get paid in each market (strongest monetization
@@ -534,6 +496,42 @@ function pruneCaches(){
 
 let creators = store.get("ss_creators", []);
 let apiKey   = store.get("ss_key","");
+
+/* ---------- shared trial key: a free taste before you bring your own ---------- */
+const TRIAL_KEY   = (window.TRIAL_YT_KEY || "").trim();
+const TRIAL_LIMIT = 5;                                   // free preview searches/scouts
+const trialConfigured = ()=> !!TRIAL_KEY;
+const trialRemaining  = ()=> Math.max(0, TRIAL_LIMIT - (+store.get("ss_trial_used",0)||0));
+const usingTrial      = ()=> !apiKey && trialConfigured() && trialRemaining()>0;
+const effectiveKey    = ()=> apiKey || (usingTrial() ? TRIAL_KEY : "");
+function noteTrialUse(){ if(!apiKey && trialConfigured()){ store.set("ss_trial_used",(+store.get("ss_trial_used",0)||0)+1); } }
+/* gate before any live call: returns false (and nudges) when there's no way to scout */
+async function ensureCanScout(){
+  if(apiKey || usingTrial()) return true;
+  if(trialConfigured()) await trialEndedPrompt(); else await needKeyPrompt();
+  return false;
+}
+async function trialEndedPrompt(){
+  const yes = await uiConfirm(
+    "Loving it? You've used up your free preview. Add your own free key to keep scouting — it refreshes a big batch of searches every single day, it's completely free, and everything you've saved stays right here. Sign in too and your ideas follow you to every device.",
+    {title:"Keep scouting — free", okText:"Get my free key"});
+  if(yes) go("set");
+}
+async function needKeyPrompt(){
+  const yes = await uiConfirm(
+    "To scout live from YouTube you'll add your own free key. It takes about two minutes and it's completely free.",
+    {title:"Add your free key", okText:"Open Settings"});
+  if(yes) go("set");
+}
+const isTrialGate = e => !apiKey && trialConfigured() && /quota|limit|__trial/i.test(e&&e.message||"");
+function refreshTrialNote(){ const el=document.getElementById("trialNote"); if(el) el.innerHTML=trialNoteHTML(); }
+function trialNoteHTML(){
+  if(apiKey || !trialConfigured()) return "";
+  const r = trialRemaining();
+  if(r<=0) return `<div class="notice" style="margin-top:10px">Your free preview is used up. <a onclick="go('set')" style="cursor:pointer;font-weight:700">Add your own free key</a> to keep scouting — unlimited, every day.</div>`;
+  if(r>2)  return `<div class="muted" style="margin-top:8px">You're on a free preview — no key needed to try it out.</div>`;
+  return `<div class="notice" style="margin-top:10px">Just ${r} free ${r===1?"search":"searches"} left. <a onclick="go('set')" style="cursor:pointer;font-weight:700">Add your own free key</a> for unlimited daily searches.</div>`;
+}
 
 /* ---------- video library: one permanent status per video id ----------
    library[id] = {s:"saved"|"remade"|"skipped", t,th,v,ch,at,d,u}; absent = "new". */
@@ -652,18 +650,23 @@ function renderAuth(){
 
 /* ---------- YouTube API ---------- */
 async function yt(endpoint, params){
-  if(!apiKey) throw new Error("You need a free YouTube key first. Open Settings — it takes about 2 minutes to set up, and it costs nothing.");
+  const key = effectiveKey();
+  const trial = !apiKey && !!key;                        // this call rides the shared trial key
+  if(!key) throw new Error(trialConfigured()? "__TRIAL_ENDED__" : "Add your own free YouTube key in Settings to start scouting — it's quick and completely free.");
   const u = new URL("https://www.googleapis.com/youtube/v3/"+endpoint);
   Object.entries(params).forEach(([k,v])=>{ if(v!=="" && v!==undefined && v!==null) u.searchParams.set(k,v); });
-  u.searchParams.set("key",apiKey);
+  u.searchParams.set("key",key);
   let r;
   try{ r = await fetch(u); }
   catch(e){ throw new Error("Network error reaching YouTube API. Check your connection."); }
   const d = await r.json();
   if(d.error){
     let m = d.error.message || "YouTube API error";
-    if(/quota/i.test(m)) m = "You've reached today's free limit — it resets at midnight (Pacific time). Scouting creators uses far less than searching, so that may still work.";
-    if(/referer|referrer|blocked/i.test(m)) m += " — Tip: in Google Cloud → Credentials, restrict your key to this website's address (recommended), or set restrictions to None.";
+    if(/quota/i.test(m)){
+      if(trial) throw new Error("__TRIAL_ENDED__");      // shared key ran dry for the day → nudge to own key
+      m = "You've reached today's free limit — it resets at midnight (Pacific time). Scouting creators uses far less than searching, so that may still work.";
+    }
+    if(/referer|referrer|blocked/i.test(m)) m += trial ? "" : " — Tip: in Google Cloud → Credentials, restrict your key to this website's address (recommended), or set restrictions to None.";
     throw new Error(m);
   }
   return d;
@@ -838,17 +841,14 @@ function renderHome(){
   <div class="lp">
     <!-- HERO -->
     <section class="lp-hero">
-      <div class="lp-eyebrow lp-reveal"><span class="dot"></span> Proven ideas, not guesswork</div>
-      <h1 class="lp-reveal d1">Find your next video idea —<br><span class="g">already proven to go viral.</span></h1>
-      <p class="lp-sub lp-reveal d2">ScoutViral is the creative tool for short-form creators. Discover the Shorts that actually blew up in any country and niche, then remake the best ones in your own style.</p>
-      <div class="lp-cta lp-reveal d3">
+      <h1 class="lp-reveal">Find your next video idea.<br><span class="g">Already proven to go viral.</span></h1>
+      <p class="lp-sub lp-reveal d1">ScoutViral is the creative tool for short-form creators. Discover the Shorts that actually blew up in any country and niche, then remake the best ones in your own style.</p>
+      <div class="lp-cta lp-reveal d2">
         <button class="lp-btn p" onclick="go('disc')">Start discovering ${ico("arrowr")}</button>
         <button class="lp-btn s" onclick="lpScroll('lp-how')">See how it works</button>
       </div>
-      <div class="lp-trust lp-reveal d3">
+      <div class="lp-trust lp-reveal d2">
         <span>${ico("check")} Free to use</span>
-        <span>${ico("check")} No sign-up to start</span>
-        <span>${ico("check")} Nothing tracked</span>
       </div>
     </section>
 
@@ -883,7 +883,7 @@ function renderHome(){
         <p class="lp-p lp-reveal d1">Discover creators with proven viral content and turn their best ideas into your next viral post.</p>
         <div class="lp-stats lp-reveal d2">
           <div><div class="n lp-num" data-count="${COUNTRIES.length-1}" data-suffix="+">0</div><div class="l">Countries</div></div>
-          <div><div class="n lp-num" data-count="${NICHES.length}">0</div><div class="l">Niches</div></div>
+          <div><div class="n lp-num" data-count="${NICHES.length}" data-suffix="+">0</div><div class="l">Niches</div></div>
           <div><div class="n">∞</div><div class="l">Ideas to find</div></div>
         </div>
       </div>
@@ -913,7 +913,7 @@ function renderHome(){
     <section class="lp-feat">
       <div class="lp-txt">
         <div class="lp-kicker">${ico("star")} Build your idea board</div>
-        <h2 class="lp-reveal">Your creative workspace, not a dashboard.</h2>
+        <h2 class="lp-reveal">Your creative workspace, all in one place.</h2>
         <p class="lp-p lp-reveal d1">Save the ideas worth remaking, organize them in one place, and access your inspiration anytime, anywhere.</p>
       </div>
       <div class="lp-visual lp-reveal d1"><div class="lp-panel" data-depth="4">
@@ -928,14 +928,13 @@ function renderHome(){
     <!-- WORKFLOW -->
     <section class="lp-flow" id="lp-how">
       <h2 class="lp-reveal">From scroll to shoot in five steps.</h2>
-      <p class="lp-lead lp-reveal d1">ScoutViral stays simple on purpose. One clean path from a proven idea to your own published Short.</p>
       <div class="lp-steps lp-reveal d1">${stepsHtml}</div>
     </section>
 
     <!-- FINAL CTA -->
     <section class="lp-final lp-reveal">
-      <h2>Stop guessing. Start remaking what already works.</h2>
-      <p>Find your next proven video idea in the next two minutes — free, no sign-up needed.</p>
+      <h2>Find what works. Make it your own.</h2>
+      <p>Discover your next proven idea in minutes and start creating. Free to use.</p>
       <button class="lp-btn p" style="font-size:16px;padding:14px 26px" onclick="go('disc')">Start discovering ${ico("arrowr")}</button>
     </section>
   </div>`;
@@ -984,7 +983,7 @@ function renderDisc(){
     chips = c.local.map(([label,q])=>`<span class="qchip" onclick="discSearch('${esc(q).replace(/'/g,"&#39;")}')">${esc(label)}<small>${esc(q)}</small></span>`).join("");
   }
   view().innerHTML = `<h2>Discover</h2>
-  <div class="muted" style="margin-bottom:12px">Pick a country and niche. For silent comedy, searches run in the <b>local language</b> (shown small on each chip) — that's what surfaces creators English search never finds.</div>
+  <div class="muted" style="margin-bottom:12px">Pick a country and a niche, and see what's already going viral.</div>
   <div class="card" style="margin-bottom:12px">
     <div class="filterbar">
       <select onchange="disc.c=+this.value;store.set('ss_disc',disc);renderDisc()">${countryOpts(disc.c)}</select>
@@ -1012,6 +1011,7 @@ function renderDisc(){
       <button class="btn sec" title="Jump to a random country + niche" onclick="randomDiscover()">${ico("dice")} Random</button>
     </div>
     ${chips?`<div style="margin-top:10px">${chips}</div>`:""}
+    <div id="trialNote">${trialNoteHTML()}</div>
   </div>
   <div id="dres"></div>`;
 }
@@ -1023,6 +1023,7 @@ function randomDiscover(){
   discSearch(null);
 }
 async function discSearch(customQ){
+  if(!(await ensureCanScout())) return;
   const c = COUNTRIES[disc.c]||COUNTRIES[0], ni = NICHES[disc.n]||NICHES[0];
   let q = customQ;
   if(!q){
@@ -1031,6 +1032,7 @@ async function discSearch(customQ){
   }
   const box = document.getElementById("dres");
   box.innerHTML = `<div class="muted" style="padding:14px 2px">Searching “${esc(q)}” ${c.rc?("in "+esc(c.n)):"worldwide"}…</div>`;
+  const wasTrial = usingTrial();
   try{
     const baseParams = {part:"snippet", q, type:"video", videoDuration:"short", order:disc.order};
     if(c.rc) baseParams.regionCode = c.rc;
@@ -1066,7 +1068,11 @@ async function discSearch(customQ){
         </div>
       </div>`).join("") + `</div>`;
     observePreviews();
-  }catch(e){ box.innerHTML = `<div class="notice">${esc(e.message)}</div>`; }
+    if(wasTrial){ noteTrialUse(); refreshTrialNote(); }
+  }catch(e){
+    if(isTrialGate(e)){ trialEndedPrompt(); box.innerHTML=""; refreshTrialNote(); return; }
+    box.innerHTML = `<div class="notice">${esc(e.message)}</div>`;
+  }
 }
 async function pagedSearchIds(baseParams, total){
   let ids = [], pageToken = "";
@@ -1106,7 +1112,10 @@ async function addFromDisc(chId, chName){
     creators.push({name:meta.title, handle:chId, id:meta.id, country:country.trim()||"Uncategorized", tag:(NICHES[disc.n]||{}).n||"", meta});
     persist(); sbar(false);
     uiAlert("Added "+meta.title+" ✓ — it's in My directory.", {title:"Added"});
-  }catch(e){ sbar(false); uiAlert(e.message, {title:"Couldn't add creator"}); }
+  }catch(e){ sbar(false);
+    if(isTrialGate(e)){ trialEndedPrompt(); return; }
+    uiAlert(e.message, {title:"Couldn't add creator"});
+  }
 }
 
 /* ---------- My directory (creator workspace, ranked by Scout Score) ---------- */
@@ -1120,16 +1129,15 @@ function renderDir(){
   let h = `<h2>My directory</h2>
   <div class="card" style="margin-bottom:12px">
     <div class="row">
-      <input type="text" id="addIn" placeholder="Add creator: @handle or channel URL">
-      <button class="btn" onclick="addCreator()">Add + verify</button>
+      <input type="text" id="addIn" placeholder="Add a creator: @handle or channel URL">
+      <button class="btn" onclick="addCreator()">Add creator</button>
     </div>
-    <div class="muted" style="margin-top:7px">Every creator is verified on YouTube before they're added. Not sure who to add yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
+    <div class="muted" style="margin-top:7px">Add a creator you love by @handle or link — we'll confirm the channel on YouTube automatically. Not sure who yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
   </div>`;
   if(!creators.length){
-    h += `<div class="card" style="text-align:center;padding:30px">
-      <b>Your directory is empty.</b>
-      <div class="muted" style="margin:8px 0 14px">Start from Discover, add channels by handle, or load the starter pack — 34 verified silent-comedy creators to get going.</div>
-      <button class="btn" onclick="loadSeed()">Load starter pack</button></div>`;
+    h += `<div class="card" style="text-align:center;padding:34px 24px">
+      <b>Build your creator directory.</b>
+      <div class="muted" style="margin:8px auto 0;max-width:420px">Add the creators you already admire by their @handle or channel link, or head to <a onclick="go('disc')" style="cursor:pointer">Discover</a> to find new ones worth scouting.</div></div>`;
     view().innerHTML = h; return;
   }
   h += `<div class="filters">
@@ -1152,10 +1160,6 @@ function renderDir(){
   h += `</div>`;
   view().innerHTML = h;
 }
-function loadSeed(){
-  creators = SEED.map(s=>({...s, id:null, seed:true}));
-  persist(); renderDir();
-}
 async function editTags(i){
   const t = await uiPrompt("Style tags for "+creators[i].name+" (comma separated):", creators[i].tag||"", {title:"Edit style tags", placeholder:"e.g. silent comedy, prank"});
   if(t===null) return;
@@ -1165,6 +1169,7 @@ async function addCreator(){
   const inp = document.getElementById("addIn").value.trim();
   const country = "Uncategorized";
   if(!inp) return;
+  if(!(await ensureCanScout())) return;
   const parsed = parseChannelInput(inp);
   try{
     sbar(true,"Verifying channel…",30);
@@ -1172,7 +1177,10 @@ async function addCreator(){
     if(creators.some(c=>c.id===meta.id)){ sbar(false); await uiAlert("Already in your directory: "+meta.title); return; }
     creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta});
     persist(); sbar(false); renderDir();
-  }catch(e){ sbar(false); uiAlert(e.message, {title:"Couldn't add creator"}); }
+  }catch(e){ sbar(false);
+    if(isTrialGate(e)){ trialEndedPrompt(); return; }
+    uiAlert(e.message, {title:"Couldn't add creator"});
+  }
 }
 async function removeCreator(i){
   if(!(await uiConfirm("Remove "+creators[i].name+" from your directory?", {title:"Remove creator", okText:"Remove", danger:true}))) return;
@@ -1189,11 +1197,13 @@ async function renderCreator(i){
   view().innerHTML = h + `<div class="muted">Loading channel…</div>`;
   let meta = c.meta;
   if(!meta || !c.id){
+    if(!(await ensureCanScout())){ go("dir"); return; }
     try{
       meta = await resolveChannel(c);
       creators[i] = {...c, id:meta.id, name:meta.title, meta, verify:false};
       persist();
     }catch(e){
+      if(isTrialGate(e)){ trialEndedPrompt(); go("dir"); return; }
       view().innerHTML = h + `<div class="card"><b>${esc(c.name)}</b><div class="muted" style="margin:8px 0">${esc(e.message)}</div>
       <div class="row"><input type="text" id="fixH" value="${esc(c.handle)}" placeholder="correct @handle or channel URL">
       <button class="btn" onclick="fixHandle(${i})">Retry</button></div></div>`;
@@ -1311,7 +1321,7 @@ function updateCost(i, meta){
   const n=+nEl.value||0, depth=Math.min(scanDepth(), meta.videoCount||SCAN_CAP);
   if(n<1){ out.innerHTML=`<span style="color:var(--danger)">Enter at least 1.</span>`; return; }
   if(n>(meta.videoCount||0)){ out.innerHTML=`<span style="color:var(--danger)">This channel only has ${(meta.videoCount||0).toLocaleString()} uploads — lower your number.</span>`; return; }
-  out.textContent = `Checks ${Math.ceil(depth).toLocaleString()} uploads — free, and barely touches your daily limit. A wider range gives a truer all-time ranking.`;
+  out.textContent = `Scouts ${Math.ceil(depth).toLocaleString()} uploads. A wider range gives a truer all-time ranking.`;
 }
 async function fixHandle(i){
   creators[i].handle = document.getElementById("fixH").value.trim().replace(/^@/,"");
@@ -1324,13 +1334,19 @@ async function doScan(i){
   const depth = scanDepth();
   if(n<1){ await uiAlert("Enter at least 1 for “Show top”."); return; }
   if(n>(c.meta.videoCount||0)){ await uiAlert("This channel only has "+(c.meta.videoCount||0).toLocaleString()+" uploads — choose a smaller number."); return; }
+  if(!(await ensureCanScout())) return;
   store.set("ss_scancfg",{n,depth});
+  const wasTrial = usingTrial();
   try{
     const vids = await scanChannel(c.meta, depth);
     if(!vids.length){ await uiAlert("No videos found (or scouting was cancelled early)."); return; }
     store.set("ss_vids_"+c.meta.id, {at:Date.now(), depth, vids});
+    if(wasTrial) noteTrialUse();
     renderCreator(i);
-  }catch(e){ uiAlert(e.message, {title:"Scouting failed"}); }
+  }catch(e){
+    if(isTrialGate(e)){ trialEndedPrompt(); return; }
+    uiAlert(e.message, {title:"Scouting failed"});
+  }
 }
 /* ---------- video workflow (New / Saved / Remade / Skipped) ---------- */
 let vFilter = store.get("ss_vfilter","active");   // active | all | new | saved | remade | skipped
@@ -1357,11 +1373,21 @@ function vFilterBarHTML(i, counts, total){
     ${chip("all","All",total)}
   </div>`;
 }
+/* rank a creator's Shorts by raw reach (views) or by engagement (likes ÷ views).
+   Videos with hidden likes fall to the bottom of an engagement ranking. */
+function engRatio(v){ return (v.likes>0 && v.views>0) ? v.likes/v.views : -1; }
+function rankVids(vids, by){
+  const arr=[...vids];
+  if(by==="engagement") arr.sort((a,b)=> engRatio(b)-engRatio(a) || b.views-a.views);
+  else arr.sort((a,b)=> b.views-a.views);
+  return arr;
+}
 function shortsUI(i, cached){
   const c = creators[i];
   const cfg = store.get("ss_scancfg",{n:25,depth:500});
   const maxDur = store.get("ss_maxdur",183);
-  const all = cached.vids.filter(v=>v.dur>0 && v.dur<=maxDur).sort((a,b)=>b.views-a.views);
+  const rankBy = store.get("ss_rankby","views");
+  const all = rankVids(cached.vids.filter(v=>v.dur>0 && v.dur<=maxDur), rankBy);
   if(!all.length) return `<div class="empty">No Shorts at this length — try a wider Scout range, or switch to Shorts ≤ 3 min.</div>`;
   const counts={new:0,saved:0,remade:0,skipped:0}; all.forEach(v=>counts[vStat(v.id)]++);
   const shown = all.filter(v=>vFilterMatch(vFilter, vStat(v.id)));
@@ -1370,11 +1396,15 @@ function shortsUI(i, cached){
   const autoplay = !(vFilter==="remade"||vFilter==="skipped");
   let h = vFilterBarHTML(i, counts, all.length);
   h += `<div class="filters" style="margin-bottom:12px">
+    <select title="How to rank the Shorts" onchange="store.set('ss_rankby',this.value);refreshShorts(${i})">
+      <option value="views" ${rankBy==="views"?"selected":""}>Ranked by views</option>
+      <option value="engagement" ${rankBy==="engagement"?"selected":""}>Ranked by engagement</option>
+    </select>
     <select onchange="store.set('ss_maxdur',+this.value);renderCreator(${i})">
       <option value="183" ${maxDur===183?"selected":""}>Shorts ≤ 3 min</option>
       <option value="60" ${maxDur===60?"selected":""}>Classic ≤ 60s</option>
     </select>
-    <span class="muted">${capped && shown.length>list.length ? `Top ${list.length} by views · ${shown.length} in this view` : `${list.length} video${list.length!==1?"s":""}`}</span>
+    <span class="muted">${capped && shown.length>list.length ? `Top ${list.length} by ${rankBy==="engagement"?"engagement":"views"} · ${shown.length} in this view` : `${list.length} video${list.length!==1?"s":""}`}</span>
   </div>`;
   if(!list.length) return h + `<div class="empty">${emptyMsg(vFilter)}</div>`;
   h += `<div class="vgrid">` + list.map((v,r)=>statusVidCard(v,{status:vStat(v.id), rank:capped?r+1:0, autoplay, i})).join("") + `</div>`;
@@ -1406,7 +1436,7 @@ function statusVidCard(v, o){
     </div>
     <div class="b">
       <div class="t">${esc(v.title)}</div>
-      <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span></div>
+      <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}${(store.get("ss_rankby","views")==="engagement"&&v.likes>0&&v.views>0)?` · ${(v.likes/v.views*100).toFixed(1)}% liked`:""}</span></div>
       <div class="acts">
         <button class="act ${s==="saved"?"on":""}" title="Save to your board" onclick="vSetCreator(${o.i},'${v.id}','saved')">${ico("star")}</button>
         <button class="act ${s==="remade"?"on":""}" title="Mark as remade" onclick="vSetCreator(${o.i},'${v.id}','remade')">${ico("clapper")}</button>
@@ -1449,10 +1479,11 @@ function exportCSV(i){
   const c=creators[i]; const cached=store.get("ss_vids_"+c.meta.id,null); if(!cached) return;
   const cfg = store.get("ss_scancfg",{n:25});
   const maxDur = store.get("ss_maxdur",183);
-  const shorts = cached.vids.filter(v=>v.dur>0&&v.dur<=maxDur).sort((a,b)=>b.views-a.views).slice(0,cfg.n);
+  const rankBy = store.get("ss_rankby","views");
+  const shorts = rankVids(cached.vids.filter(v=>v.dur>0&&v.dur<=maxDur), rankBy).slice(0,cfg.n);
   const q = s=>'"'+String(s).replace(/"/g,'""')+'"';
-  const rows = [["rank","title","url","views","likes","published","duration_s"].join(",")]
-    .concat(shorts.map((v,r)=>[r+1,q(v.title),"https://www.youtube.com/shorts/"+v.id,v.views,v.likes,v.at,v.dur].join(",")));
+  const rows = [["rank","title","url","views","likes","engagement_pct","published","duration_s"].join(",")]
+    .concat(shorts.map((v,r)=>[r+1,q(v.title),"https://www.youtube.com/shorts/"+v.id,v.views,v.likes,(v.likes>0&&v.views>0?(v.likes/v.views*100).toFixed(2):""),v.at,v.dur].join(",")));
   const blob = new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download=c.meta.title.replace(/[^\w\- ]+/g,"")+"-top-shorts.csv"; a.click();
