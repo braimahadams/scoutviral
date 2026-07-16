@@ -7,7 +7,22 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-15 (SVG icons replace emojis, per-video notes, friendly copy pass)
+**Last updated:** 2026-07-16 (landing copy pass, monetization-ordered countries, 28 niches, cloud merge-not-overwrite, remade confirmation, key removal)
+
+## Product ambition — read this first
+
+ScoutViral is built and treated as **the next big thing**, not a hobby tool.
+Creativity is the future economy and this app serves that wave. Concretely:
+
+- **Copy is premium, confident, professional.** Never "we check…" — say "is
+  verified…". Never surface quotas, API costs, ToS mechanics, or "why we didn't
+  build X" disclaimers; that kills momentum. Users get the shortest confident
+  version; Braimah handles the deeper explanation in his own promotion.
+- **Implement industry standards proactively** (data never lost on sign-out/in,
+  key management, confirmations before actions that move things) without waiting
+  to be asked — then tell Braimah what was added and why, so he learns from it.
+- Simplicity stays (see design principle below) — ambition shows in polish and
+  trustworthiness, not in feature bloat.
 
 ---
 
@@ -41,6 +56,11 @@ no build step, no framework, no npm). This is deliberate. Edit it directly.
   kept failing because this is a static site with no package.json).
 - **Auth:** Google + Email/Password enabled. Firestore syncs each signed-in user's
   directory + remake list. Works in "local mode" (no login) too.
+- **Sync is MERGE, never overwrite** (`mergeCreators`/`mergeLibrary` in index.html):
+  on sign-in, cloud and local are unioned — per-video the newest status wins and a
+  note from either side is always kept; creators dedupe by channel id OR handle
+  (starter-pack entries have no id until scouted). Sign-out never touches local
+  data, so nobody ever loses saves. Don't regress this to a plain overwrite.
 - **Firestore:** `(default)` db, region nam5. Rules in `firestore.rules` lock each
   user to `/users/{uid}` only.
 - **GitHub repo:** https://github.com/braimahadams/scoutviral (branch `main`).
@@ -78,12 +98,36 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   paths to index.html; init shows a "Page not found — brought you home" dialog
   and cleans the URL.
 
+## Landing page (home / `renderHome`)
+
+- A premium **storytelling landing** — Linear/Vercel-tier — is the `home` route.
+  Flow: hero → Discover Worldwide → Scout a Creator → Build Your Board → 5-step
+  workflow (Discover→Scout→Save→Remake→Publish) → final CTA. Global `<footer>` closes it.
+- **All product visuals are pure CSS/DOM mockups** built from the real design
+  tokens (a mock "app window" with a Discover grid + floating Scout Score / Saved
+  cards, a world-pin map, a ranked Top-Shorts list, an idea-board grid). Chosen
+  over generated images on purpose: crisp at any DPI, theme-aware, zero network
+  weight, and always matches the real UI. If you change a real component's look,
+  glance at its `.lp-*` mock twin so they don't drift.
+- **Motion** (`lpInit`/`lpCount`/`lpParallax`, all `lp-`-prefixed): IntersectionObserver
+  scroll-reveal, animated counters (computed live from `COUNTRIES.length`/`NICHES.length`
+  — they can't drift), CSS float on the hero cards, and a gentle desktop-only pointer
+  parallax. All gated behind `prefers-reduced-motion`; the mousemove listener is
+  torn down in `go()` when leaving home. No emojis (SVG `ico()` only), no new deps.
+
 ## Features currently live
 
 - **Discover:** country + niche pickers (local-language search for silent comedy),
   **result count = a number stepper (default 10, 1–500, arrows or type)** like the
-  channel Top-N control; counts >50 paginate. Sort/time filters, free-text search,
-  **🎲 Random** button, per-search quota-cost estimate.
+  channel Top-N control; counts >50 paginate. Sort ("Biggest hits / Best match /
+  Newest first") + time ("All time / Hot this week / Past month / 3 months / year"),
+  free-text search, **Random** button. No quota-cost estimates surfaced (ambition rule).
+  **COUNTRIES (48) are ordered by creator monetization strength** — Worldwide, then
+  US → Australia → Norway → … down to emerging markets, so picking near the top
+  always lands on highly competitive creative scenes. **NICHES (28)** cover ~99% of
+  short-form content (comedy cluster, lifestyle, looks, food/fitness/travel,
+  dance/music/art, DIY/hacks/ASMR, science/facts/motivation/money, tech/gaming/cars,
+  pets/sports). Landing counters read these arrays' lengths automatically.
 - **Video cards:** taller shorts-style ratio. On Discover they **autoplay muted +
   looped while on-screen and stop when scrolled out of view** — driven by an
   `IntersectionObserver` (`observePreviews`/`startPreview`/`stopPreview`/
@@ -107,6 +151,13 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
 - **Per-video notes:** pencil button on any non-New video opens a multiline
   dialog (`editNote`); note stored as `library[id].n`, survives status changes,
   shown in a dashed `.vnote` box on the card. Aggregated in the board's Notes view.
+  On **Discover** cards the pencil appears next to the star the moment an idea is
+  saved (`discPencilHTML`/`discSyncPencil`) and Discover cards carry `data-card` so
+  the note box renders in place.
+- **Marking Remade asks first** (`confirmRemade` → branded uiConfirm) because the
+  card moves off the working list; the copy reassures that any note stays with it.
+- **Settings:** API key has Save + **Remove key** (confirm dialog); privacy line is
+  the confident "Your privacy is protected…" copy. No quota talk anywhere.
 - **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
   Full history, or Custom #) sets how deep to look; "Show top N" sets how many
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing

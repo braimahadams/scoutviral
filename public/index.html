@@ -92,6 +92,8 @@ button.btn:disabled{opacity:.5;cursor:default}
 .star{background:none;border:none;font-size:19px;cursor:pointer;color:var(--ink3);padding:0 2px;line-height:1;transition:transform .1s,color .12s}
 .star:hover{color:var(--gold);transform:scale(1.18)}
 .star.on{color:var(--gold)}
+.star.pencil:hover{color:var(--accent)}
+.star.pencil .i{width:16px;height:16px}
 .rank{position:absolute;top:0;left:0;background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:0 0 12px 0;z-index:2}
 .thumbwrap{position:relative;overflow:hidden}
 .dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px}
@@ -179,14 +181,163 @@ a{color:var(--accent);text-decoration-color:var(--accent-bg)}
 .bk summary{cursor:pointer;font-weight:600;font-size:14px}
 .bk .in{margin-top:12px;font-size:13.5px;color:var(--ink2)}
 .bk .in ol{padding-left:20px;display:flex;flex-direction:column;gap:6px}
-/* landing */
-.hero{padding:64px 12px 40px;text-align:center;max-width:660px;margin:0 auto}
-.hero h2{font-size:clamp(28px,5.5vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.03em;margin-bottom:16px}
-.hero p{font-size:16px;color:var(--ink2);margin-bottom:26px;line-height:1.6}
-.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:34px auto 0;max-width:940px}
-.feat .card{text-align:left}
-.feat .card b{display:block;margin-bottom:6px;font-size:15px}
-.feat .card span{font-size:13.5px;color:var(--ink2);line-height:1.55}
+/* ===================== Landing page ===================== */
+html{scroll-behavior:smooth}
+.lp{position:relative;z-index:1}
+.lp-glow{position:fixed;top:-160px;left:50%;transform:translateX(-50%);width:min(1200px,130vw);height:680px;pointer-events:none;z-index:0;
+  background:radial-gradient(56% 58% at 50% 42%,var(--accent-bg),transparent 68%);opacity:.9}
+.lp-reveal{opacity:0;transform:translateY(24px);transition:opacity .75s cubic-bezier(.22,.61,.36,1),transform .75s cubic-bezier(.22,.61,.36,1)}
+.lp-reveal.d1{transition-delay:.08s}.lp-reveal.d2{transition-delay:.16s}.lp-reveal.d3{transition-delay:.24s}
+.lp-reveal.in{opacity:1;transform:none}
+/* hero */
+.lp-hero{text-align:center;max-width:840px;margin:0 auto;padding:46px 0 8px}
+.lp-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink2);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:6px 14px 6px 12px;margin-bottom:24px;box-shadow:var(--shadow)}
+.lp-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-bg)}
+.lp-hero h1{font-size:clamp(33px,6.4vw,64px);line-height:1.03;font-weight:800;letter-spacing:-.038em;margin-bottom:20px}
+.lp-hero h1 .g{background:linear-gradient(115deg,var(--accent),#ff9d5c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lp-sub{font-size:clamp(15px,1.9vw,19px);color:var(--ink2);line-height:1.6;max-width:588px;margin:0 auto 30px}
+.lp-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.lp-btn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:13px 22px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid transparent;transition:transform .13s,background .15s,border-color .15s,box-shadow .15s}
+.lp-btn .i{width:17px;height:17px}
+.lp-btn.p{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(242,85,90,.34)}
+.lp-btn.p:hover{background:var(--accent-h);transform:translateY(-2px);box-shadow:0 12px 32px rgba(242,85,90,.46)}
+.lp-btn.s{background:var(--card);color:var(--ink);border-color:var(--line)}
+.lp-btn.s:hover{border-color:var(--ink3);transform:translateY(-2px)}
+.lp-trust{margin-top:20px;font-size:12.5px;color:var(--ink3);display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.lp-trust span{display:inline-flex;align-items:center;gap:6px}
+.lp-trust .i{width:14px;height:14px;color:var(--ok)}
+/* hero product stage */
+.lp-stage{position:relative;max-width:940px;margin:44px auto 0;padding:0 4px}
+.lp-window{position:relative;border:1px solid var(--line);border-radius:18px;background:var(--card);box-shadow:0 40px 90px -20px rgba(0,0,0,.6),0 8px 24px rgba(0,0,0,.3);overflow:hidden;will-change:transform}
+.lp-winbar{display:flex;align-items:center;gap:14px;padding:11px 16px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.lp-dots{display:flex;gap:6px}.lp-dots i{width:11px;height:11px;border-radius:50%;background:var(--line)}
+.lp-winnav{display:flex;gap:5px;font-size:12.5px}
+.lp-winnav span{padding:5px 11px;border-radius:9px;color:var(--ink3);font-weight:500}
+.lp-winnav span.on{color:var(--accent);background:var(--accent-bg);font-weight:600}
+.lp-winpill{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:5px 12px}
+.lp-winpill b{color:var(--ink);font-weight:600}
+.lp-winbody{padding:18px}
+.lp-chiprow{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.lp-fchip{font-size:12px;font-weight:500;color:var(--ink2);background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;white-space:nowrap}
+.lp-fchip.on{color:#fff;background:var(--accent);border-color:var(--accent)}
+.lp-vrow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.lp-vcard{position:relative;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--card2);box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.lp-poster{position:relative;aspect-ratio:9/16;background-size:cover;background-position:center}
+.lp-poster::before{content:"";position:absolute;inset:0;background:radial-gradient(52% 34% at 50% 26%,rgba(255,255,255,.22),transparent 62%)}
+.lp-poster::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent 42%)}
+.lp-poster>*{position:absolute;z-index:2}
+.lp-rank{top:0;left:0;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:0 0 11px 0}
+.lp-star{top:7px;right:7px;width:26px;height:26px;border-radius:8px;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;color:#fff}
+.lp-star.on{color:var(--gold)}.lp-star .i{width:15px;height:15px}.lp-star.on .i{fill:currentColor}
+.lp-play{top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff}
+.lp-play .i{width:16px;height:16px;margin-left:2px}
+.lp-dur{right:7px;bottom:7px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:6px}
+.lp-vw{left:8px;bottom:7px;color:#fff;font-weight:800;font-size:14px;text-shadow:0 1px 4px rgba(0,0,0,.6);line-height:1}
+.lp-vw small{display:block;font-size:9.5px;font-weight:600;opacity:.85;margin-top:1px}
+/* floating cards */
+.lp-floatwrap{position:absolute;z-index:4;will-change:transform}
+.lp-float{animation:lpfloat 6.5s ease-in-out infinite}
+.lp-floatwrap.f2 .lp-float{animation-duration:7.8s;animation-delay:-2s}
+@keyframes lpfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+.lp-mini{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 44px -8px rgba(0,0,0,.5);padding:13px 15px}
+.lp-score{position:absolute;top:64px;left:-26px;width:186px}
+.lp-score .lp-mini{display:flex;align-items:center;gap:13px}
+.lp-scoreN{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--ok)}
+.lp-scoreN span{font-size:13px;color:var(--ink3);font-weight:600}
+.lp-scoreL{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:3px}
+.lp-scoreV{font-size:12.5px;font-weight:600;color:var(--ink)}
+.lp-scoreV .i{width:13px;height:13px;color:var(--accent);vertical-align:-.12em}
+.lp-saved{position:absolute;bottom:40px;right:-22px;width:210px}
+.lp-saved .lp-mini{display:flex;align-items:center;gap:11px}
+.lp-savedIc{width:34px;height:34px;border-radius:10px;background:var(--accent-bg);color:var(--gold);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.lp-savedIc .i{width:18px;height:18px;fill:currentColor}
+.lp-saved b{font-size:13px;display:block}.lp-saved span{font-size:11.5px;color:var(--ink3)}
+/* section shell */
+.lp-feat{display:grid;grid-template-columns:1fr 1.12fr;gap:52px;align-items:center;max-width:1040px;margin:0 auto;padding:66px 0}
+.lp-feat.rev .lp-txt{order:2}
+.lp-kicker{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:14px}
+.lp-kicker .i{width:14px;height:14px}
+.lp-feat h2{font-size:clamp(24px,3.3vw,35px);font-weight:800;letter-spacing:-.028em;line-height:1.12;margin:0 0 15px}
+.lp-feat .lp-p{font-size:15.5px;color:var(--ink2);line-height:1.66;max-width:430px}
+.lp-stats{display:flex;gap:30px;margin-top:24px}
+.lp-stats .n{font-size:27px;font-weight:800;letter-spacing:-.02em}
+.lp-stats .l{font-size:12px;color:var(--ink3);margin-top:2px}
+.lp-visual{position:relative}
+.lp-panel{border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:0 24px 60px -18px rgba(0,0,0,.5);overflow:hidden}
+.lp-panelHd{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--line);background:var(--bg2);font-size:12.5px;font-weight:600;color:var(--ink2)}
+.lp-panelHd .i{width:15px;height:15px;color:var(--accent)}
+.lp-panelBd{padding:15px}
+/* discover visual — world map dots + niche chips */
+.lp-map{position:relative;height:150px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);overflow:hidden;margin-bottom:13px}
+.lp-pin{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent-bg);animation:lppin 2.6s ease-out infinite}
+.lp-pin::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid var(--accent);opacity:.35}
+@keyframes lppin{0%{box-shadow:0 0 0 0 rgba(242,85,90,.4)}70%,100%{box-shadow:0 0 0 12px rgba(242,85,90,0)}}
+.lp-nichegrid{display:flex;flex-wrap:wrap;gap:7px}
+/* scout visual — ranked list */
+.lp-rankrow{display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid var(--line)}
+.lp-rankrow:last-child{border-bottom:none}
+.lp-rankn{width:22px;height:22px;border-radius:7px;background:var(--bg2);color:var(--ink2);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.lp-rankrow.top .lp-rankn{background:var(--accent);color:#fff}
+.lp-rankthumb{width:34px;height:46px;border-radius:6px;flex:0 0 auto;background-size:cover;background-position:center}
+.lp-rankmeta{flex:1;min-width:0}
+.lp-rankmeta b{font-size:13px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-rankmeta span{font-size:11.5px;color:var(--ink3)}
+.lp-rankvw{font-size:14px;font-weight:800;letter-spacing:-.01em;flex:0 0 auto}
+.lp-bar{height:4px;border-radius:3px;background:var(--accent);margin-top:5px;opacity:.55}
+/* board visual */
+.lp-boardtabs{display:flex;gap:6px;margin-bottom:13px}
+.lp-boardtab{font-size:12px;font-weight:600;padding:6px 12px;border-radius:9px;color:var(--ink3);background:var(--bg2);border:1px solid var(--line)}
+.lp-boardtab.on{color:var(--accent);background:var(--accent-bg);border-color:transparent}
+.lp-boardgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.lp-bcard{position:relative;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.lp-bcard .lp-poster{aspect-ratio:9/16}
+.lp-badge{position:absolute;bottom:6px;left:6px;z-index:3;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+.lp-badge .i{width:10px;height:10px;fill:currentColor}
+.lp-badge.sv{background:var(--gold);color:#1a1a1f}
+.lp-badge.rm{background:var(--ok);color:#08130d}
+.lp-bnote{grid-column:1/-1;background:var(--bg2);border:1px dashed var(--line);border-radius:9px;padding:9px 11px;font-size:11.5px;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.lp-bnote .i{width:14px;height:14px;color:var(--ink3);flex:0 0 auto}
+/* workflow */
+.lp-flow{max-width:1000px;margin:0 auto;padding:56px 0 40px;text-align:center}
+.lp-flow h2{font-size:clamp(24px,3.3vw,35px);font-weight:800;letter-spacing:-.028em;margin-bottom:10px}
+.lp-flow .lp-lead{font-size:15.5px;color:var(--ink2);max-width:520px;margin:0 auto}
+.lp-steps{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-top:38px}
+.lp-step{flex:1;max-width:170px}
+.lp-stepic{width:54px;height:54px;border-radius:15px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--accent);margin:0 auto 13px;box-shadow:var(--shadow);transition:transform .2s,border-color .2s}
+.lp-step:hover .lp-stepic{transform:translateY(-3px);border-color:var(--accent)}
+.lp-stepic .i{width:22px;height:22px}
+.lp-step b{font-size:14.5px;font-weight:700;display:block}
+.lp-step span{font-size:12.5px;color:var(--ink3);line-height:1.5;display:block;margin-top:4px}
+.lp-arrow{color:var(--ink3);margin-top:15px;flex:0 0 auto}.lp-arrow .i{width:20px;height:20px}
+/* final CTA */
+.lp-final{position:relative;text-align:center;max-width:760px;margin:34px auto 8px;padding:66px 28px;border:1px solid var(--line);border-radius:26px;overflow:hidden;
+  background:radial-gradient(80% 130% at 50% 0%,var(--accent-bg),transparent 58%),var(--card)}
+.lp-final h2{font-size:clamp(26px,4.2vw,42px);font-weight:800;letter-spacing:-.032em;line-height:1.08;margin-bottom:14px}
+.lp-final p{color:var(--ink2);font-size:16px;line-height:1.6;margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto}
+@media (max-width:820px){
+  .lp-feat{grid-template-columns:1fr;gap:30px;padding:48px 0}
+  .lp-feat.rev .lp-txt{order:0}
+  .lp-feat .lp-p{max-width:none}
+  .lp-score{left:-6px;top:40px;width:158px}
+  .lp-saved{right:-4px;width:180px}
+}
+@media (max-width:640px){
+  .lp-hero{padding:30px 0 4px}
+  .lp-stage{margin-top:36px}
+  .lp-vrow{grid-template-columns:repeat(3,1fr)}
+  .lp-vrow .lp-vcard:nth-child(4){display:none}
+  .lp-floatwrap{display:none}
+  .lp-steps{flex-direction:column;align-items:stretch;gap:0;max-width:320px;margin:30px auto 0}
+  .lp-step{display:flex;align-items:center;text-align:left;gap:15px;max-width:none}
+  .lp-stepic{margin:0;flex:0 0 auto}
+  .lp-arrow{margin:2px 0 2px 27px;transform:rotate(90deg)}
+  .lp-boardgrid{grid-template-columns:repeat(3,1fr)}
+}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .lp-reveal{opacity:1!important;transform:none!important;transition:none}
+  .lp-float,.lp-pin{animation:none!important}
+}
 footer{max-width:1180px;margin:48px auto 0;padding:20px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.6}
 /* mobile: bottom tab bar */
 @media (max-width:720px){
@@ -225,8 +376,7 @@ footer{max-width:1180px;margin:48px auto 0;padding:20px 18px;border-top:1px soli
   Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a>. This site uses YouTube API Services with an API key you provide; your use is subject to the
   <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a> and
   <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
-  Your API key stays in your browser and is sent only to Google. Video caches stay on your device.
-  No cookies, no tracking, no ads — everything you save lives on your device (and in your own account if you sign in).
+  Your API key stays in your browser and is sent only to Google.
 </footer>
 <div class="statusbar" id="sbar">
   <span id="stext"></span>
@@ -284,45 +434,58 @@ const SEED = [
 ];
 
 /* ---------- Discover: countries (regionCode + language + optional local silent-comedy queries) ---------- */
+/* Ordered by how well creators get paid in each market (strongest monetization
+   first, after Worldwide). Top picks = the most competitive, most creative
+   scenes; scroll down for emerging markets. */
 const COUNTRIES = [
  {n:"Worldwide",rc:"",lang:""},
  {n:"United States",rc:"US",lang:"en"},
+ {n:"Australia",rc:"AU",lang:"en"},
+ {n:"Norway",rc:"NO",lang:"no",local:[["Comedy without words","komedie uten ord"]]},
+ {n:"Switzerland",rc:"CH",lang:"de",local:[["Comedy without words","Comedy ohne Worte"]]},
+ {n:"Canada",rc:"CA",lang:"en"},
  {n:"United Kingdom",rc:"GB",lang:"en"},
- {n:"Hungary",rc:"HU",lang:"hu",local:[["Funny videos","vicces videók"],["Humor without words","humor beszéd nélkül"]]},
- {n:"Japan",rc:"JP",lang:"ja",local:[["Funny-face comedy","顔芸"],["Silent comedy","無言 コメディ"]]},
- {n:"South Korea",rc:"KR",lang:"ko",local:[["Physical gag comedy","몸개그"],["Facial-expression gags","표정 개그"]]},
- {n:"Taiwan / Chinese",rc:"TW",lang:"zh-Hant",local:[["Funny no-dialogue clips","搞笑 无对白"],["Silent comedy","无声喜剧"]]},
- {n:"India",rc:"IN",lang:"hi",local:[["Comedy without speaking","बिना बोले कॉमेडी"],["No-dialogue funny","बिना डायलॉग funny"]]},
- {n:"Pakistan",rc:"PK",lang:"ur",local:[["Silent comedy","خاموش کامیڈی"]]},
- {n:"Turkey",rc:"TR",lang:"tr",local:[["Silent comedy","sessiz komedi"],["Funny facial expressions","yüz ifadesi komik"]]},
- {n:"Russia",rc:"RU",lang:"ru",local:[["Jokes without words","без слов приколы"],["Facial-expression humor","мимика юмор"]]},
- {n:"Kazakhstan",rc:"KZ",lang:"ru",local:[["Jokes without words","без слов приколы"]]},
- {n:"Brazil",rc:"BR",lang:"pt",local:[["Comedy without talking","comédia sem falar"],["Humor without words","humor sem palavras"]]},
- {n:"Mexico",rc:"MX",lang:"es",local:[["Comedy without talking","comedia sin hablar"],["Humor without words","humor sin palabras"]]},
- {n:"Spain",rc:"ES",lang:"es",local:[["Comedy without talking","comedia sin hablar"]]},
- {n:"Argentina",rc:"AR",lang:"es",local:[["Funny gestures","gestos graciosos"]]},
- {n:"Colombia",rc:"CO",lang:"es",local:[["Comedy without talking","comedia sin hablar"]]},
- {n:"Dominican Republic",rc:"DO",lang:"es",local:[["Humor without words","humor sin palabras"]]},
- {n:"Egypt",rc:"EG",lang:"ar",local:[["Comedy without words","كوميديا بدون كلام"],["Silent comedy","كوميديا صامتة"]]},
- {n:"Saudi Arabia",rc:"SA",lang:"ar",local:[["Silent pranks","مقالب صامتة"]]},
- {n:"Morocco",rc:"MA",lang:"ar",local:[["Comedy without words","كوميديا بدون كلام"]]},
- {n:"Ethiopia",rc:"ET",lang:"am",local:[["Comedy shorts (Amharic)","ኮሜዲ shorts"],["Ethiopian silent comedy","ethiopian silent comedy"]]},
- {n:"Nigeria",rc:"NG",lang:"en",local:[["No-talking comedy","no talking comedy nigeria"]]},
- {n:"Kenya",rc:"KE",lang:"sw",local:[["Comedy (Swahili)","vichekesho"]]},
- {n:"South Africa",rc:"ZA",lang:"en"},
- {n:"Indonesia",rc:"ID",lang:"id",local:[["Comedy without words","komedi tanpa kata"]]},
- {n:"Vietnam",rc:"VN",lang:"vi",local:[["Comedy without words","hài không lời"]]},
- {n:"Thailand",rc:"TH",lang:"th",local:[["Comedy without talking","ตลกไม่พูด"]]},
- {n:"Philippines",rc:"PH",lang:"tl",local:[["Comedy without words","komedya walang salita"]]},
- {n:"France",rc:"FR",lang:"fr",local:[["Comedy without words","comédie sans paroles"]]},
+ {n:"Denmark",rc:"DK",lang:"da",local:[["Comedy without words","komedie uden ord"]]},
+ {n:"New Zealand",rc:"NZ",lang:"en"},
  {n:"Germany",rc:"DE",lang:"de",local:[["Comedy without words","Comedy ohne Worte"]]},
- {n:"Italy",rc:"IT",lang:"it",local:[["Comedy without words","commedia senza parole"]]},
- {n:"Poland",rc:"PL",lang:"pl",local:[["Comedy without words","komedia bez słów"]]},
  {n:"Netherlands",rc:"NL",lang:"nl"},
  {n:"Sweden",rc:"SE",lang:"sv"},
- {n:"Australia",rc:"AU",lang:"en"},
- {n:"Canada",rc:"CA",lang:"en"},
- {n:"New Zealand",rc:"NZ",lang:"en"},
+ {n:"Ireland",rc:"IE",lang:"en"},
+ {n:"Austria",rc:"AT",lang:"de",local:[["Comedy without words","Comedy ohne Worte"]]},
+ {n:"Finland",rc:"FI",lang:"fi",local:[["Funny videos","hauskat videot"]]},
+ {n:"Belgium",rc:"BE",lang:"nl"},
+ {n:"France",rc:"FR",lang:"fr",local:[["Comedy without words","comédie sans paroles"]]},
+ {n:"Japan",rc:"JP",lang:"ja",local:[["Funny-face comedy","顔芸"],["Silent comedy","無言 コメディ"]]},
+ {n:"South Korea",rc:"KR",lang:"ko",local:[["Physical gag comedy","몸개그"],["Facial-expression gags","표정 개그"]]},
+ {n:"Italy",rc:"IT",lang:"it",local:[["Comedy without words","commedia senza parole"]]},
+ {n:"Spain",rc:"ES",lang:"es",local:[["Comedy without talking","comedia sin hablar"]]},
+ {n:"Israel",rc:"IL",lang:"iw",local:[["Comedy without words","קומדיה בלי מילים"]]},
+ {n:"Singapore",rc:"SG",lang:"en"},
+ {n:"United Arab Emirates",rc:"AE",lang:"ar",local:[["Silent comedy","كوميديا صامتة"]]},
+ {n:"Saudi Arabia",rc:"SA",lang:"ar",local:[["Silent pranks","مقالب صامتة"]]},
+ {n:"Taiwan / Chinese",rc:"TW",lang:"zh-Hant",local:[["Funny no-dialogue clips","搞笑 无对白"],["Silent comedy","无声喜剧"]]},
+ {n:"Poland",rc:"PL",lang:"pl",local:[["Comedy without words","komedia bez słów"]]},
+ {n:"Hungary",rc:"HU",lang:"hu",local:[["Funny videos","vicces videók"],["Humor without words","humor beszéd nélkül"]]},
+ {n:"Brazil",rc:"BR",lang:"pt",local:[["Comedy without talking","comédia sem falar"],["Humor without words","humor sem palavras"]]},
+ {n:"Mexico",rc:"MX",lang:"es",local:[["Comedy without talking","comedia sin hablar"],["Humor without words","humor sin palabras"]]},
+ {n:"Argentina",rc:"AR",lang:"es",local:[["Funny gestures","gestos graciosos"]]},
+ {n:"Colombia",rc:"CO",lang:"es",local:[["Comedy without talking","comedia sin hablar"]]},
+ {n:"Turkey",rc:"TR",lang:"tr",local:[["Silent comedy","sessiz komedi"],["Funny facial expressions","yüz ifadesi komik"]]},
+ {n:"Russia",rc:"RU",lang:"ru",local:[["Jokes without words","без слов приколы"],["Facial-expression humor","мимика юмор"]]},
+ {n:"South Africa",rc:"ZA",lang:"en"},
+ {n:"Thailand",rc:"TH",lang:"th",local:[["Comedy without talking","ตลกไม่พูด"]]},
+ {n:"Dominican Republic",rc:"DO",lang:"es",local:[["Humor without words","humor sin palabras"]]},
+ {n:"India",rc:"IN",lang:"hi",local:[["Comedy without speaking","बिना बोले कॉमेडी"],["No-dialogue funny","बिना डायलॉग funny"]]},
+ {n:"Indonesia",rc:"ID",lang:"id",local:[["Comedy without words","komedi tanpa kata"]]},
+ {n:"Vietnam",rc:"VN",lang:"vi",local:[["Comedy without words","hài không lời"]]},
+ {n:"Philippines",rc:"PH",lang:"tl",local:[["Comedy without words","komedya walang salita"]]},
+ {n:"Egypt",rc:"EG",lang:"ar",local:[["Comedy without words","كوميديا بدون كلام"],["Silent comedy","كوميديا صامتة"]]},
+ {n:"Morocco",rc:"MA",lang:"ar",local:[["Comedy without words","كوميديا بدون كلام"]]},
+ {n:"Kazakhstan",rc:"KZ",lang:"ru",local:[["Jokes without words","без слов приколы"]]},
+ {n:"Nigeria",rc:"NG",lang:"en",local:[["No-talking comedy","no talking comedy nigeria"]]},
+ {n:"Kenya",rc:"KE",lang:"sw",local:[["Comedy (Swahili)","vichekesho"]]},
+ {n:"Pakistan",rc:"PK",lang:"ur",local:[["Silent comedy","خاموش کامیڈی"]]},
+ {n:"Ethiopia",rc:"ET",lang:"am",local:[["Comedy shorts (Amharic)","ኮሜዲ shorts"],["Ethiopian silent comedy","ethiopian silent comedy"]]},
 ];
 
 /* ---------- Discover: niches (English label -> base query; silent comedy uses local packs when available) ---------- */
@@ -331,17 +494,28 @@ const NICHES = [
  {n:"Funny face reactions",q:"funny face reaction shorts"},
  {n:"Physical comedy & pranks",q:"physical comedy prank"},
  {n:"Skits & sketches",q:"comedy skit shorts"},
+ {n:"Couples & family comedy",q:"couple prank family comedy shorts"},
+ {n:"Magic & illusions",q:"magic trick illusion shorts"},
  {n:"Lifestyle & vlogs",q:"lifestyle vlog shorts"},
+ {n:"Storytime",q:"storytime shorts"},
  {n:"Fashion & outfits",q:"fashion outfit style"},
  {n:"Beauty & makeup",q:"makeup tutorial shorts"},
  {n:"Food & cooking",q:"street food cooking"},
  {n:"Fitness & gym",q:"fitness workout shorts"},
  {n:"Travel",q:"travel destinations shorts"},
- {n:"Tech & gadgets",q:"tech gadgets shorts"},
- {n:"Gaming",q:"gaming funny moments shorts"},
  {n:"Dance",q:"dance challenge shorts"},
  {n:"Music & covers",q:"music cover shorts"},
+ {n:"Art & drawing",q:"satisfying art drawing shorts"},
  {n:"DIY & crafts",q:"diy crafts shorts"},
+ {n:"Life hacks",q:"life hacks shorts"},
+ {n:"ASMR & satisfying",q:"asmr satisfying shorts"},
+ {n:"Science & experiments",q:"science experiment shorts"},
+ {n:"Facts & learning",q:"amazing facts did you know shorts"},
+ {n:"Motivation & mindset",q:"motivation mindset shorts"},
+ {n:"Money & side hustles",q:"money tips side hustle shorts"},
+ {n:"Tech & gadgets",q:"tech gadgets shorts"},
+ {n:"Gaming",q:"gaming funny moments shorts"},
+ {n:"Cars & bikes",q:"cars supercars shorts"},
  {n:"Pets & animals",q:"funny pets shorts"},
  {n:"Sports skills",q:"sports skills shorts"},
 ];
@@ -395,6 +569,17 @@ async function editNote(id){
     if(e.n && cp) cp.insertAdjacentHTML("beforebegin", noteHTML(id));
   }
 }
+/* Discover cards: a pencil appears next to the star the moment an idea is saved */
+function discPencilHTML(id){ return `<button class="star pencil" title="Add a note (props, ideas, anything)" onclick="editNote('${id}')">${ico("pencil")}</button>`; }
+function discSyncPencil(id, starBtn){
+  const row=starBtn.parentElement; if(!row) return;
+  const ex=row.querySelector(".pencil");
+  if(vStat(id)==="saved"){ if(!ex) starBtn.insertAdjacentHTML("beforebegin", discPencilHTML(id)); }
+  else{
+    if(ex) ex.remove();
+    const card=starBtn.closest(".vid"), nt=card&&card.querySelector(".vnote"); if(nt) nt.remove();
+  }
+}
 
 /* ---------- optional Firebase sync ---------- */
 let fb = null, user = null, cloudTimer = null, applyingCloud = false;
@@ -407,17 +592,50 @@ window.onFirebaseReady = function(api){
       try{
         const data = await fb.load(u.uid);
         if(data && (data.creators||data.library||data.remakes)){
+          /* MERGE cloud + local — never overwrite. Whatever a user saved while
+             signed out (or on another device) is always kept. */
           applyingCloud = true;
-          if(data.creators){ creators = data.creators; store.set("ss_creators",creators); }
-          if(data.library){ library = data.library; store.set("ss_library",library); }
-          else if(data.remakes){ library = migrateRemakes(data.remakes); store.set("ss_library",library); }
+          creators = mergeCreators(creators, data.creators||[]);
+          library  = mergeLibrary(library, data.library || (data.remakes?migrateRemakes(data.remakes):{}));
+          store.set("ss_creators",creators); store.set("ss_library",library);
           applyingCloud = false;
           render();
-        } else { cloudSave(); }
-      }catch(e){ console.warn("cloud load:",e.message); }
+        }
+        cloudSave(); // push the merged state back up
+      }catch(e){ applyingCloud=false; console.warn("cloud load:",e.message); }
     }
   }); }
 };
+/* union of two creator lists — two entries are the same creator if their
+   channel ids OR handles match (starter-pack entries have no id until scouted) */
+function mergeCreators(local, cloud){
+  const idOf=c=>c.id||(c.meta&&c.meta.id)||null;
+  const hOf=c=>String(c.handle||"").toLowerCase().replace(/^@/,"")||null;
+  const out=[], byId={}, byH={};
+  [...(cloud||[]),...(local||[])].forEach(c=>{
+    if(!c) return;
+    const id=idOf(c), h=hOf(c);
+    let ix = (id&&byId[id]!==undefined)?byId[id] : (h&&byH[h]!==undefined)?byH[h] : undefined;
+    if(ix===undefined){ ix=out.length; out.push(c); }
+    else if(c.meta && !out[ix].meta){ out[ix]=c; } // prefer the scouted copy
+    if(id) byId[id]=ix;
+    if(h) byH[h]=ix;
+  });
+  return out;
+}
+/* per-video: newest status wins, and a note from either side is never dropped */
+function mergeLibrary(local, cloud){
+  const out={...(cloud||{})};
+  Object.entries(local||{}).forEach(([id,e])=>{
+    if(!e) return;
+    const c=out[id];
+    if(!c){ out[id]=e; return; }
+    const winner=( (e.u||0) >= (c.u||0) ) ? {...e} : {...c};
+    const note=e.n||c.n; if(note && !winner.n) winner.n=note;
+    out[id]=winner;
+  });
+  return out;
+}
 function cloudSave(){
   if(!fb || !user || applyingCloud) return;
   clearTimeout(cloudTimer);
@@ -480,6 +698,10 @@ const ICONS = {
   note:'<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><path d="M15 3v6h6"/>',
   plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
   check:'<path d="M20 6 9 17l-5-5"/>',
+  arrowr:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  play:'<polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/>',
+  rocket:'<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+  eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
 };
 function ico(name, cls){ return `<svg class="i${cls?" "+cls:""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||""}</svg>`; }
 
@@ -544,6 +766,7 @@ async function scanChannel(meta, depth){
 let route = {v:"home"};
 function go(v,extra){ route={v,...(extra||{})};
   if(typeof stopAllPreviews==="function") stopAllPreviews();
+  if(v!=="home" && window._lpMove){ window.removeEventListener("mousemove",window._lpMove); window._lpMove=null; }
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   render(); window.scrollTo(0,0); }
 const view = ()=>document.getElementById("view");
@@ -557,18 +780,196 @@ function render(){
 }
 
 /* ---------- Landing ---------- */
+const LP_G=["linear-gradient(158deg,#3a2b52,#d24a63)","linear-gradient(158deg,#123a4a,#1fae9c)","linear-gradient(158deg,#4a2a12,#f0a63e)","linear-gradient(158deg,#241a3a,#7a4bd0)","linear-gradient(158deg,#3a1220,#f2555a)","linear-gradient(158deg,#14233a,#3a7bd5)","linear-gradient(158deg,#123322,#3ec47a)","linear-gradient(158deg,#3a1430,#e0559a)"];
+function lpPoster(g,o){o=o||{};return `<div class="lp-poster" style="background-image:${g}">`+
+  (o.rank?`<div class="lp-rank">#${o.rank}</div>`:"")+
+  (o.star?`<div class="lp-star ${o.on?"on":""}">${ico("star")}</div>`:"")+
+  (o.play?`<div class="lp-play">${ico("play")}</div>`:"")+
+  (o.dur?`<div class="lp-dur">${o.dur}s</div>`:"")+
+  (o.views?`<div class="lp-vw">${o.views}<small>views</small></div>`:"")+
+  (o.badge?`<div class="lp-badge ${o.badge.c}">${ico(o.badge.i)} ${o.badge.t}</div>`:"")+
+  `</div>`;}
+
 function renderHome(){
+  const heroCards=[
+    lpPoster(LP_G[4],{rank:1,star:1,on:1,play:1,dur:14,views:"8.4M"}),
+    lpPoster(LP_G[1],{rank:2,star:1,play:1,dur:22,views:"5.1M"}),
+    lpPoster(LP_G[2],{rank:3,star:1,play:1,dur:9,views:"3.7M"}),
+    lpPoster(LP_G[3],{star:1,play:1,dur:31,views:"2.2M"})
+  ].map(p=>`<div class="lp-vcard">${p}</div>`).join("");
+
+  const nicheChips=["Silent comedy","Funny faces","Food & cooking","Dance","Fashion","Pets"]
+    .map((n,i)=>`<span class="lp-fchip ${i===0?"on":""}">${n}</span>`).join("");
+  const pins=[[18,40],[31,30],[44,58],[52,34],[63,48],[71,28],[78,62],[86,42],[26,66],[58,72]]
+    .map(([l,t],i)=>`<span class="lp-pin" style="left:${l}%;top:${t}%;animation-delay:${(i*0.26).toFixed(2)}s"></span>`).join("");
+
+  const rankRows=[
+    {n:1,t:"POV: you finally tried it",v:"8.4M",thumb:LP_G[4],w:100},
+    {n:2,t:"He didn't expect that…",v:"5.1M",thumb:LP_G[1],w:71},
+    {n:3,t:"Wait for the very end",v:"3.7M",thumb:LP_G[2],w:52},
+    {n:4,t:"One take. No cuts.",v:"2.2M",thumb:LP_G[3],w:37}
+  ].map(r=>`<div class="lp-rankrow ${r.n<=3?"top":""}">
+      <div class="lp-rankn">${r.n}</div>
+      <div class="lp-rankthumb" style="background-image:${r.thumb}"></div>
+      <div class="lp-rankmeta"><b>${esc(r.t)}</b><span>${r.v} views</span><div class="lp-bar" style="width:${r.w}%"></div></div>
+      <div class="lp-rankvw">${r.v}</div>
+    </div>`).join("");
+
+  const boardCards=
+    `<div class="lp-bcard">${lpPoster(LP_G[0],{badge:{c:"sv",i:"star",t:"Saved"}})}</div>`+
+    `<div class="lp-bcard">${lpPoster(LP_G[5],{badge:{c:"rm",i:"check",t:"Remade"}})}</div>`+
+    `<div class="lp-bcard">${lpPoster(LP_G[6],{badge:{c:"sv",i:"star",t:"Saved"}})}</div>`+
+    `<div class="lp-bnote">${ico("note")} Props: ring light, red hoodie, slow-mo at the reveal</div>`;
+
+  const steps=[
+    {i:"search",t:"Discover",d:"Pick a country and niche"},
+    {i:"chart",t:"Scout",d:"Rank a creator's best Shorts"},
+    {i:"star",t:"Save",d:"Board the ideas worth filming"},
+    {i:"clapper",t:"Remake",d:"Re-film it in your own style"},
+    {i:"rocket",t:"Publish",d:"Post it and grow"}
+  ];
+  const stepsHtml=steps.map((s,i)=>
+    `<div class="lp-step"><div class="lp-stepic">${ico(s.i)}</div><b>${s.t}</b><span>${s.d}</span></div>`+
+    (i<steps.length-1?`<div class="lp-arrow">${ico("arrowr")}</div>`:"")
+  ).join("");
+
   view().innerHTML = `
-  <div class="hero">
-    <h2>Find your next video idea — proven, not guessed.</h2>
-    <p>Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral for real channels, and save the ones worth re-filming in your own style.</p>
-    <button class="btn" style="font-size:15px;padding:11px 22px" onclick="go('disc')">Start discovering →</button>
-  </div>
-  <div class="feat">
-    <div class="card"><div class="fico">${ico("globe")}</div><b>Discover worldwide</b><span>Pick a country and a niche — Hungary × silent comedy, Brazil × food, Japan × funny faces. Local-language search finds creators English search never will.</span></div>
-    <div class="card"><div class="fico">${ico("chart")}</div><b>Rank any channel's top Shorts</b><span>Scout a channel's history and see its most-viewed Shorts ranked — top 10, 25, 100, however many you want.</span></div>
-    <div class="card"><div class="fico">${ico("star")}</div><b>Build your idea board</b><span>Watch inside the app, save the ideas you want to re-film in your own style, and sign in to keep your board synced everywhere.</span></div>
+  <div class="lp-glow"></div>
+  <div class="lp">
+    <!-- HERO -->
+    <section class="lp-hero">
+      <div class="lp-eyebrow lp-reveal"><span class="dot"></span> Proven ideas, not guesswork</div>
+      <h1 class="lp-reveal d1">Find your next video idea —<br><span class="g">already proven to go viral.</span></h1>
+      <p class="lp-sub lp-reveal d2">ScoutViral is the creative tool for short-form creators. Discover the Shorts that actually blew up in any country and niche, then remake the best ones in your own style.</p>
+      <div class="lp-cta lp-reveal d3">
+        <button class="lp-btn p" onclick="go('disc')">Start discovering ${ico("arrowr")}</button>
+        <button class="lp-btn s" onclick="lpScroll('lp-how')">See how it works</button>
+      </div>
+      <div class="lp-trust lp-reveal d3">
+        <span>${ico("check")} Free to use</span>
+        <span>${ico("check")} No sign-up to start</span>
+        <span>${ico("check")} Nothing tracked</span>
+      </div>
+    </section>
+
+    <!-- HERO PRODUCT STAGE -->
+    <div class="lp-stage lp-reveal d2">
+      <div class="lp-window" data-depth="5">
+        <div class="lp-winbar">
+          <div class="lp-dots"><i></i><i></i><i></i></div>
+          <div class="lp-winnav"><span class="on">Discover</span><span>Directory</span><span>Remakes</span></div>
+          <div class="lp-winpill">${ico("globe")} <b>Worldwide</b> × Silent comedy</div>
+        </div>
+        <div class="lp-winbody">
+          <div class="lp-chiprow">${nicheChips}</div>
+          <div class="lp-vrow">${heroCards}</div>
+        </div>
+      </div>
+      <div class="lp-floatwrap lp-score" data-depth="22"><div class="lp-float"><div class="lp-mini">
+        <div class="lp-scoreN">87<span>/100</span></div>
+        <div><div class="lp-scoreL">Scout Score</div><div class="lp-scoreV">${ico("zap")} Strong bet</div></div>
+      </div></div></div>
+      <div class="lp-floatwrap lp-saved f2" data-depth="16"><div class="lp-float"><div class="lp-mini">
+        <div class="lp-savedIc">${ico("star")}</div>
+        <div><b>Saved to your board</b><span>1 idea ready to remake</span></div>
+      </div></div></div>
+    </div>
+
+    <!-- DISCOVER WORLDWIDE -->
+    <section class="lp-feat">
+      <div class="lp-txt">
+        <div class="lp-kicker">${ico("globe")} Discover worldwide</div>
+        <h2 class="lp-reveal">The whole world's best ideas, one search away.</h2>
+        <p class="lp-p lp-reveal d1">Discover creators with proven viral content and turn their best ideas into your next viral post.</p>
+        <div class="lp-stats lp-reveal d2">
+          <div><div class="n lp-num" data-count="${COUNTRIES.length-1}" data-suffix="+">0</div><div class="l">Countries</div></div>
+          <div><div class="n lp-num" data-count="${NICHES.length}">0</div><div class="l">Niches</div></div>
+          <div><div class="n">∞</div><div class="l">Ideas to find</div></div>
+        </div>
+      </div>
+      <div class="lp-visual lp-reveal d1"><div class="lp-panel" data-depth="4">
+        <div class="lp-panelHd">${ico("search")} Discover · pick anywhere</div>
+        <div class="lp-panelBd">
+          <div class="lp-map">${pins}</div>
+          <div class="lp-nichegrid">${["Silent comedy","Funny faces","Food","Fitness","Dance","Beauty","Pets","Travel","Gaming"].map((n,i)=>`<span class="lp-fchip ${i===0?"on":""}">${n}</span>`).join("")}</div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- SCOUT A CREATOR -->
+    <section class="lp-feat rev">
+      <div class="lp-txt">
+        <div class="lp-kicker">${ico("chart")} Scout a creator's best Shorts</div>
+        <h2 class="lp-reveal">See any creator's biggest hits in seconds.</h2>
+        <p class="lp-p lp-reveal d1">Scout any creator's history and instantly uncover their highest-performing Shorts, ranked by views or engagement. Choose exactly how many results to explore.</p>
+      </div>
+      <div class="lp-visual lp-reveal d1"><div class="lp-panel" data-depth="4">
+        <div class="lp-panelHd">${ico("chart")} Top Shorts · ranked by views</div>
+        <div class="lp-panelBd">${rankRows}</div>
+      </div></div>
+    </section>
+
+    <!-- BUILD YOUR BOARD -->
+    <section class="lp-feat">
+      <div class="lp-txt">
+        <div class="lp-kicker">${ico("star")} Build your idea board</div>
+        <h2 class="lp-reveal">Your creative workspace, not a dashboard.</h2>
+        <p class="lp-p lp-reveal d1">Save the ideas worth remaking, organize them in one place, and access your inspiration anytime, anywhere.</p>
+      </div>
+      <div class="lp-visual lp-reveal d1"><div class="lp-panel" data-depth="4">
+        <div class="lp-panelHd">${ico("star")} Your board</div>
+        <div class="lp-panelBd">
+          <div class="lp-boardtabs"><span class="lp-boardtab on">Saved</span><span class="lp-boardtab">Remade</span><span class="lp-boardtab">Notes</span></div>
+          <div class="lp-boardgrid">${boardCards}</div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- WORKFLOW -->
+    <section class="lp-flow" id="lp-how">
+      <h2 class="lp-reveal">From scroll to shoot in five steps.</h2>
+      <p class="lp-lead lp-reveal d1">ScoutViral stays simple on purpose. One clean path from a proven idea to your own published Short.</p>
+      <div class="lp-steps lp-reveal d1">${stepsHtml}</div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="lp-final lp-reveal">
+      <h2>Stop guessing. Start remaking what already works.</h2>
+      <p>Find your next proven video idea in the next two minutes — free, no sign-up needed.</p>
+      <button class="lp-btn p" style="font-size:16px;padding:14px 26px" onclick="go('disc')">Start discovering ${ico("arrowr")}</button>
+    </section>
   </div>`;
+  lpInit();
+}
+
+/* landing motion: scroll-reveal, animated counters, gentle pointer parallax */
+function lpScroll(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}
+let lpObs=null;
+function lpInit(){
+  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const els=[...document.querySelectorAll(".lp-reveal")];
+  if(lpObs)lpObs.disconnect();
+  if(reduce){els.forEach(e=>{e.classList.add("in");if(e.querySelector)e.querySelectorAll(".lp-num").forEach(lpCount);});document.querySelectorAll(".lp-num").forEach(n=>n.textContent=(+n.dataset.count).toLocaleString()+(n.dataset.suffix||""));return;}
+  lpObs=new IntersectionObserver(ents=>{ents.forEach(en=>{if(en.isIntersecting){en.target.classList.add("in");en.target.querySelectorAll&&en.target.querySelectorAll(".lp-num").forEach(lpCount);lpObs.unobserve(en.target);}});},{threshold:.16,rootMargin:"0px 0px -6% 0px"});
+  els.forEach(e=>lpObs.observe(e));
+  lpParallax();
+}
+function lpCount(el){
+  if(el._done)return;el._done=1;
+  const target=+el.dataset.count,suf=el.dataset.suffix||"",dur=1150,t0=performance.now();
+  (function tick(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e).toLocaleString()+suf;if(p<1)requestAnimationFrame(tick);})(t0);
+}
+function lpParallax(){
+  if(window._lpMove){window.removeEventListener("mousemove",window._lpMove);window._lpMove=null;}
+  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fine=window.matchMedia&&window.matchMedia("(pointer:fine)").matches;
+  const stage=document.querySelector(".lp-stage");
+  if(reduce||!fine||!stage)return;
+  const layers=[...stage.querySelectorAll("[data-depth]")];let raf=null,mx=0,my=0;
+  window._lpMove=e=>{const r=stage.getBoundingClientRect();if(!r.width||!document.body.contains(stage))return;
+    mx=(e.clientX-(r.left+r.width/2))/r.width;my=(e.clientY-(r.top+r.height/2))/r.height;
+    if(!raf)raf=requestAnimationFrame(()=>{raf=null;layers.forEach(l=>{const d=+l.dataset.depth;l.style.transform=`translate3d(${(mx*d).toFixed(1)}px,${(my*d).toFixed(1)}px,0)`;});});};
+  window.addEventListener("mousemove",window._lpMove,{passive:true});
 }
 
 /* ---------- Discover ---------- */
@@ -590,17 +991,19 @@ function renderDisc(){
       <select onchange="disc.n=+this.value;store.set('ss_disc',disc);renderDisc()">${nicheOpts(disc.n)}</select>
       <span class="numfield"><label class="muted">Show</label>
         <input type="number" id="maxN" min="1" max="500" value="${disc.max}" style="width:76px"
-          oninput="disc.max=Math.max(1,Math.min(500,+this.value||1));store.set('ss_disc',disc);updateCostNote()">
+          oninput="disc.max=Math.max(1,Math.min(500,+this.value||1));store.set('ss_disc',disc)">
         <label class="muted">results</label></span>
       <select onchange="disc.order=this.value;store.set('ss_disc',disc)">
-        <option value="viewCount" ${disc.order==="viewCount"?"selected":""}>Most viewed</option>
-        <option value="relevance" ${disc.order==="relevance"?"selected":""}>Most relevant</option>
-        <option value="date" ${disc.order==="date"?"selected":""}>Newest</option>
+        <option value="viewCount" ${disc.order==="viewCount"?"selected":""}>Biggest hits first</option>
+        <option value="relevance" ${disc.order==="relevance"?"selected":""}>Best match first</option>
+        <option value="date" ${disc.order==="date"?"selected":""}>Newest first</option>
       </select>
       <select onchange="disc.when=this.value;store.set('ss_disc',disc)">
-        <option value="" ${disc.when===""?"selected":""}>Any time</option>
+        <option value="" ${disc.when===""?"selected":""}>All time</option>
+        <option value="7" ${disc.when==="7"?"selected":""}>Hot this week</option>
+        <option value="30" ${disc.when==="30"?"selected":""}>Past month</option>
+        <option value="90" ${disc.when==="90"?"selected":""}>Past 3 months</option>
         <option value="365" ${disc.when==="365"?"selected":""}>Past year</option>
-        <option value="90" ${disc.when==="90"?"selected":""}>Past 90 days</option>
       </select>
     </div>
     <div class="row">
@@ -609,16 +1012,8 @@ function renderDisc(){
       <button class="btn sec" title="Jump to a random country + niche" onclick="randomDiscover()">${ico("dice")} Random</button>
     </div>
     ${chips?`<div style="margin-top:10px">${chips}</div>`:""}
-    <div class="muted" style="margin-top:8px" id="costNote"></div>
   </div>
   <div id="dres"></div>`;
-  updateCostNote();
-}
-function updateCostNote(){
-  const el = document.getElementById("costNote"); if(!el) return;
-  const calls = Math.max(1, Math.ceil(disc.max/50));
-  const perDay = Math.floor(100/calls);
-  el.textContent = `Free to use — your key covers about ${perDay} searches like this every day.`;
 }
 function randomDiscover(){
   disc.c = 1 + Math.floor(Math.random()*(COUNTRIES.length-1)); // skip "Worldwide"
@@ -654,7 +1049,7 @@ async function discSearch(customQ){
       `<span class="qchip" title="Top result: ${fmtN(c.top)} views" onclick="addFromDisc('${id}','${esc(c.name).replace(/'/g,"&#39;")}')">＋ ${esc(c.name)}<small>${c.hits} hit${c.hits>1?"s":""}</small></span>`).join("");
     box.innerHTML = `<h3>Channels in these results — tap to add to your directory</h3><div>${chanRow}</div>
       <h3>Videos <span class="muted" style="font-weight:400;font-size:12.5px">— they play muted as you scroll; tap the corner arrows for sound</span></h3><div class="vgrid">` + vids.map(v=>`
-      <div class="vid tall">
+      <div class="vid tall" data-card="${v.id}">
         <div class="thumbwrap" data-vid="${v.id}">
           <img loading="lazy" src="${esc(v.thumb)}" alt="${esc(v.title)}" onclick="playVid('${v.id}')">
           <span class="dur">${v.dur}s</span>
@@ -664,8 +1059,9 @@ async function discSearch(customQ){
           <div class="t">${esc(v.title)}</div>
           <div class="muted" style="font-size:12px">${esc(v.ch)}</div>
           <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}</span>
-          <button class="star ${vStat(v.id)==="saved"?"on":""}" title="Save to your board"
-            onclick="vSet({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}',at:'${v.at}',dur:${v.dur}},'saved');this.classList.toggle('on')">${ico("star")}</button></div>
+          <span style="display:flex;align-items:center;gap:2px">${vStat(v.id)==="saved"?discPencilHTML(v.id):""}<button class="star ${vStat(v.id)==="saved"?"on":""}" title="Save to your board"
+            onclick="vSet({id:'${v.id}',title:'${esc(v.title).replace(/'/g,"&#39;")}',thumb:'${esc(v.thumb)}',views:${v.views},ch:'${esc(v.ch).replace(/'/g,"&#39;")}',at:'${v.at}',dur:${v.dur}},'saved');this.classList.toggle('on');discSyncPencil('${v.id}',this)">${ico("star")}</button></span></div>
+          ${noteHTML(v.id)}
           <button class="cp" onclick="copyLink('${v.id}',this)">${ico("link")} Copy link</button>
         </div>
       </div>`).join("") + `</div>`;
@@ -727,7 +1123,7 @@ function renderDir(){
       <input type="text" id="addIn" placeholder="Add creator: @handle or channel URL">
       <button class="btn" onclick="addCreator()">Add + verify</button>
     </div>
-    <div class="muted" style="margin-top:7px">We check every creator on YouTube before saving them. Don't know who to add yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
+    <div class="muted" style="margin-top:7px">Every creator is verified on YouTube before they're added. Not sure who to add yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
   </div>`;
   if(!creators.length){
     h += `<div class="card" style="text-align:center;padding:30px">
@@ -1022,10 +1418,11 @@ function statusVidCard(v, o){
     </div>
   </div>`;
 }
-function vSetCreator(i, id, s){
+async function vSetCreator(i, id, s){
   const c=creators[i]; if(!c||!c.meta) return;
   const cached=store.get("ss_vids_"+c.meta.id,null); if(!cached) return;
   const v=cached.vids.find(x=>x.id===id); if(!v) return;
+  if(s==="remade" && vStat(id)!=="remade" && !(await confirmRemade(id))) return;
   vSet({id:v.id,title:v.title,thumb:v.thumb,views:v.views,ch:c.meta.title,at:v.at,dur:v.dur}, s);
   const ns=vStat(id);
   const maxDur=store.get("ss_maxdur",183);
@@ -1063,10 +1460,19 @@ function exportCSV(i){
 
 /* ---------- Saved board + Remade (global, from the library) ---------- */
 let libFilter = "saved";  // saved | remade
-function vSetById(id, s){
+async function vSetById(id, s){
   const e=library[id]; if(!e) return;
+  if(s==="remade" && e.s!=="remade" && !(await confirmRemade(id))) return;
   vSet({id, title:e.t, thumb:e.th, views:e.v, ch:e.ch, at:e.at, dur:e.d}, s);
   renderRemake();
+}
+/* marking Remade moves the idea off your working list — confirm first */
+function confirmRemade(id){
+  const hasNote = !!(library[id]&&library[id].n);
+  return uiConfirm(
+    hasNote ? "Nice one! It moves to your Remade collection, and your note stays with it."
+            : "Nice one! It moves to your Remade collection — you can always find it there.",
+    {title:"Mark as remade?", okText:"Yes, I remade it"});
 }
 function renderRemake(){
   const saved  = Object.entries(library).filter(([id,e])=>e.s==="saved");
@@ -1260,15 +1666,16 @@ function renderSet(){
     <div class="row" style="margin-top:8px">
       <input type="password" id="keyIn" value="${esc(apiKey)}" placeholder="Paste your API key">
       <button class="btn" onclick="saveKey()">Save</button>
+      ${apiKey?`<button class="btn sec" onclick="removeKey()">Remove key</button>`:""}
     </div>
-    <div class="muted" style="margin-top:7px">Your key stays in this browser and is only ever sent to Google — never to us. It's completely free to use.</div>
+    <div class="muted" style="margin-top:7px">Your privacy is protected — your key is stored only on this device and is never sent to us. You can remove or replace it anytime.</div>
   </div>
   <div class="bk"><details ${apiKey?"":"open"}><summary>Get a free API key (2 minutes)</summary><div class="in"><ol>
     <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> and create a project (or reuse one).</li>
     <li>APIs &amp; Services → <b>Library</b> → search “YouTube Data API v3” → <b>Enable</b>.</li>
     <li>APIs &amp; Services → <b>Credentials</b> → Create credentials → <b>API key</b>.</li>
     <li><b>Recommended:</b> click the key → Application restrictions → Websites → add this site's address. That locks your key so it only works here.</li>
-    <li>Paste it above. That's it — it's free, and your daily allowance covers around 100 searches plus plenty of creator scouting.</li>
+    <li>Paste it above and you're ready to scout.</li>
   </ol></div></details></div>
   <div class="card" style="margin-bottom:12px">
     <b>Data</b>
@@ -1279,10 +1686,14 @@ function renderSet(){
       <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
       <button class="btn sec" onclick="clearCaches()">Clear video caches</button>
     </div>
-  </div>
-  <div class="muted">Videos play through YouTube's official embedded player — the views you generate count for the creators. There's deliberately no downloader: ripping videos breaks YouTube's terms, and re-uploaded footage gets demonetized as reused content anyway. The play is re-filming the <i>concept</i> in your own style.</div>`;
+  </div>`;
 }
-function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); uiAlert(apiKey?"Key saved ✓":"Key cleared"); }
+function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); uiAlert(apiKey?"Key saved ✓":"Key cleared"); renderSet(); }
+async function removeKey(){
+  const ok = await uiConfirm("Remove your API key from this device? Your saved creators and ideas are untouched — you can paste a new key anytime.", {title:"Remove key", okText:"Remove", danger:true});
+  if(!ok) return;
+  apiKey=""; store.del("ss_key"); renderSet();
+}
 function clearCaches(){
   const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("ss_vids_")) keys.push(k); }
   keys.forEach(k=>localStorage.removeItem(k)); renderSet();
