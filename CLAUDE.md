@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-16 (landing copy polish, shared trial key + free-preview nudge, engagement ranking, sticky footer, directory no longer pushes a starter pack)
+**Last updated:** 2026-07-16 (S+Play logo & favicon, Saved→Remaking→Completed workflow, API key + data sync per account, Production Notes modal, landing CTA/mockup polish)
 
 ## Product ambition — read this first
 
@@ -46,8 +46,11 @@ no build step, no framework, no npm). This is deliberate. Edit it directly.
 - `public/config.js` — Firebase web config (safe to be public; these keys are
   client-side by design).
 - Everything is client-side. **BYOK**: each user pastes their own free YouTube
-  Data API v3 key (stored in their browser's localStorage only, never sent to us).
-  All API usage bills to the user's own free Google quota (10,000 units/day).
+  Data API v3 key (localStorage `ss_key`). All API usage bills to the user's own free
+  Google quota (10,000 units/day). **The key is also synced to the signed-in user's
+  private Firestore doc** (`cloudSave` includes `apiKey`; sign-in restores it only
+  when the local device has none) so it follows them across devices and never has to
+  be re-entered. `saveKey`/`removeKey` push the change to the cloud.
 - **Shared trial key (optional):** `window.TRIAL_YT_KEY` in config.js. When set (a
   domain-restricted key from the `scoutviral` GCP project), first-time visitors get
   `TRIAL_LIMIT` (5) free searches/scouts on it before being nudged to add their own.
@@ -92,6 +95,11 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   `prefers-color-scheme: light`. **One accent: red** (`--accent` #f2555a dark /
   #e5333a light) used sparingly. **Inter** font (Google Fonts `<link>` in `<head>`
   — the app's only external dependency; falls back to `system-ui`).
+- **Logo = "S + Play" mark** (chosen from 3 concepts): a monoline **S** next to a red
+  **play triangle** (the play button doubles as the V). Header uses it inline (S =
+  `currentColor` so it's theme-aware, triangle = `var(--accent)`). Favicon is an SVG
+  data-URI: the same mark in white on a red gradient app-icon tile (in `<head>`). Both
+  are hand-built vectors — no raster assets. Keep them in sync if the mark changes.
 - **Bottom tab bar on mobile** (Discover/Directory/Remakes/Settings), inline top
   nav on desktop — driven by CSS media query on the single `<nav>`; `go()`/`data-v`
   unchanged. Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
@@ -150,25 +158,28 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   creators you already admire or head to Discover. Deliberately lean — no country input,
   no country/style filter dropdowns, no country grouping; a single grid **ranked by
   Scout Score** (scouted creators first) with a name search. `dirF = {q}` only.
-- **Video workflow (statuses):** every video has one permanent status keyed by its
-  YouTube id — **New / ⭐ Saved / 🎬 Remade / 🚫 Skipped** — stored in the `library`
-  map (`ss_library`, synced to Firestore; migrated from the old `ss_remakes`). On a
-  creator's page the scouted Shorts show status-filter chips (**Active** = New+Saved
-  is the default, plus New / Saved / Remade / Skipped / All); status survives
-  rescans. Save/Remade/Skip buttons update the card in place (`vSetCreator`,
-  `vStat`/`vSet`); skipped/remade leave the working view. Autoplay-in-view is on for
-  New/Saved/Active/All, **off for Remade + Skipped** (static references).
-- **Remakes tab = global board:** Saved (inspiration board, autoplay) + Remade
-  (static) + **Notes** view (every video with a note — the "shopping list" for
-  props/gear). Built from `library`; `renderRemake`/`vSetById`.
-- **Per-video notes:** pencil button on any non-New video opens a multiline
-  dialog (`editNote`); note stored as `library[id].n`, survives status changes,
-  shown in a dashed `.vnote` box on the card. Aggregated in the board's Notes view.
-  On **Discover** cards the pencil appears next to the star the moment an idea is
-  saved (`discPencilHTML`/`discSyncPencil`) and Discover cards carry `data-card` so
-  the note box renders in place.
-- **Marking Remade asks first** (`confirmRemade` → branded uiConfirm) because the
-  card moves off the working list; the copy reassures that any note stays with it.
+- **Creator workflow (progress model):** every video has one permanent status keyed
+  by its YouTube id — **New / ⭐ Saved / 🎬 Remaking / ✅ Completed / 🚫 Skipped** —
+  stored in the `library` map (`ss_library`, synced to Firestore). The pipeline is
+  **Save an idea → Remaking (planning/filming) → Completed**. `normalizeLib` migrates
+  the old `"remade"` status to `"completed"` on load/import/merge. On a creator's
+  page the scouted Shorts show status-filter chips (**Active** = New+Saved default,
+  plus Saved / Remaking / Completed / Skipped / All); the per-card action row is
+  Save / Remaking / Completed / Skip (+ a notes pencil once actioned), updated in
+  place by `vSetCreator`. Autoplay-in-view is on except **Completed + Skipped**.
+- **Board tab (`renderRemake`) = the workflow hub:** three tabs **Saved / Remaking /
+  Completed** (NOT a Notes tab — notes belong to a video, not a category). Cards carry
+  contextual actions: Saved → [Start remaking, Notes, Remove]; Remaking → [Mark
+  completed, Notes, Back to Saved]; Completed → [Reopen, Notes]. Saved+Remaking
+  autoplay; Completed is static. `libFilter` = saved|remaking|completed.
+- **Per-video notes = "Production Notes":** pencil on any actioned video opens the
+  `editNote` modal (title "Production Notes", "Write down anything you'll need to
+  recreate this video.", Save button). Note stored as `library[id].n`, survives
+  status changes, shown in a dashed `.vnote` box. On **Discover** cards the pencil
+  appears next to the star the moment an idea is saved (`discPencilHTML`/
+  `discSyncPencil`); Discover cards carry `data-card` so the note renders in place.
+- **Marking Completed asks first** (`confirmCompleted` → branded uiConfirm) — the
+  finish-line moment; copy reassures that production notes stay with it.
 - **Settings:** API key has Save + **Remove key** (confirm dialog); privacy line is
   the confident "Your privacy is protected…" copy. No quota talk anywhere.
 - **Top Shorts ranking:** a "Ranked by views / Ranked by engagement" select on the

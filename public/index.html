@@ -16,6 +16,7 @@
 <meta name="theme-color" content="#f6f6f7" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-title" content="ScoutViral">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23ff7d5c'/><stop offset='1' stop-color='%23f2555a'/></linearGradient></defs><rect width='64' height='64' rx='15' fill='url(%23g)'/><path d='M30 20 C30 15,18 15,18 21 C18 26,30 27,30 32 C30 37,19 37.5,16 33' fill='none' stroke='%23fff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round'/><path d='M34 20 L34 44 L50 32 Z' fill='%23fff'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -136,14 +137,15 @@ button.btn:disabled{opacity:.5;cursor:default}
 .vstat{position:absolute;bottom:8px;left:8px;z-index:2}
 .vbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;color:#fff;background:rgba(0,0,0,.72)}
 .b-saved{background:var(--gold);color:#1a1a1f}
-.b-remade{background:var(--ok);color:#08130d}
+.b-remaking{background:var(--accent);color:#fff}
+.b-completed{background:var(--ok);color:#08130d}
 .b-skip{background:rgba(0,0,0,.72)}
 .vid.leaving{opacity:0;transform:scale(.94);transition:opacity .2s ease,transform .2s ease}
 /* icons */
 .i{width:1em;height:1em;display:inline-block;vertical-align:-.125em;flex:0 0 auto}
 nav button .ico{display:flex;align-items:center;justify-content:center}
 nav button .ico .i{width:17px;height:17px}
-header h1 .i{width:21px;height:21px;color:var(--accent);vertical-align:-.18em}
+header h1 .i{width:25px;height:25px;vertical-align:-.26em}
 .star .i{width:19px;height:19px}
 .star.on .i{fill:currentColor}
 .act .i{width:16px;height:16px}
@@ -161,10 +163,14 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
 .player iframe{width:100%;height:100%;border:0}
 .closex{position:absolute;top:-4px;right:0;transform:translateY(-110%);background:none;border:none;color:#fff;font-size:28px;cursor:pointer}
 .dlg{z-index:90}
-.dlgbox{width:min(400px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.5);animation:dlgpop .13s ease-out}
-@keyframes dlgpop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
-.dlgtitle{font-size:16.5px;font-weight:700;margin-bottom:7px}
-.dlgmsg{font-size:14px;color:var(--ink2);line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.dlgbox{width:min(440px,92vw);padding:24px;border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.55);animation:dlgpop .14s ease-out}
+@keyframes dlgpop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.dlgtitle{font-size:19px;font-weight:800;letter-spacing:-.015em;margin-bottom:8px}
+.dlgmsg{font-size:14px;color:var(--ink2);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.dlgbox textarea{margin-top:14px;min-height:132px;border-radius:14px;padding:13px 15px;line-height:1.55}
+.dlgbox textarea::placeholder{color:var(--ink3)}
+.dlgbox input[type=text]{margin-top:14px;border-radius:12px}
+.dlgbox .row{margin-top:20px;gap:10px}
 .statusbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding:12px 18px;font-size:13px;display:none;align-items:center;gap:14px;z-index:50}
 .statusbar.show{display:flex}
 .bar{flex:1;height:6px;background:var(--bg2);border-radius:4px;overflow:hidden}
@@ -369,7 +375,7 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
 </head>
 <body>
 <header>
-  <h1 onclick="go('home')"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg> Scout<span class="vv">Viral</span></h1>
+  <h1 onclick="go('home')"><svg class="i" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M30 20 C30 15,18 15,18 21 C18 26,30 27,30 32 C30 37,19 37.5,16 33" stroke="currentColor" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 20 L34 44 L50 32 Z" fill="var(--accent)"/></svg> Scout<span class="vv">Viral</span></h1>
   <nav>
     <button data-v="disc" onclick="go('disc')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span><span class="lbl">Discover</span></button>
     <button data-v="dir" onclick="go('dir')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span><span class="lbl">Directory</span></button>
@@ -541,13 +547,16 @@ function trialNoteHTML(){
 }
 
 /* ---------- video library: one permanent status per video id ----------
-   library[id] = {s:"saved"|"remade"|"skipped", t,th,v,ch,at,d,u}; absent = "new". */
+   library[id] = {s:"saved"|"remaking"|"completed"|"skipped", t,th,v,ch,at,d,u}; absent = "new". */
 let library = store.get("ss_library", null);
 if(!library || typeof library!=="object"){
   library = {};
   (store.get("ss_remakes", []) || []).forEach(r=>{ if(r && r.id) library[r.id] = {s:"saved", t:r.title, th:r.thumb, v:r.views, ch:r.ch, at:r.at, d:r.dur, u:r.added||Date.now()}; });
   store.set("ss_library", library);
 }
+/* older versions used status "remade"; the workflow is now Saved → Remaking → Completed */
+function normalizeLib(lib){ Object.values(lib||{}).forEach(e=>{ if(e && e.s==="remade") e.s="completed"; }); return lib; }
+normalizeLib(library);
 function migrateRemakes(arr){ const lib={}; (arr||[]).forEach(r=>{ if(r&&r.id) lib[r.id]={s:"saved",t:r.title,th:r.thumb,v:r.views,ch:r.ch,at:r.at,d:r.dur,u:r.added||Date.now()}; }); return lib; }
 function vStat(id){ const e=library[id]; return e?e.s:"new"; }
 function vSet(v, s){
@@ -562,7 +571,7 @@ function vSet(v, s){
 }
 async function editNote(id){
   const e=library[id]; if(!e) return;
-  const txt = await uiPrompt("Your note for this idea — props to buy, how you'd film it, anything.", e.n||"", {title:"Note", multiline:true, placeholder:"e.g. need sunglasses + tripod, film at the market", okText:"Save note"});
+  const txt = await uiPrompt("Write down anything you'll need to recreate this video.", e.n||"", {title:"Production Notes", multiline:true, placeholder:"e.g. Buy sunglasses, film at the shopping mall, ask a friend to record, try a different ending...", okText:"Save"});
   if(txt===null) return;
   if(txt.trim()) e.n=txt.trim(); else delete e.n;
   persist();
@@ -596,13 +605,16 @@ window.onFirebaseReady = function(api){
     if(u){
       try{
         const data = await fb.load(u.uid);
-        if(data && (data.creators||data.library||data.remakes)){
+        if(data){
           /* MERGE cloud + local — never overwrite. Whatever a user saved while
              signed out (or on another device) is always kept. */
           applyingCloud = true;
           creators = mergeCreators(creators, data.creators||[]);
-          library  = mergeLibrary(library, data.library || (data.remakes?migrateRemakes(data.remakes):{}));
+          library  = normalizeLib(mergeLibrary(library, data.library || (data.remakes?migrateRemakes(data.remakes):{})));
           store.set("ss_creators",creators); store.set("ss_library",library);
+          /* the user's own API key follows their account — restored on any device,
+             only ever adopted when this device doesn't already have one. */
+          if(data.apiKey && !apiKey){ apiKey = data.apiKey; store.set("ss_key",apiKey); }
           applyingCloud = false;
           render();
         }
@@ -644,7 +656,7 @@ function mergeLibrary(local, cloud){
 function cloudSave(){
   if(!fb || !user || applyingCloud) return;
   clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
+  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,apiKey,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
 }
 function persist(){ store.set("ss_creators",creators); store.set("ss_library",library); cloudSave(); }
 function renderAuth(){
@@ -802,10 +814,10 @@ function lpPoster(g,o){o=o||{};return `<div class="lp-poster" style="background-
 
 function renderHome(){
   const heroCards=[
-    lpPoster(LP_G[4],{rank:1,star:1,on:1,play:1,dur:14,views:"8.4M"}),
-    lpPoster(LP_G[1],{rank:2,star:1,play:1,dur:22,views:"5.1M"}),
-    lpPoster(LP_G[2],{rank:3,star:1,play:1,dur:9,views:"3.7M"}),
-    lpPoster(LP_G[3],{star:1,play:1,dur:31,views:"2.2M"})
+    lpPoster(LP_G[4],{rank:1,star:1,on:1,play:1,dur:14,views:"245M"}),
+    lpPoster(LP_G[1],{rank:2,star:1,play:1,dur:22,views:"156M"}),
+    lpPoster(LP_G[2],{rank:3,star:1,play:1,dur:9,views:"118M"}),
+    lpPoster(LP_G[3],{star:1,play:1,dur:31,views:"91M"})
   ].map(p=>`<div class="lp-vcard">${p}</div>`).join("");
 
   const nicheChips=["Silent comedy","Funny faces","Food & cooking","Dance","Fashion","Pets"]
@@ -814,10 +826,10 @@ function renderHome(){
     .map(([l,t],i)=>`<span class="lp-pin" style="left:${l}%;top:${t}%;animation-delay:${(i*0.26).toFixed(2)}s"></span>`).join("");
 
   const rankRows=[
-    {n:1,t:"POV: you finally tried it",v:"8.4M",thumb:LP_G[4],w:100},
-    {n:2,t:"He didn't expect that…",v:"5.1M",thumb:LP_G[1],w:71},
-    {n:3,t:"Wait for the very end",v:"3.7M",thumb:LP_G[2],w:52},
-    {n:4,t:"One take. No cuts.",v:"2.2M",thumb:LP_G[3],w:37}
+    {n:1,t:"POV: you finally tried it",v:"245M",thumb:LP_G[4],w:100},
+    {n:2,t:"He didn't expect that…",v:"156M",thumb:LP_G[1],w:64},
+    {n:3,t:"Wait for the very end",v:"118M",thumb:LP_G[2],w:48},
+    {n:4,t:"One take. No cuts.",v:"91M",thumb:LP_G[3],w:37}
   ].map(r=>`<div class="lp-rankrow ${r.n<=3?"top":""}">
       <div class="lp-rankn">${r.n}</div>
       <div class="lp-rankthumb" style="background-image:${r.thumb}"></div>
@@ -827,9 +839,9 @@ function renderHome(){
 
   const boardCards=
     `<div class="lp-bcard">${lpPoster(LP_G[0],{badge:{c:"sv",i:"star",t:"Saved"}})}</div>`+
-    `<div class="lp-bcard">${lpPoster(LP_G[5],{badge:{c:"rm",i:"check",t:"Remade"}})}</div>`+
+    `<div class="lp-bcard">${lpPoster(LP_G[5],{badge:{c:"rm",i:"check",t:"Completed"}})}</div>`+
     `<div class="lp-bcard">${lpPoster(LP_G[6],{badge:{c:"sv",i:"star",t:"Saved"}})}</div>`+
-    `<div class="lp-bnote">${ico("note")} Props: ring light, red hoodie, slow-mo at the reveal</div>`;
+    `<div class="lp-bnote">${ico("note")} Items needed: wig, fake mic, tripod, LED lights</div>`;
 
   const steps=[
     {i:"search",t:"Discover",d:"Pick a country and niche"},
@@ -926,7 +938,7 @@ function renderHome(){
       <div class="lp-visual lp-reveal d1"><div class="lp-panel" data-depth="4">
         <div class="lp-panelHd">${ico("star")} Your board</div>
         <div class="lp-panelBd">
-          <div class="lp-boardtabs"><span class="lp-boardtab on">Saved</span><span class="lp-boardtab">Remade</span><span class="lp-boardtab">Notes</span></div>
+          <div class="lp-boardtabs"><span class="lp-boardtab on">Saved</span><span class="lp-boardtab">Remaking</span><span class="lp-boardtab">Completed</span></div>
           <div class="lp-boardgrid">${boardCards}</div>
         </div>
       </div></div>
@@ -940,8 +952,8 @@ function renderHome(){
 
     <!-- FINAL CTA -->
     <section class="lp-final lp-reveal">
-      <h2>Find what works. Make it your own.</h2>
-      <p>Discover your next proven idea in minutes and start creating. Free to use.</p>
+      <h2>Proven ideas, reimagined by you.</h2>
+      <p>Discover your next proven idea in minutes and start creating.</p>
       <button class="lp-btn p" style="font-size:16px;padding:14px 26px" onclick="go('disc')">Start discovering ${ico("arrowr")}</button>
     </section>
   </div>`;
@@ -1355,8 +1367,9 @@ async function doScan(i){
     uiAlert(e.message, {title:"Scouting failed"});
   }
 }
-/* ---------- video workflow (New / Saved / Remade / Skipped) ---------- */
-let vFilter = store.get("ss_vfilter","active");   // active | all | new | saved | remade | skipped
+/* ---------- video workflow (New / Saved / Remaking / Completed / Skipped) ---------- */
+let vFilter = store.get("ss_vfilter","active");   // active | all | new | saved | remaking | completed | skipped
+if(!["active","all","new","saved","remaking","completed","skipped"].includes(vFilter)){ vFilter="active"; store.set("ss_vfilter",vFilter); }
 function vFilterMatch(f, s){
   if(f==="active") return s==="new" || s==="saved";
   if(f==="all") return true;
@@ -1373,9 +1386,9 @@ function vFilterBarHTML(i, counts, total){
   const chip=(key,label,n)=>`<button class="vchip ${vFilter===key?"on":""}" onclick="setVFilter('${key}',${i})">${label} <small>${n}</small></button>`;
   return `<div class="vfilters" id="vfilters">
     ${chip("active","Active",counts.new+counts.saved)}
-    ${chip("new","New",counts.new)}
     ${chip("saved",ico("star")+" Saved",counts.saved)}
-    ${chip("remade",ico("clapper")+" Remade",counts.remade)}
+    ${chip("remaking",ico("clapper")+" Remaking",counts.remaking)}
+    ${chip("completed",ico("check")+" Completed",counts.completed)}
     ${chip("skipped",ico("skip")+" Skipped",counts.skipped)}
     ${chip("all","All",total)}
   </div>`;
@@ -1396,11 +1409,11 @@ function shortsUI(i, cached){
   const rankBy = store.get("ss_rankby","views");
   const all = rankVids(cached.vids.filter(v=>v.dur>0 && v.dur<=maxDur), rankBy);
   if(!all.length) return `<div class="empty">No Shorts at this length — try a wider Scout range, or switch to Shorts ≤ 3 min.</div>`;
-  const counts={new:0,saved:0,remade:0,skipped:0}; all.forEach(v=>counts[vStat(v.id)]++);
+  const counts={new:0,saved:0,remaking:0,completed:0,skipped:0}; all.forEach(v=>counts[vStat(v.id)]++);
   const shown = all.filter(v=>vFilterMatch(vFilter, vStat(v.id)));
   const capped = (vFilter==="active"||vFilter==="new"||vFilter==="all");
   const list = capped ? shown.slice(0, cfg.n) : shown;
-  const autoplay = !(vFilter==="remade"||vFilter==="skipped");
+  const autoplay = !(vFilter==="completed"||vFilter==="skipped");
   let h = vFilterBarHTML(i, counts, all.length);
   h += `<div class="filters" style="margin-bottom:12px">
     <select title="How to rank the Shorts" onchange="store.set('ss_rankby',this.value);refreshShorts(${i})">
@@ -1419,12 +1432,13 @@ function shortsUI(i, cached){
 }
 function emptyMsg(f){
   return f==="saved" ? "No saved ideas yet — tap the star on a video to start your board."
-    : f==="remade" ? "Nothing remade yet. Finished re-filming one? Tap the clapper."
+    : f==="remaking" ? "Nothing in progress. Start remaking a saved idea and it shows up here."
+    : f==="completed" ? "Nothing completed yet. Finished one? Mark it done to keep it here."
     : f==="skipped" ? "Nothing skipped. The skip button hides ideas you're not into."
     : f==="new" ? "No new videos left here — you've been through them all."
     : "Nothing here yet.";
 }
-const STATUS_BADGE = {saved:['star','Saved','b-saved'], remade:['clapper','Remade','b-remade'], skipped:['skip','Skipped','b-skip']};
+const STATUS_BADGE = {saved:['star','Saved','b-saved'], remaking:['clapper','Remaking','b-remaking'], completed:['check','Completed','b-completed'], skipped:['skip','Skipped','b-skip']};
 function badgeHTML(s){ const b=STATUS_BADGE[s]; return b?`<span class="vstat"><span class="vbadge ${b[2]}">${ico(b[0])} ${b[1]}</span></span>`:""; }
 function noteHTML(id){
   const e=library[id];
@@ -1445,10 +1459,11 @@ function statusVidCard(v, o){
       <div class="t">${esc(v.title)}</div>
       <div class="m"><span><span class="views">${fmtN(v.views)}</span> views · ${fmtD(v.at)}${(store.get("ss_rankby","views")==="engagement"&&v.likes>0&&v.views>0)?` · ${(v.likes/v.views*100).toFixed(1)}% liked`:""}</span></div>
       <div class="acts">
-        <button class="act ${s==="saved"?"on":""}" title="Save to your board" onclick="vSetCreator(${o.i},'${v.id}','saved')">${ico("star")}</button>
-        <button class="act ${s==="remade"?"on":""}" title="Mark as remade" onclick="vSetCreator(${o.i},'${v.id}','remade')">${ico("clapper")}</button>
+        <button class="act ${s==="saved"?"on":""}" title="Save" onclick="vSetCreator(${o.i},'${v.id}','saved')">${ico("star")}</button>
+        <button class="act ${s==="remaking"?"on":""}" title="Remaking" onclick="vSetCreator(${o.i},'${v.id}','remaking')">${ico("clapper")}</button>
+        <button class="act ${s==="completed"?"on":""}" title="Mark completed" onclick="vSetCreator(${o.i},'${v.id}','completed')">${ico("check")}</button>
         <button class="act ${s==="skipped"?"on":""}" title="Skip — hide this idea" onclick="vSetCreator(${o.i},'${v.id}','skipped')">${ico("skip")}</button>
-        ${s!=="new"?`<button class="act" title="Add a note (gear to buy, ideas, anything)" onclick="editNote('${v.id}')">${ico("pencil")}</button>`:""}
+        ${s!=="new"?`<button class="act" title="Production notes" onclick="editNote('${v.id}')">${ico("pencil")}</button>`:""}
       </div>
       ${noteHTML(v.id)}
       <button class="cp" onclick="copyLink('${v.id}',this)">${ico("link")} Copy link</button>
@@ -1459,23 +1474,23 @@ async function vSetCreator(i, id, s){
   const c=creators[i]; if(!c||!c.meta) return;
   const cached=store.get("ss_vids_"+c.meta.id,null); if(!cached) return;
   const v=cached.vids.find(x=>x.id===id); if(!v) return;
-  if(s==="remade" && vStat(id)!=="remade" && !(await confirmRemade(id))) return;
+  if(s==="completed" && vStat(id)!=="completed" && !(await confirmCompleted(id))) return;
   vSet({id:v.id,title:v.title,thumb:v.thumb,views:v.views,ch:c.meta.title,at:v.at,dur:v.dur}, s);
   const ns=vStat(id);
   const maxDur=store.get("ss_maxdur",183);
   const all=cached.vids.filter(x=>x.dur>0&&x.dur<=maxDur);
-  const counts={new:0,saved:0,remade:0,skipped:0}; all.forEach(x=>counts[vStat(x.id)]++);
+  const counts={new:0,saved:0,remaking:0,completed:0,skipped:0}; all.forEach(x=>counts[vStat(x.id)]++);
   const bar=document.getElementById("vfilters"); if(bar) bar.outerHTML=vFilterBarHTML(i, counts, all.length);
   const card=document.querySelector('.vid[data-card="'+id+'"]'); if(!card) return;
   if(vFilterMatch(vFilter, ns)){
     let old=card.querySelector(".vstat"); if(old) old.remove();
     const tw=card.querySelector(".thumbwrap");
     if(STATUS_BADGE[ns]&&tw) tw.insertAdjacentHTML("beforeend", badgeHTML(ns));
-    const acts=card.querySelectorAll(".acts .act"), order=["saved","remade","skipped"];
+    const acts=card.querySelectorAll(".acts .act"), order=["saved","remaking","completed","skipped"];
     acts.forEach((btn,ix)=>btn.classList.toggle("on", order[ix]===ns));
     const actsBox=card.querySelector(".acts");
-    if(ns!=="new" && acts.length<4 && actsBox) actsBox.insertAdjacentHTML("beforeend", `<button class="act" title="Add a note (gear to buy, ideas, anything)" onclick="editNote('${id}')">${ico("pencil")}</button>`);
-    if(ns==="new"){ if(acts[3]) acts[3].remove(); const nt=card.querySelector(".vnote"); if(nt) nt.remove(); }
+    if(ns!=="new" && acts.length<5 && actsBox) actsBox.insertAdjacentHTML("beforeend", `<button class="act" title="Production notes" onclick="editNote('${id}')">${ico("pencil")}</button>`);
+    if(ns==="new"){ if(acts[4]) acts[4].remove(); const nt=card.querySelector(".vnote"); if(nt) nt.remove(); }
   } else {
     const tw=card.querySelector(".thumbwrap"); if(tw) stopPreview(tw);
     card.classList.add("leaving");
@@ -1496,46 +1511,60 @@ function exportCSV(i){
   a.download=c.meta.title.replace(/[^\w\- ]+/g,"")+"-top-shorts.csv"; a.click();
 }
 
-/* ---------- Saved board + Remade (global, from the library) ---------- */
-let libFilter = "saved";  // saved | remade
+/* ---------- Board: Saved -> Remaking -> Completed (global, from the library) ---------- */
+let libFilter = "saved";  // saved | remaking | completed
 async function vSetById(id, s){
   const e=library[id]; if(!e) return;
-  if(s==="remade" && e.s!=="remade" && !(await confirmRemade(id))) return;
+  if(s==="completed" && e.s!=="completed" && !(await confirmCompleted(id))) return;
   vSet({id, title:e.t, thumb:e.th, views:e.v, ch:e.ch, at:e.at, dur:e.d}, s);
   renderRemake();
 }
-/* marking Remade moves the idea off your working list — confirm first */
-function confirmRemade(id){
+/* marking Completed is the finish line — a small confirm makes it feel earned */
+function confirmCompleted(id){
   const hasNote = !!(library[id]&&library[id].n);
   return uiConfirm(
-    hasNote ? "Nice one! It moves to your Remade collection, and your note stays with it."
-            : "Nice one! It moves to your Remade collection — you can always find it there.",
-    {title:"Mark as remade?", okText:"Yes, I remade it"});
+    hasNote ? "Nice work! It moves to Completed, and your production notes stay with it."
+            : "Nice work! It moves to Completed, where you can always find it.",
+    {title:"Mark as completed?", okText:"Yes, it's done"});
 }
 function renderRemake(){
-  const saved  = Object.entries(library).filter(([id,e])=>e.s==="saved");
-  const remade = Object.entries(library).filter(([id,e])=>e.s==="remade");
-  const noted  = Object.entries(library).filter(([id,e])=>e.n);
-  const src = libFilter==="remade"?remade : libFilter==="notes"?noted : saved;
+  const byStat = st => Object.entries(library).filter(([id,e])=>e.s===st);
+  const saved     = byStat("saved");
+  const remaking  = byStat("remaking");
+  const completed = byStat("completed");
+  const src = libFilter==="remaking"?remaking : libFilter==="completed"?completed : saved;
   const active = src.map(([id,e])=>({id,...e})).sort((a,b)=>(b.u||0)-(a.u||0));
-  const autoplay = libFilter==="saved";
-  let h = `<h2>${libFilter==="remade"?"Remade":libFilter==="notes"?"Your notes":"Saved ideas"}</h2>
-  <div class="muted" style="margin-bottom:12px">${libFilter==="remade"?"Videos you've already remade — kept as references."
-    :libFilter==="notes"?"Every idea you wrote a note on — handy when you're out buying props and gear."
-    :"Your inspiration board — ideas to re-film in your own style."} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
+  const autoplay = libFilter!=="completed";
+  const heading = libFilter==="remaking"?"Remaking" : libFilter==="completed"?"Completed" : "Saved ideas";
+  const sub = libFilter==="remaking"?"Ideas you're actively working on — plan them, note what you need, and film."
+    :libFilter==="completed"?"Videos you've finished and posted — kept as your track record."
+    :"Your inspiration board. Ready to make one? Start remaking it.";
+  let h = `<h2>${heading}</h2>
+  <div class="muted" style="margin-bottom:12px">${sub} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
   <div class="vfilters">
     <button class="vchip ${libFilter==="saved"?"on":""}" onclick="libFilter='saved';renderRemake()">${ico("star")} Saved <small>${saved.length}</small></button>
-    <button class="vchip ${libFilter==="remade"?"on":""}" onclick="libFilter='remade';renderRemake()">${ico("clapper")} Remade <small>${remade.length}</small></button>
-    <button class="vchip ${libFilter==="notes"?"on":""}" onclick="libFilter='notes';renderRemake()">${ico("note")} Notes <small>${noted.length}</small></button>
+    <button class="vchip ${libFilter==="remaking"?"on":""}" onclick="libFilter='remaking';renderRemake()">${ico("clapper")} Remaking <small>${remaking.length}</small></button>
+    <button class="vchip ${libFilter==="completed"?"on":""}" onclick="libFilter='completed';renderRemake()">${ico("check")} Completed <small>${completed.length}</small></button>
   </div>`;
-  if(!active.length){ view().innerHTML = h + `<div class="empty">${libFilter==="remade"?"Nothing remade yet."
-    :libFilter==="notes"?"No notes yet — open a saved idea and tap the pencil to write one."
+  if(!active.length){ view().innerHTML = h + `<div class="empty">${libFilter==="remaking"?"Nothing in progress yet — open a saved idea and tap Start remaking."
+    :libFilter==="completed"?"Nothing completed yet. Finish a remake and mark it done to build your track record."
     :"Nothing saved yet — tap the star on any video in Discover or on a creator's page."}</div>`; return; }
   h += `<div class="vgrid">` + active.map(v=>{
     const twOpen = autoplay ? `<div class="thumbwrap" data-vid="${v.id}">` : `<div class="thumbwrap">`;
+    const acts =
+      v.s==="saved" ?
+        `<button class="act" title="Start remaking" onclick="vSetById('${v.id}','remaking')">${ico("clapper")}</button>
+         <button class="act" title="Production notes" onclick="editNote('${v.id}')">${ico("pencil")}</button>
+         <button class="act" title="Remove from board" onclick="vSetById('${v.id}','saved')">${ico("x")}</button>`
+      : v.s==="remaking" ?
+        `<button class="act" title="Mark completed" onclick="vSetById('${v.id}','completed')">${ico("check")}</button>
+         <button class="act" title="Production notes" onclick="editNote('${v.id}')">${ico("pencil")}</button>
+         <button class="act" title="Back to Saved" onclick="vSetById('${v.id}','saved')">${ico("undo")}</button>`
+      :
+        `<button class="act" title="Reopen (back to Remaking)" onclick="vSetById('${v.id}','remaking')">${ico("undo")} Reopen</button>
+         <button class="act" title="Production notes" onclick="editNote('${v.id}')">${ico("pencil")}</button>`;
     return `<div class="vid tall" data-card="${v.id}">
       ${twOpen}
-        ${libFilter==="notes"?badgeHTML(v.s):""}
         <img loading="lazy" src="${esc(v.th)}" alt="${esc(v.t)}" onclick="playVid('${v.id}')">
         ${v.d?`<span class="dur">${v.d}s</span>`:""}
         <button class="expand" title="Open with sound" onclick="event.stopPropagation();playVid('${v.id}')">${ico("expand")}</button>
@@ -1543,11 +1572,7 @@ function renderRemake(){
       <div class="b">
         <div class="t">${esc(v.t)}</div>
         <div class="muted" style="font-size:12px">${esc(v.ch||"")}</div>
-        <div class="acts">
-          ${v.s==="saved"
-            ? `<button class="act" title="Mark as remade" onclick="vSetById('${v.id}','remade')">${ico("clapper")}</button><button class="act" title="Add a note" onclick="editNote('${v.id}')">${ico("pencil")}</button><button class="act" title="Remove from board" onclick="vSetById('${v.id}','saved')">${ico("x")}</button>`
-            : `<button class="act" title="Move back to your board" onclick="vSetById('${v.id}','saved')">${ico("undo")} Back to board</button><button class="act" title="Add a note" onclick="editNote('${v.id}')">${ico("pencil")}</button>`}
-        </div>
+        <div class="acts">${acts}</div>
         ${noteHTML(v.id)}
         <button class="cp" onclick="copyLink('${v.id}',this)">${ico("link")} Copy link</button>
       </div>
@@ -1619,9 +1644,9 @@ function _showDlg(cfg){
         ${cfg.title?`<div class="dlgtitle">${esc(cfg.title)}</div>`:""}
         <div class="dlgmsg">${esc(cfg.msg)}</div>
         ${cfg.input?(cfg.multiline
-          ?`<textarea id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="margin-top:12px"></textarea>`
-          :`<input type="text" id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="width:100%;margin-top:12px">`):""}
-        <div class="row" style="justify-content:flex-end;margin-top:16px">
+          ?`<textarea id="dlgInput" placeholder="${esc(cfg.placeholder||"")}"></textarea>`
+          :`<input type="text" id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="width:100%">`):""}
+        <div class="row" style="justify-content:flex-end">
           ${cfg.cancelText!==null?`<button class="btn sec" onclick="_dlgCancel()">${esc(cfg.cancelText||"Cancel")}</button>`:""}
           <button class="btn"${okStyle} onclick="_dlgOk()">${esc(cfg.okText||"OK")}</button>
         </div>
@@ -1717,7 +1742,7 @@ function renderSet(){
   </ol></div></details></div>
   <div class="card" style="margin-bottom:12px">
     <b>Data</b>
-    <div class="muted" style="margin:6px 0 10px">${creators.length} creators · ${Object.values(library).filter(e=>e.s==="saved").length} saved · ${Object.values(library).filter(e=>e.s==="remade").length} remade · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
+    <div class="muted" style="margin:6px 0 10px">${creators.length} creators · ${Object.values(library).filter(e=>e.s==="saved").length} saved · ${Object.values(library).filter(e=>e.s==="remaking").length} remaking · ${Object.values(library).filter(e=>e.s==="completed").length} completed · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
     <div class="row">
       <button class="btn sec" onclick="exportAll()">${ico("download")} Backup (JSON)</button>
       <button class="btn sec" onclick="document.getElementById('impF').click()">${ico("upload")} Restore backup</button>
@@ -1726,11 +1751,11 @@ function renderSet(){
     </div>
   </div>`;
 }
-function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); uiAlert(apiKey?"Key saved ✓":"Key cleared"); renderSet(); }
+function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); cloudSave(); uiAlert(apiKey?"Key saved ✓":"Key cleared"); renderSet(); }
 async function removeKey(){
-  const ok = await uiConfirm("Remove your API key from this device? Your saved creators and ideas are untouched — you can paste a new key anytime.", {title:"Remove key", okText:"Remove", danger:true});
+  const ok = await uiConfirm("Remove your saved API key? Your creators and ideas stay exactly where they are, and you can add a new key anytime.", {title:"Remove key", okText:"Remove", danger:true});
   if(!ok) return;
-  apiKey=""; store.del("ss_key"); renderSet();
+  apiKey=""; store.del("ss_key"); cloudSave(); renderSet();
 }
 function clearCaches(){
   const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("ss_vids_")) keys.push(k); }
@@ -1747,7 +1772,7 @@ function importAll(inp){
   r.onload = ()=>{ try{
     const d = JSON.parse(r.result);
     if(d.creators) creators = d.creators;
-    if(d.library) library = d.library;
+    if(d.library) library = normalizeLib(d.library);
     else if(d.remakes) library = migrateRemakes(d.remakes);
     persist(); uiAlert("Backup restored ✓"); render();
   }catch(e){ uiAlert("Couldn't read that file.", {title:"Import failed"}); } };
