@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-16 (S+Play logo & favicon, Saved→Remaking→Completed workflow, API key + data sync per account, Production Notes modal, landing CTA/mockup polish)
+**Last updated:** 2026-07-16 (bulk creator import — paste many, validate concurrently, summary; plus S+Play logo, Saved→Remaking→Completed workflow, key/data sync, Production Notes)
 
 ## Product ambition — read this first
 
@@ -152,10 +152,17 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   `IntersectionObserver` (`observePreviews`/`startPreview`/`stopPreview`/
   `stopAllPreviews`, threshold 0.5). ⤢ opens focused player with sound.
   **🔗 Copy link** button on every card (Discover, channel Top Shorts, Remake list).
-- **My directory (workspace):** add creators by @handle/URL (confirmed live against
-  YouTube — button says "Add creator", not "verify"). **No starter pack** — we don't
-  push any creator (they don't pay for placement); the empty state invites you to add
-  creators you already admire or head to Discover. Deliberately lean — no country input,
+- **My directory (workspace):** **bulk add** — the add box is a textarea; paste one
+  creator or a whole list (handles, usernames, channel URLs, @names) separated by
+  newlines / commas / spaces / tabs. `parseBulkCreators`+`normalizeToken` tokenize it,
+  extract handles/ids from URLs (`/@`, `/channel/UC…`, `/c/`, `/user/`), drop blanks +
+  junk + emoji, and dedupe case-insensitively. `addCreators` validates each against
+  YouTube **concurrently (5 at a time)** with a live `X / N` progress bar, keeps going
+  past failures, then shows a dismissible summary banner ("Imported N · skipped M" with
+  a View-details ✓/✕ list via `importSummary`/`importSummaryHTML`). Confirmed live
+  against YouTube; **no starter pack** — we don't push any creator (they don't pay for
+  placement); the empty state invites you to add creators you admire or use Discover.
+  Deliberately lean — no country input,
   no country/style filter dropdowns, no country grouping; a single grid **ranked by
   Scout Score** (scouted creators first) with a name search. `dirF = {q}` only.
 - **Creator workflow (progress model):** every video has one permanent status keyed

@@ -74,6 +74,24 @@ button.btn.sec{background:var(--bg2);color:var(--ink);border:1px solid var(--lin
 button.btn.sec:hover{background:var(--card2);border-color:var(--ink3)}
 button.btn.small{padding:7px 12px;font-size:13px}
 button.btn:disabled{opacity:.5;cursor:default}
+/* bulk creator import */
+.addbox{flex:1;min-height:46px;max-height:220px;line-height:1.5}
+.importbar{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink2)}
+.importbar b{color:var(--ink);font-variant-numeric:tabular-nums}
+.importsum{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.importsum-head{display:flex;align-items:center;gap:12px}
+.importsum-msg{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex:1}
+.importsum-msg .i{color:var(--ok);width:17px;height:17px;flex:0 0 auto}
+.importsum-toggle{background:var(--bg2);border:1px solid var(--line);color:var(--ink2);border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.importsum-toggle:hover{border-color:var(--ink3);color:var(--ink)}
+.importsum-x{background:none;border:none;color:var(--ink3);cursor:pointer;display:flex;padding:4px;line-height:1}
+.importsum-x:hover{color:var(--ink)}.importsum-x .i{width:16px;height:16px}
+.importsum-body{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px;font-size:13px;max-height:260px;overflow-y:auto}
+.imp-ok,.imp-no{display:flex;align-items:center;gap:8px}
+.imp-ok .i{color:var(--ok);width:14px;height:14px;flex:0 0 auto}
+.imp-no{color:var(--ink2)}
+.imp-no .i{color:var(--danger);width:14px;height:14px;flex:0 0 auto}
+.imp-no small{color:var(--ink3);font-size:12px}
 .tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;background:var(--accent-bg);color:var(--accent);margin:2px 3px 0 0}
 .tag.warn{background:var(--warn-bg);color:var(--warn)}
 .tag.ok{background:var(--ok-bg);color:var(--ok)}
@@ -737,13 +755,6 @@ async function resolveChannel(c){
            subs:+(it.statistics.subscriberCount||0), uploads:it.contentDetails.relatedPlaylists.uploads,
            videoCount:+(it.statistics.videoCount||0) };
 }
-function parseChannelInput(str){
-  str = str.trim();
-  const ch = str.match(/channel\/(UC[\w-]{10,})/); if(ch) return {id:ch[1]};
-  const at = str.match(/@([\w.\-]+)/); if(at) return {handle:at[1]};
-  if(/^UC[\w-]{10,}$/.test(str)) return {id:str};
-  return {handle:str.replace(/^@/,"")};
-}
 
 /* ---------- scanning ---------- */
 let scan = {active:false, cancelled:false};
@@ -1139,6 +1150,55 @@ async function addFromDisc(chId, chName){
 
 /* ---------- My directory (creator workspace, ranked by Scout Score) ---------- */
 let dirF = {q:""};
+let importSummary = null;   // {added:[names], skipped:[{label,reason}], open:bool} after a bulk import
+function importSummaryHTML(){
+  if(!importSummary) return "";
+  const {added, skipped, open} = importSummary;
+  const parts = [`Imported <b>${added.length}</b> creator${added.length!==1?"s":""}`];
+  if(skipped.length) parts.push(`skipped <b>${skipped.length}</b>`);
+  const hasDetails = (added.length + skipped.length) > 0;
+  return `<div class="importsum">
+    <div class="importsum-head">
+      <span class="importsum-msg">${ico("check")} ${parts.join(" · ")}</span>
+      ${hasDetails?`<button class="importsum-toggle" onclick="toggleImportDetails()">${open?"Hide details":"View details"}</button>`:""}
+      <button class="importsum-x" title="Dismiss" onclick="dismissImport()">${ico("x")}</button>
+    </div>
+    ${open?`<div class="importsum-body">
+      ${added.map(a=>`<div class="imp-ok">${ico("check")} ${esc(a)}</div>`).join("")}
+      ${skipped.map(s=>`<div class="imp-no">${ico("x")} ${esc(s.label)} <small>(${esc(s.reason)})</small></div>`).join("")}
+    </div>`:""}
+  </div>`;
+}
+function toggleImportDetails(){ if(importSummary){ importSummary.open=!importSummary.open; renderDir(); } }
+function dismissImport(){ importSummary=null; renderDir(); }
+function importProgressHTML(done,total){
+  return `<div class="importbar" style="margin-top:10px"><span>Importing creators… <b>${done} / ${total}</b></span><div class="bar"><i style="width:${total?Math.round(done/total*100):0}%"></i></div></div>`;
+}
+/* Parse a free-form paste (lines / commas / spaces / URLs / @handles) into a
+   deduped list of {parsed:{id|handle}, label}. Ignores blanks + junk. */
+function normalizeToken(tok){
+  tok = (tok||"").trim().replace(/[\s,;.)\]>]+$/,"");
+  if(!tok) return null;
+  let m;
+  if((m=tok.match(/channel\/(UC[\w-]{10,})/)))                       return {id:m[1]};
+  if((m=tok.match(/(?:youtube\.com|youtu\.be)\/@([A-Za-z0-9._\-]+)/i))) return {handle:m[1]};
+  if((m=tok.match(/\/(?:c|user)\/([A-Za-z0-9._\-]+)/i)))             return {handle:m[1]};
+  if(/^https?:\/\//i.test(tok)) return null;                          // unrecognized URL
+  if(/^UC[\w-]{10,}$/.test(tok)) return {id:tok};
+  const h = tok.replace(/^@/,"");
+  return /^[A-Za-z0-9._\-]{2,}$/.test(h) ? {handle:h} : null;
+}
+function parseBulkCreators(raw){
+  const seen=new Set(), out=[];
+  (raw||"").split(/[\s,;]+/).forEach(tok=>{
+    const p=normalizeToken(tok); if(!p) return;
+    const key = p.id ? "id:"+p.id.toLowerCase() : "h:"+p.handle.toLowerCase();
+    if(seen.has(key)) return;
+    seen.add(key);
+    out.push({parsed:p, label:p.handle||p.id});
+  });
+  return out;
+}
 function renderDir(){
   let list = creators.map((c,i)=>({...c,_i:i}));
   if(dirF.q){ const q=dirF.q.toLowerCase(); list=list.filter(c=>(c.name+" "+(c.handle||"")+" "+(c.tag||"")).toLowerCase().includes(q)); }
@@ -1147,12 +1207,14 @@ function renderDir(){
 
   let h = `<h2>My directory</h2>
   <div class="card" style="margin-bottom:12px">
-    <div class="row">
-      <input type="text" id="addIn" placeholder="Add a creator: @handle or channel URL">
-      <button class="btn" onclick="addCreator()">Add creator</button>
+    <div class="row" style="align-items:flex-start">
+      <textarea id="addIn" class="addbox" rows="1" placeholder="Add creators — paste @handles, usernames, or channel links. One per line, or separated by commas or spaces." oninput="this.style.height='auto';this.style.height=Math.min(220,this.scrollHeight)+'px'"></textarea>
+      <button class="btn" id="addBtn" onclick="addCreators()">Add creators</button>
     </div>
-    <div class="muted" style="margin-top:7px">Add a creator you love by @handle or link — we'll confirm the channel on YouTube automatically. Not sure who yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
-  </div>`;
+    <div id="addProgress"></div>
+    <div class="muted" style="margin-top:7px">Paste one creator or a whole list at once — we'll confirm each channel on YouTube and skip any that don't exist. Not sure who yet? <a onclick="go('disc')" style="cursor:pointer">Discover</a> will help you find them.</div>
+  </div>
+  ${importSummaryHTML()}`;
   if(!creators.length){
     h += `<div class="card" style="text-align:center;padding:34px 24px">
       <b>Build your creator directory.</b>
@@ -1184,22 +1246,54 @@ async function editTags(i){
   if(t===null) return;
   creators[i].tag = t; persist(); renderDir();
 }
-async function addCreator(){
-  const inp = document.getElementById("addIn").value.trim();
-  const country = "Uncategorized";
-  if(!inp) return;
-  if(!(await ensureCanScout())) return;
-  const parsed = parseChannelInput(inp);
-  try{
-    sbar(true,"Verifying channel…",30);
-    const meta = await resolveChannel(parsed);
-    if(creators.some(c=>c.id===meta.id)){ sbar(false); await uiAlert("Already in your directory: "+meta.title); return; }
-    creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta});
-    persist(); sbar(false); renderDir();
-  }catch(e){ sbar(false);
-    if(isTrialGate(e)){ trialEndedPrompt(); return; }
-    uiAlert(e.message, {title:"Couldn't add creator"});
+/* Bulk-capable: works for one creator or a whole pasted list. Validates each
+   against YouTube concurrently, keeps going past failures, shows a summary. */
+async function addCreators(){
+  const raw = (document.getElementById("addIn")||{}).value || "";
+  const tokens = parseBulkCreators(raw);
+  if(!tokens.length){
+    if(raw.trim()) uiAlert("Paste a creator's @handle, username, or channel link — one per line, or separated by commas or spaces.", {title:"Nothing to add"});
+    return;
   }
+  if(!(await ensureCanScout())) return;
+
+  importSummary = null;
+  const btn = document.getElementById("addBtn"); if(btn) btn.disabled = true;
+  const prog = document.getElementById("addProgress");
+  const total = tokens.length; let done = 0;
+  const paint = ()=>{ if(prog) prog.innerHTML = importProgressHTML(done, total); };
+  paint();
+
+  const added = [], skipped = [];
+  const haveId = new Set(creators.map(c=>c.id||(c.meta&&c.meta.id)).filter(Boolean));
+  let trialHit = false;
+  const queue = [...tokens];
+  async function worker(){
+    while(queue.length && !trialHit){
+      const t = queue.shift();
+      try{
+        const meta = await resolveChannel(t.parsed);
+        if(haveId.has(meta.id)){ skipped.push({label:t.label, reason:"already added"}); }
+        else{
+          haveId.add(meta.id);
+          creators.push({name:meta.title, handle:t.parsed.handle||meta.id, id:meta.id, country:"Uncategorized", tag:"", meta});
+          added.push(meta.title);
+        }
+      }catch(e){
+        if(isTrialGate(e)){ trialHit=true; queue.length=0; }
+        else skipped.push({label:t.label, reason:/couldn't find|not find/i.test(e.message||"")?"not found":"couldn't verify"});
+      }
+      done++; paint();
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(5,total)}, worker));
+
+  persist();
+  if(btn) btn.disabled = false;
+  const box = document.getElementById("addIn"); if(box){ box.value=""; box.style.height="auto"; }
+  importSummary = (added.length||skipped.length) ? {added, skipped, open:false} : null;
+  renderDir();
+  if(trialHit) trialEndedPrompt();
 }
 async function removeCreator(i){
   if(!(await uiConfirm("Remove "+creators[i].name+" from your directory?", {title:"Remove creator", okText:"Remove", danger:true}))) return;
