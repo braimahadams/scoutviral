@@ -3,8 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ScoutViral — find your next video idea</title>
+<title>ScoutViral | Find your next viral video idea</title>
 <meta name="description" content="Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral, and save the ones worth re-filming in your own style.">
+<meta property="og:title" content="ScoutViral | Find your next viral video idea">
+<meta property="og:description" content="Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral, and save the ones worth re-filming in your own style.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://scoutviral.com">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ScoutViral | Find your next viral video idea">
+<meta name="twitter:description" content="Built for creators who remake and reinvent viral videos. Pick any country and niche, see which Shorts actually went viral, and save the ones worth re-filming in your own style.">
 <meta name="theme-color" content="#101012" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f6f6f7" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-title" content="ScoutViral">
@@ -499,7 +506,7 @@ let apiKey   = store.get("ss_key","");
 
 /* ---------- shared trial key: a free taste before you bring your own ---------- */
 const TRIAL_KEY   = (window.TRIAL_YT_KEY || "").trim();
-const TRIAL_LIMIT = 5;                                   // free preview searches/scouts
+const TRIAL_LIMIT = 3;                                   // free preview searches/scouts
 const trialConfigured = ()=> !!TRIAL_KEY;
 const trialRemaining  = ()=> Math.max(0, TRIAL_LIMIT - (+store.get("ss_trial_used",0)||0));
 const usingTrial      = ()=> !apiKey && trialConfigured() && trialRemaining()>0;
