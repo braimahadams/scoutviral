@@ -460,7 +460,36 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
   .filterbar select{flex:1 1 calc(50% - 4px);min-width:0}
   .filterbar .numfield{flex:1 1 100%}
 }
-@media (max-width:520px){ .vgrid{grid-template-columns:1fr} }
+@media (max-width:560px){
+  /* two-up video cards on phones: seeing 2 at a glance while scrolling beats
+     one full-screen card at a time, which forced a lot of scrolling just to
+     compare ideas. Applies to Discover, a creator's scouted Shorts, and the
+     Saved/Remaking/Completed board — all share .vgrid/.vid.tall. */
+  .vgrid{grid-template-columns:1fr 1fr;gap:9px}
+  .vid .b{padding:8px 8px 9px;gap:5px}
+  .vid .t{font-size:12px;line-height:1.35;min-height:2.4em}
+  .vid .m{font-size:10.5px}
+  .vid .views{font-size:12.5px}
+  .vid .cp{font-size:11px;padding:6px}
+  .vid .cp .i{width:12px;height:12px}
+  .acts{gap:4px}
+  .act{font-size:12.5px;padding:6px 0}
+  .act .i{width:13px;height:13px}
+  .rank{font-size:10px;padding:2px 7px}
+  .expand{width:27px;height:27px;font-size:11px;top:6px;right:6px}
+  .dur{font-size:9.5px;padding:1px 5px;bottom:6px;right:6px}
+  .vbadge{font-size:9.5px;padding:2px 6px}
+  .vnote{font-size:11px;padding:6px 7px}
+  /* two-up creator directory cards, same reasoning */
+  .grid{grid-template-columns:1fr 1fr;gap:9px}
+  .creator{padding:10px}
+  .cr-head{gap:8px;padding-right:18px}
+  .cr-av{width:34px;height:34px}
+  .cr-av-ph{font-size:14px}
+  .creator .nm{font-size:13px}
+  .creator .hd{font-size:11px}
+  .scorechip{font-size:10px;padding:2px 6px}
+}
 </style>
 </head>
 <body>
