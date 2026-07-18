@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-16 (bulk creator import — paste many, validate concurrently, summary; plus S+Play logo, Saved→Remaking→Completed workflow, key/data sync, Production Notes)
+**Last updated:** 2026-07-16 (creator profile pics in directory, deletion tombstones so removed saves stay removed, mobile Discover filters wrap; reverted bulk import back to single-add on purpose)
 
 ## Product ambition — read this first
 
@@ -72,9 +72,15 @@ no build step, no framework, no npm). This is deliberate. Edit it directly.
   directory + remake list. Works in "local mode" (no login) too.
 - **Sync is MERGE, never overwrite** (`mergeCreators`/`mergeLibrary` in index.html):
   on sign-in, cloud and local are unioned — per-video the newest status wins and a
-  note from either side is always kept; creators dedupe by channel id OR handle
-  (starter-pack entries have no id until scouted). Sign-out never touches local
-  data, so nobody ever loses saves. Don't regress this to a plain overwrite.
+  note from either side is always kept; creators dedupe by channel id OR handle.
+  Sign-out never touches local data, so nobody ever loses saves. Don't regress this
+  to a plain overwrite.
+- **Deletions use tombstones** (`removed` map = `{id: removedAt}`, `ss_removed`,
+  synced): a union merge can't represent a removal, so deleting a saved idea records
+  a tombstone. `applyTombstones` drops any merged entry whose `u` ≤ its removal time,
+  so a removed video **doesn't come back after refresh/sync**; re-adding it (newer
+  `u`) wins and clears the tombstone (`pruneRemoved` forgets stale ones). Restoring a
+  backup clears tombstones for its ids. `vSet` sets/clears the tombstone.
 - **Firestore:** `(default)` db, region nam5. Rules in `firestore.rules` lock each
   user to `/users/{uid}` only.
 - **GitHub repo:** https://github.com/braimahadams/scoutviral (branch `main`).
@@ -152,19 +158,18 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   `IntersectionObserver` (`observePreviews`/`startPreview`/`stopPreview`/
   `stopAllPreviews`, threshold 0.5). ⤢ opens focused player with sound.
   **🔗 Copy link** button on every card (Discover, channel Top Shorts, Remake list).
-- **My directory (workspace):** **bulk add** — the add box is a textarea; paste one
-  creator or a whole list (handles, usernames, channel URLs, @names) separated by
-  newlines / commas / spaces / tabs. `parseBulkCreators`+`normalizeToken` tokenize it,
-  extract handles/ids from URLs (`/@`, `/channel/UC…`, `/c/`, `/user/`), drop blanks +
-  junk + emoji, and dedupe case-insensitively. `addCreators` validates each against
-  YouTube **concurrently (5 at a time)** with a live `X / N` progress bar, keeps going
-  past failures, then shows a dismissible summary banner ("Imported N · skipped M" with
-  a View-details ✓/✕ list via `importSummary`/`importSummaryHTML`). Confirmed live
-  against YouTube; **no starter pack** — we don't push any creator (they don't pay for
-  placement); the empty state invites you to add creators you admire or use Discover.
-  Deliberately lean — no country input,
-  no country/style filter dropdowns, no country grouping; a single grid **ranked by
-  Scout Score** (scouted creators first) with a name search. `dirF = {q}` only.
+- **My directory (workspace):** add creators **one at a time** by @handle/URL
+  (`addCreator`, confirmed live against YouTube; Enter submits). Bulk paste-import was
+  built then **deliberately reverted** — Braimah wants to discourage over-importing;
+  Discover already covers browsing many. **No starter pack** — we don't push any
+  creator (they don't pay for placement). Cards show the creator's **profile photo**
+  (`c.meta.thumb` → `.cr-av`, initial-letter placeholder when absent) beside the name
+  for at-a-glance recognition. Deliberately lean — no country input, no filter
+  dropdowns; a single grid **ranked by Scout Score** with a name search. `dirF = {q}`.
+- **Mobile Discover filters wrap** (`.filterbar` at ≤600px is `flex-wrap:wrap`, NOT a
+  hidden horizontal scroll) so all controls — country, niche, result count, sort,
+  time — are visible. Search placeholders are short ("Type your own search…",
+  "@handle or channel link") so they fit small inputs; Enter submits both.
 - **Creator workflow (progress model):** every video has one permanent status keyed
   by its YouTube id — **New / ⭐ Saved / 🎬 Remaking / ✅ Completed / 🚫 Skipped** —
   stored in the `library` map (`ss_library`, synced to Firestore). The pipeline is
