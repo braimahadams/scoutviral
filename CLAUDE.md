@@ -151,16 +151,22 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   component's look, glance at its `.lp-*` mock twin so they don't drift.
 - **The "Discover worldwide" visual is a creator mesh** (`.lp-mesh`, built in
   `renderHome` from `meshNodes`/`meshLinks`), not the old pulsing-pins map. It
-  reads as a live global network: gradient-avatar nodes (`.lp-node`, an `ico("user")`
-  silhouette on an `LP_G` gradient) placed in a rough continent layout — N/S
-  America, Europe, Africa, a central **hub** node, E-Asia, Oceania — joined by
-  animated dashed "connection" lines (`.lp-mline`, red accent, `lpflow` flowing
-  dash) over a masked dotted globe-surface texture. **Alignment trick:** node
-  `left/top` % and the SVG path coordinates share one 0–100 space because the SVG
-  is `preserveAspectRatio="none"`, so lines land exactly on avatar centers — keep
-  that if you move nodes. Deliberately **gradient avatars, not photos** (same
-  reason as every other mock: crisp, theme-aware, zero network weight, no external
-  asset). All animation is reduced-motion-gated.
+  reads as a live global network **over a dotted world map**: gradient-avatar
+  nodes (`.lp-node`, an `ico("user")` silhouette on an `LP_G` gradient) sit on
+  their home continent — N/S America, Europe, Africa, a central **hub** node,
+  E-Asia, Oceania — joined by animated dashed "connection" lines (`.lp-mline`,
+  red accent, `lpflow` flowing dash). The world map is **generated, not an asset**:
+  `CONT` is a list of continent ellipses `[cx,cy,rx,ry]` and a grid scan keeps a
+  faint dot (`.lp-mdots circle`) wherever it falls inside one — so a creator from
+  any continent sees themselves placed on it. **Coordinate trick:** the SVG is
+  `viewBox="0 0 210 100" preserveAspectRatio="none"` over the ~2.1:1 box (so units
+  are ≈square → dots render round); a node's HTML `left/top` is a %, and its SVG
+  point is `(xPct*2.1, yPct)` — lines, dots, and avatars all share that space, so
+  endpoints land exactly on avatar centers (verified 0px). Move a node → its
+  continent ellipse must move too, or it floats off the land. Deliberately
+  **gradient avatars, not photos** (same reason as every other mock: crisp,
+  theme-aware, zero network weight, no external asset). All animation is
+  reduced-motion-gated.
 - **Overflow gotcha (fixed once, don't reintroduce):** the mock app window
   (`.lp-stage{max-width:940px}`) fills its column with **zero side margin** for
   almost the entire 641–976px range (main's content width ≤ 940px there), so the

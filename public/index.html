@@ -310,11 +310,8 @@ html{scroll-behavior:smooth}
 .lp-panelBd{padding:15px}
 /* discover visual — worldwide creator mesh (connected creators, globe surface) */
 .lp-mesh{position:relative;height:196px;border-radius:12px;background:radial-gradient(130% 100% at 50% 40%,var(--card2),var(--bg2));border:1px solid var(--line);overflow:hidden;margin-bottom:13px}
-.lp-mesh::before{content:"";position:absolute;inset:0;
-  background-image:radial-gradient(circle,var(--line) 1.1px,transparent 1.6px);background-size:15px 15px;
-  -webkit-mask:radial-gradient(120% 96% at 50% 44%,#000 38%,transparent 80%);mask:radial-gradient(120% 96% at 50% 44%,#000 38%,transparent 80%);
-  opacity:.85}
 .lp-mesh svg{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.lp-mdots circle{fill:var(--ink3);opacity:.34}
 .lp-mline{fill:none;stroke:var(--accent);stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-dasharray:3 7;opacity:.55;animation:lpflow 3.4s linear infinite}
 @keyframes lpflow{to{stroke-dashoffset:-20}}
 .lp-node{position:absolute;transform:translate(-50%,-50%);width:33px;height:33px;z-index:2}
@@ -1043,26 +1040,49 @@ function renderHome(){
 
   const nicheChips=["Silent comedy","Funny faces","Food & cooking","Dance","Fashion","Pets"]
     .map((n,i)=>`<span class="lp-fchip ${i===0?"on":""}">${n}</span>`).join("");
-  /* Worldwide creator mesh: avatar nodes spread across the globe (a rough
-     continent layout — N/S America, Europe, Africa, a central hub, E-Asia,
-     Oceania), joined by animated "connection" lines like a live network.
-     Node left/top % and the SVG path coords share one 0–100 space (the SVG is
-     preserveAspectRatio="none"), so lines land exactly on the avatars. */
+  /* Worldwide creator mesh over a dotted world map. Avatar nodes sit on their
+     home continent (N/S America, Europe, Africa, a central hub, E-Asia,
+     Oceania), joined by animated "connection" lines like a live network, so a
+     creator from any continent sees themselves on it.
+     Coordinate space: the SVG is `viewBox="0 0 210 100" preserveAspectRatio=none`
+     over a ~2.1:1 box, so 1 unit ≈ 2px both ways → continent dots render round.
+     Node HTML uses left/top %, and its SVG point is (xPct*2.1, yPct) — same space
+     as the lines and dots, so everything lands exactly on the avatars. */
+  const MW=210;                                   // svg width units (x); y is 0–100
   const meshNodes=[
     {x:19,y:31,g:0},{x:29,y:74,g:4},{x:46,y:23,g:1},{x:54,y:61,g:2},
     {x:63,y:42,g:5,hub:1},{x:80,y:29,g:6},{x:85,y:68,g:3}
   ];
+  const sx=p=>+(p*(MW/100)).toFixed(1);
+  /* dotted world map: continents as unions of ellipses (cx,cy,rx,ry) in svg
+     space; a dot is kept if it falls inside any one. */
+  const CONT=[
+    [34,26,26,15],[44,40,10,8],                   // N America + Central/Mexico
+    [70,12,8,6],                                   // Greenland
+    [62,60,15,10],[58,77,10,11],                  // S America (upper + tapering)
+    [99,20,13,8],                                 // Europe
+    [110,48,22,9],[112,64,16,12],                 // Africa (Sahara + sub-Saharan)
+    [128,40,14,8],                                // Middle East (under the hub)
+    [155,27,38,14],                               // Asia
+    [137,49,10,8],                                // India
+    [165,52,16,5],                                // SE Asia / Indonesia
+    [178,68,16,7],[196,80,4,4]                    // Australia + NZ
+  ];
+  const inLand=(x,y)=>CONT.some(([cx,cy,rx,ry])=>((x-cx)/rx)**2+((y-cy)/ry)**2<=1);
+  let dots="";
+  for(let y=4;y<98;y+=4.2) for(let x=3+(Math.round(y/4.2)%2?2.1:0);x<MW-1;x+=4.2)
+    if(inLand(x,y)) dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.15"/>`;
   const meshLinks=[[4,0],[4,1],[4,2],[4,3],[4,5],[4,6],[0,2],[3,6],[1,5]];
   const meshPaths=meshLinks.map(([a,b],i)=>{
-    const A=meshNodes[a],B=meshNodes[b], mx=(A.x+B.x)/2, my=(A.y+B.y)/2-8;
-    return `<path class="lp-mline" style="animation-delay:${(i*0.3).toFixed(2)}s" d="M${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}"/>`;
+    const A=meshNodes[a],B=meshNodes[b], AX=sx(A.x),BX=sx(B.x), mx=(AX+BX)/2, my=(A.y+B.y)/2-8;
+    return `<path class="lp-mline" style="animation-delay:${(i*0.3).toFixed(2)}s" d="M${AX} ${A.y} Q ${mx} ${my} ${BX} ${B.y}"/>`;
   }).join("");
   const meshDots=meshNodes.map((n,i)=>
     `<span class="lp-node ${n.hub?"hub":""}" style="left:${n.x}%;top:${n.y}%">
        <span class="lp-ping" style="animation-delay:${(i*0.42).toFixed(2)}s"></span>
        <span class="lp-av" style="background:${LP_G[n.g]}">${ico("user")}</span>
      </span>`).join("");
-  const mesh=`<div class="lp-mesh"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${meshPaths}</svg>${meshDots}</div>`;
+  const mesh=`<div class="lp-mesh"><svg viewBox="0 0 ${MW} 100" preserveAspectRatio="none" aria-hidden="true"><g class="lp-mdots">${dots}</g>${meshPaths}</svg>${meshDots}</div>`;
 
   const rankRows=[
     {n:1,t:"POV: you finally tried it",v:"245M",thumb:LP_G[4],w:100},
