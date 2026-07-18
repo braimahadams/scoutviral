@@ -55,8 +55,28 @@ nav button{display:flex;align-items:center;gap:7px;border:none;background:transp
 nav button .ico{font-size:16px;line-height:1}
 nav button:hover{color:var(--ink);background:var(--card2)}
 nav button.on{color:var(--accent);background:var(--accent-bg);font-weight:600}
-#authbox{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
-#authbox img{width:28px;height:28px;border-radius:50%;border:1px solid var(--line)}
+#authbox{margin-left:auto;display:flex;align-items:center;font-size:13px;color:var(--ink2)}
+.acctwrap{position:relative}
+.acctbtn{display:flex;align-items:center;gap:8px;background:none;border:1px solid transparent;border-radius:11px;padding:5px 9px 5px 5px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink2);transition:background .12s,border-color .12s}
+.acctbtn:hover{background:var(--card2);border-color:var(--line)}
+.acctbtn img,.acctbtn .acct-ph{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);flex:0 0 auto}
+.acctbtn .acct-ph{background:var(--bg2);color:var(--ink3);display:flex;align-items:center;justify-content:center}
+.acctbtn .acct-ph .i{width:15px;height:15px}
+.acctbtn .lbl{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the inline top nav (Discover/Directory/Remakes/Settings) is tight with the
+   account button between ~721-860px, before nav drops to the mobile bottom bar
+   at 720px — hide the account label a bit earlier so nothing crowds off-screen */
+@media (max-width:860px){
+  .acctbtn .lbl{display:none}
+  .acctbtn{padding:5px}
+}
+.acctbtn .i:last-child{width:14px;height:14px;color:var(--ink3);flex:0 0 auto}
+.acctmenu{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:200px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 50px -12px rgba(0,0,0,.45);padding:6px;z-index:60;animation:dlgpop .13s ease-out}
+.acctmenu.open{display:block}
+.acctitem{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;text-align:left;color:var(--ink);font-family:inherit;font-size:14px;font-weight:500;padding:9px 10px;border-radius:9px;cursor:pointer;transition:background .1s}
+.acctitem:hover{background:var(--card2)}
+.acctitem .i{width:16px;height:16px;color:var(--ink3);flex:0 0 auto}
+.acctitem-static{padding:9px 10px;font-size:12.5px}
 main{max-width:1180px;width:100%;margin:0 auto;padding:24px 18px 48px;min-height:calc(100vh - 162px)}
 h2{font-size:23px;font-weight:700;letter-spacing:-.02em;margin:2px 0 6px}
 h3{font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin:26px 0 11px}
@@ -201,7 +221,7 @@ a{color:var(--accent);text-decoration-color:var(--accent-bg)}
 /* ===================== Landing page ===================== */
 html{scroll-behavior:smooth}
 .lp{position:relative;z-index:1}
-.lp-glow{position:fixed;top:-160px;left:50%;transform:translateX(-50%);width:min(1200px,130vw);height:680px;pointer-events:none;z-index:0;
+.lp-glow{position:absolute;top:-160px;left:50%;transform:translateX(-50%);width:min(1200px,100%);height:680px;pointer-events:none;z-index:0;
   background:radial-gradient(56% 58% at 50% 42%,var(--accent-bg),transparent 68%);opacity:.9}
 .lp-reveal{opacity:0;transform:translateY(24px);transition:opacity .75s cubic-bezier(.22,.61,.36,1),transform .75s cubic-bezier(.22,.61,.36,1)}
 .lp-reveal.d1{transition-delay:.08s}.lp-reveal.d2{transition-delay:.16s}.lp-reveal.d3{transition-delay:.24s}
@@ -331,12 +351,20 @@ html{scroll-behavior:smooth}
   background:radial-gradient(80% 130% at 50% 0%,var(--accent-bg),transparent 58%),var(--card)}
 .lp-final h2{font-size:clamp(26px,4.2vw,42px);font-weight:800;letter-spacing:-.032em;line-height:1.08;margin-bottom:14px}
 .lp-final p{color:var(--ink2);font-size:16px;line-height:1.6;margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto}
+@media (max-width:1180px){
+  /* below ~1180px the mock app window fills the content column with little or
+     no side margin, so the floating cards' usual -26px/-22px spill has nowhere
+     safe to go and pushes the page wider. Tuck them just inside the window
+     edge instead — a positive inset can never overflow, at any width. */
+  .lp-score{left:6px}
+  .lp-saved{right:6px}
+}
 @media (max-width:820px){
   .lp-feat{grid-template-columns:1fr;gap:30px;padding:48px 0}
   .lp-feat.rev .lp-txt{order:0}
   .lp-feat .lp-p{max-width:none}
-  .lp-score{left:-6px;top:40px;width:158px}
-  .lp-saved{right:-4px;width:180px}
+  .lp-score{top:40px;width:158px}
+  .lp-saved{width:180px}
 }
 @media (max-width:640px){
   .lp-hero{padding:30px 0 4px}
@@ -356,11 +384,53 @@ html{scroll-behavior:smooth}
   .lp-float,.lp-pin{animation:none!important}
 }
 footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.6}
+/* ===================== Creator Dashboard ===================== */
+.dash{display:flex;flex-direction:column;gap:16px;max-width:900px}
+.dash-welcome h2{margin-bottom:3px}
+.dash-goal-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.dash-goal-num{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.dash-goal-num span{font-size:14px;font-weight:600;color:var(--ink3)}
+.dash-momentum{text-align:right}
+.dash-mom-val{font-size:24px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.dash-goalbar{margin-top:12px;height:8px}
+.dash-goalbar i{transition:width .5s cubic-bezier(.22,.61,.36,1)}
+.dash-goal-msg{margin-top:9px;font-size:13px}
+.dash-grid{display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;grid-auto-columns:13px;gap:3px;overflow-x:auto;padding-bottom:2px}
+.dash-grid .sq{width:13px;height:13px;border-radius:3px}
+.sq.l0{background:var(--bg2)}
+.sq.l1{background:color-mix(in srgb, var(--accent) 25%, var(--bg2))}
+.sq.l2{background:color-mix(in srgb, var(--accent) 50%, var(--bg2))}
+.sq.l3{background:color-mix(in srgb, var(--accent) 75%, var(--bg2))}
+.sq.l4{background:var(--accent)}
+.dash-legend{display:flex;align-items:center;gap:4px;font-size:11px;margin-top:10px}
+.dash-legend .sq{width:10px;height:10px;border-radius:2px;display:inline-block;margin:0 1px}
+.dash-trend{display:flex;gap:10px;align-items:flex-end;height:140px;padding-top:8px}
+.dash-tbar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+.dash-tval{font-size:12px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums}
+.dash-tbar i{display:block;width:100%;max-width:34px;background:var(--accent);border-radius:6px 6px 3px 3px;opacity:.88;transition:height .5s cubic-bezier(.22,.61,.36,1)}
+.dash-tlbl{font-size:10.5px;color:var(--ink3);white-space:nowrap}
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.dashtile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:11px;transition:transform .12s,border-color .12s}
+.dashtile:hover{transform:translateY(-2px);border-color:var(--line)}
+.dashtile .dt-ic{width:32px;height:32px;border-radius:10px;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.dashtile .dt-ic .i{width:16px;height:16px}
+.dashtile .dt-val{font-size:25px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.dashtile .dt-lbl{font-size:11px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.dash-insight{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}
+.dash-insight:last-child{border-bottom:none;padding-bottom:0}
+.dash-insight:first-child{padding-top:0}
+.dash-insight .i{color:var(--accent);width:16px;height:16px;flex:0 0 auto}
+@media (max-width:640px){
+  .dash-goal-head{align-items:flex-start}
+  .dash-mom-val{font-size:20px}
+}
 /* mobile: bottom tab bar */
 @media (max-width:720px){
   header{padding:11px 15px}
   main{padding:18px 14px calc(84px + env(safe-area-inset-bottom))}
-  #authbox span{display:none}
+  .acctbtn .lbl{display:none}
+  .acctbtn{padding:4px}
+  .acctmenu{right:-4px}
   nav{position:fixed;bottom:0;left:0;right:0;z-index:45;gap:0;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;box-shadow:0 -2px 18px rgba(0,0,0,.28)}
   nav button{flex-direction:column;gap:3px;flex:1;padding:6px 2px;border-radius:11px;font-size:10.5px;font-weight:500}
   nav button .ico{font-size:21px}
@@ -566,6 +636,24 @@ normalizeLib(library);
 /* tombstones: {id: removedAt} — so a delete on one device isn't re-added by the
    cloud merge (a plain union can't represent a removal). Synced like the library. */
 let removed = store.get("ss_removed", {}); if(!removed || typeof removed!=="object") removed={};
+/* activity log — append-only history of workflow events, powers the Dashboard
+   (contribution graph, streaks, trends). Never affects current state, so it
+   doesn't need tombstones; a simple union on sync is enough. Capped to stay small. */
+let activity = store.get("ss_activity", []); if(!Array.isArray(activity)) activity=[];
+function logActivity(t, id){
+  activity.push({t, id, at:Date.now()});
+  if(activity.length>2000) activity = activity.slice(activity.length-2000);
+}
+function mergeActivity(local, cloud){
+  const seen=new Set(), out=[];
+  [...(local||[]),...(cloud||[])].forEach(e=>{
+    if(!e || !e.t || !e.at) return;
+    const k=e.t+"|"+e.id+"|"+e.at;
+    if(seen.has(k)) return; seen.add(k); out.push(e);
+  });
+  out.sort((a,b)=>a.at-b.at);
+  return out.length>2000 ? out.slice(out.length-2000) : out;
+}
 function migrateRemakes(arr){ const lib={}; (arr||[]).forEach(r=>{ if(r&&r.id) lib[r.id]={s:"saved",t:r.title,th:r.thumb,v:r.views,ch:r.ch,at:r.at,d:r.dur,u:r.added||Date.now()}; }); return lib; }
 function vStat(id){ const e=library[id]; return e?e.s:"new"; }
 function vSet(v, s){
@@ -576,6 +664,7 @@ function vSet(v, s){
     library[id]={s, t:v.title||"", th:v.thumb||"", v:+v.views||0, ch:v.ch||v.channelTitle||"", at:v.at||"", d:v.dur||0, u:Date.now()};
     if(note) library[id].n=note;                                 // keep your note through status changes
     delete removed[id];                                          // it's back — clear any tombstone
+    logActivity(s, id);                                          // feeds the Dashboard's activity graph
   }
   persist();
 }
@@ -624,7 +713,8 @@ window.onFirebaseReady = function(api){
           removed  = mergeRemoved(removed, data.removed||{});
           library  = applyTombstones(normalizeLib(mergeLibrary(library, data.library || (data.remakes?migrateRemakes(data.remakes):{}))), removed);
           removed  = pruneRemoved(removed, library);
-          store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed);
+          activity = mergeActivity(activity, data.activity||[]);
+          store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); store.set("ss_activity",activity);
           /* the user's own API key follows their account — restored on any device,
              only ever adopted when this device doesn't already have one. */
           if(data.apiKey && !apiKey){ apiKey = data.apiKey; store.set("ss_key",apiKey); }
@@ -683,16 +773,46 @@ function pruneRemoved(rem, lib){
 function cloudSave(){
   if(!fb || !user || applyingCloud) return;
   clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,removed,apiKey,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
+  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,removed,activity,apiKey,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
 }
-function persist(){ store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); cloudSave(); }
+function persist(){ store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); store.set("ss_activity",activity); cloudSave(); }
+/* account control: one avatar/button in the header opens a small dropdown with
+   Dashboard + Settings + sign-in/out — the entry point for the personal workspace,
+   without adding a new item to the main nav. Works in local mode too (no fb). */
 function renderAuth(){
   const box = document.getElementById("authbox");
-  if(!fb){ box.innerHTML = `<span class="muted" title="Add your Firebase config to enable sign-in">local mode</span>`; return; }
-  if(user){ box.innerHTML = `${user.photoURL?`<img src="${esc(user.photoURL)}" alt="">`:""}<span>${esc(user.displayName||"")}</span>
-    <button class="btn small sec" onclick="fb.signOut()">Sign out</button>`; }
-  else{ box.innerHTML = `<button class="btn small" onclick="openAuthModal()">Sign in to sync</button>`; }
+  const label = user ? (user.displayName||user.email||"Account") : "Account";
+  const avatar = user && user.photoURL
+    ? `<img src="${esc(user.photoURL)}" alt="">`
+    : `<span class="acct-ph">${ico("user")}</span>`;
+  const authItem = !fb ? `<div class="acctitem-static muted">Local mode</div>`
+    : user ? `<button class="acctitem" onclick="closeAcctMenu();fb.signOut()">${ico("logout")} Sign out</button>`
+           : `<button class="acctitem" onclick="closeAcctMenu();openAuthModal()">${ico("logout")} Sign in to sync</button>`;
+  box.innerHTML = `<div class="acctwrap">
+    <button class="acctbtn" onclick="toggleAcctMenu(event)" aria-haspopup="true" aria-expanded="false">
+      ${avatar}<span class="lbl">${esc(label)}</span>${ico("chevdown")}
+    </button>
+    <div class="acctmenu" id="acctmenu">
+      <button class="acctitem" onclick="closeAcctMenu();go('dash')">${ico("chart")} Dashboard</button>
+      <button class="acctitem" onclick="closeAcctMenu();go('set')">${ico("gear")} Settings</button>
+      ${authItem}
+    </div>
+  </div>`;
 }
+let acctMenuOpen=false;
+function toggleAcctMenu(e){
+  if(e) e.stopPropagation();
+  acctMenuOpen=!acctMenuOpen;
+  const m=document.getElementById("acctmenu"), b=document.querySelector(".acctbtn");
+  if(m) m.classList.toggle("open",acctMenuOpen);
+  if(b) b.setAttribute("aria-expanded",acctMenuOpen?"true":"false");
+}
+function closeAcctMenu(){
+  acctMenuOpen=false;
+  const m=document.getElementById("acctmenu"); if(m) m.classList.remove("open");
+}
+document.addEventListener("click", e=>{ if(acctMenuOpen && !e.target.closest(".acctwrap")) closeAcctMenu(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && acctMenuOpen) closeAcctMenu(); });
 
 /* ---------- YouTube API ---------- */
 async function yt(endpoint, params){
@@ -751,6 +871,10 @@ const ICONS = {
   play:'<polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/>',
   rocket:'<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
   eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
+  chevdown:'<path d="m6 9 6 6 6-6"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 17a2.5 2.5 0 0 0 2.5-2.5c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7.5 7.5 0 1 1-15 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
 };
 function ico(name, cls){ return `<svg class="i${cls?" "+cls:""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||""}</svg>`; }
 
@@ -825,6 +949,7 @@ function render(){
   else if(route.v==="creator") renderCreator(route.c);
   else if(route.v==="disc") renderDisc();
   else if(route.v==="remake") renderRemake();
+  else if(route.v==="dash") renderDashboard();
   else renderSet();
 }
 
@@ -1155,7 +1280,7 @@ async function addFromDisc(chId, chName){
   try{
     sbar(true,"Verifying channel…",30);
     const meta = await resolveChannel({id:chId});
-    creators.push({name:meta.title, handle:chId, id:meta.id, country:country.trim()||"Uncategorized", tag:(NICHES[disc.n]||{}).n||"", meta});
+    creators.push({name:meta.title, handle:chId, id:meta.id, country:country.trim()||"Uncategorized", tag:(NICHES[disc.n]||{}).n||"", meta, addedAt:Date.now()});
     persist(); sbar(false);
     uiAlert("Added "+meta.title+" ✓ — it's in My directory.", {title:"Added"});
   }catch(e){ sbar(false);
@@ -1226,7 +1351,7 @@ async function addCreator(){
     sbar(true,"Verifying channel…",30);
     const meta = await resolveChannel(parsed);
     if(creators.some(c=>c.id===meta.id)){ sbar(false); await uiAlert("Already in your directory: "+meta.title); return; }
-    creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta});
+    creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta, addedAt:Date.now()});
     persist(); sbar(false); renderDir();
   }catch(e){ sbar(false);
     if(isTrialGate(e)){ trialEndedPrompt(); return; }
@@ -1238,6 +1363,179 @@ async function removeCreator(i){
   const c = creators.splice(i,1)[0];
   if(c.id) store.del("ss_vids_"+c.id);
   persist(); renderDir();
+}
+
+/* ================= Creator Dashboard =================
+   Not YouTube Studio: this measures creative CONSISTENCY, not channel performance
+   (no views/subs/revenue). Everything here is computed client-side from data
+   already on the device (creators, library, activity) — zero extra API calls,
+   loads instantly. */
+function dayKey(ts){ const d=new Date(ts); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function computeStreaks(events){
+  const days = new Set(events.map(e=>dayKey(e.at)));
+  const longest = (()=>{ if(!days.size) return 0;
+    const sorted=[...days].sort(); let run=1, best=1;
+    for(let i=1;i<sorted.length;i++){ const diff=Math.round((new Date(sorted[i])-new Date(sorted[i-1]))/864e5); run = diff===1?run+1:1; best=Math.max(best,run); }
+    return best; })();
+  if(!days.size) return {current:0, longest:0};
+  let cursor = new Date(); cursor.setHours(0,0,0,0);
+  if(!days.has(dayKey(cursor.getTime()))){
+    cursor.setDate(cursor.getDate()-1);                 // no activity yet today — streak's still alive if yesterday counts
+    if(!days.has(dayKey(cursor.getTime()))) return {current:0, longest};
+  }
+  let current=0;
+  while(days.has(dayKey(cursor.getTime()))){ current++; cursor.setDate(cursor.getDate()-1); }
+  return {current, longest};
+}
+function momentumScore({completionRate, avgPerWeek, current}){
+  const fCompletion = _clamp(completionRate/70, 0, 1);   // 70%+ completion = full marks
+  const fPace = _clamp(avgPerWeek/6, 0, 1);              // 6 completed/week = full marks
+  const fStreak = _clamp(current/10, 0, 1);              // 10-day streak = full marks
+  return Math.round(_clamp(100*(0.4*fCompletion + 0.35*fPace + 0.25*fStreak), 0, 100));
+}
+function dashStats(){
+  const entries = Object.values(library);
+  const ideasSaved = entries.length;                     // saved+remaking+completed currently in the workspace
+  const remaking = entries.filter(e=>e.s==="remaking").length;
+  const completed = entries.filter(e=>e.s==="completed").length;
+  const completionRate = ideasSaved ? Math.round(completed/ideasSaved*100) : 0;
+  const creatorsAdded = creators.length;
+  const countriesExplored = new Set(creators.map(c=>c.country).filter(c=>c && c!=="Uncategorized")).size;
+  const completedEvents = activity.filter(a=>a.t==="completed").sort((a,b)=>a.at-b.at);
+  const weeksSpan = completedEvents.length ? Math.max(1, Math.ceil((Date.now()-completedEvents[0].at)/(7*864e5))) : 1;
+  const avgPerWeek = completedEvents.length ? +(completedEvents.length/weeksSpan).toFixed(1) : 0;
+  const {current, longest} = computeStreaks(completedEvents);
+  const momentum = momentumScore({completionRate, avgPerWeek, current});
+  return {ideasSaved, remaking, completed, completionRate, creatorsAdded, countriesExplored, avgPerWeek, currentStreak:current, longestStreak:longest, momentum};
+}
+function dashContribution(){
+  const counts={};
+  activity.filter(a=>a.t==="completed").forEach(a=>{ const k=dayKey(a.at); counts[k]=(counts[k]||0)+1; });
+  const end=new Date(); end.setHours(0,0,0,0);
+  const start=new Date(end); start.setDate(start.getDate()-90);         // ~13 weeks back
+  start.setDate(start.getDate()-start.getDay());                        // align to the previous Sunday for clean columns
+  const cells=[];
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) cells.push({date:new Date(d), count:counts[dayKey(d.getTime())]||0});
+  return cells;
+}
+function dashWeeklyTrend(){
+  const weeks=6, buckets=Array.from({length:weeks},()=>0), now=Date.now();
+  activity.filter(a=>a.t==="completed").forEach(a=>{
+    const wk=Math.floor((now-a.at)/864e5/7);
+    if(wk>=0 && wk<weeks) buckets[wk]++;
+  });
+  buckets.reverse();
+  return buckets.map((count,i)=>({label: i===weeks-1?"This wk":i===weeks-2?"Last wk":`${weeks-1-i}w ago`, count}));
+}
+function dashWeeklyGoal(s){
+  const now=Date.now();
+  const done = activity.filter(a=>a.t==="completed" && (now-a.at)/864e5<7).length;
+  const goal = Math.max(3, Math.round(s.avgPerWeek)||3);
+  return {done, goal};
+}
+function dashGoalMsg(g){
+  if(g.done>=g.goal) return "Weekly goal reached — keep the momentum going.";
+  if(g.done===0) return "Complete your first video this week to get moving.";
+  const left=g.goal-g.done;
+  return `You're ${left} video${left!==1?"s":""} away from your weekly goal.`;
+}
+function dashInsights(s, trend){
+  const out=[];
+  const byDow=[0,0,0,0,0,0,0];
+  activity.filter(a=>a.t==="completed").forEach(a=>byDow[new Date(a.at).getDay()]++);
+  const maxDow=Math.max(...byDow);
+  if(maxDow>0){
+    const names=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    out.push({icon:"chart", text:`Your most productive day is ${names[byDow.indexOf(maxDow)]}.`});
+  }
+  const thisWk=trend[trend.length-1].count, lastWk=trend[trend.length-2]?trend[trend.length-2].count:0;
+  if(thisWk>lastWk) out.push({icon:"zap", text:`You've completed ${thisWk-lastWk} more video${thisWk-lastWk!==1?"s":""} than last week.`});
+  else if(thisWk<lastWk) out.push({icon:"clapper", text:`${lastWk-thisWk} fewer video${lastWk-thisWk!==1?"s":""} than last week — still time to catch up.`});
+  else if(thisWk>0) out.push({icon:"check", text:`Matching last week's pace — ${thisWk} completed so far.`});
+  if(s.currentStreak>=2) out.push({icon:"flame", text:`You're on a ${s.currentStreak}-day streak.`});
+  else if(s.longestStreak>=2) out.push({icon:"flame", text:`Your longest streak so far is ${s.longestStreak} days.`});
+  if(s.avgPerWeek>0) out.push({icon:"chart", text:`You average ${s.avgPerWeek} completed videos a week.`});
+  if(!out.length) out.push({icon:"star", text:"Save your first idea and mark it completed to start tracking your progress."});
+  return out.slice(0,5);
+}
+function dashGreeting(){
+  const h=new Date().getHours();
+  const time = h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+  const first = user&&user.displayName ? user.displayName.split(" ")[0] : "";
+  return first ? `${time}, ${esc(first)}` : time;
+}
+function contributionHTML(cells){
+  const level=c=> c===0?0 : c===1?1 : c===2?2 : c<=4?3 : 4;
+  return `<div class="dash-grid">` + cells.map(c=>`<span class="sq l${level(c.count)}" title="${c.count} completed · ${esc(fmtD(c.date.toISOString()))}"></span>`).join("") + `</div>`;
+}
+function trendHTML(trend){
+  const max=Math.max(1,...trend.map(t=>t.count));
+  return `<div class="dash-trend">` + trend.map(t=>`
+    <div class="dash-tbar">
+      <span class="dash-tval">${t.count}</span>
+      <i style="height:${Math.max(4,Math.round(t.count/max*84))}px"></i>
+      <span class="dash-tlbl">${esc(t.label)}</span>
+    </div>`).join("") + `</div>`;
+}
+function statTile(icon,label,value,suffix){
+  const val = suffix!==undefined
+    ? `<span class="dt-val lp-num" data-count="${value}" data-suffix="${esc(suffix)}">0</span>`
+    : `<span class="dt-val">${esc(String(value))}</span>`;
+  return `<div class="dashtile"><div class="dt-ic">${ico(icon)}</div>${val}<div class="dt-lbl">${esc(label)}</div></div>`;
+}
+function renderDashboard(){
+  const empty = Object.keys(library).length===0 && activity.length===0;
+  let h = `<div class="dash">
+  <div class="dash-welcome lp-reveal"><h2>${dashGreeting()}</h2><p class="muted">Here's how your creative momentum is building.</p></div>`;
+  if(empty){
+    h += `<div class="card lp-reveal d1" style="text-align:center;padding:34px 24px">
+      <b>Your workspace is just getting started.</b>
+      <div class="muted" style="margin:8px auto 0;max-width:420px">Save an idea and mark one completed, and your Dashboard will start tracking your progress — ideas saved, videos completed, streaks, and more.</div>
+      <button class="btn" style="margin-top:16px" onclick="go('disc')">Start discovering ${ico("arrowr")}</button>
+    </div></div>`;
+    view().innerHTML = h; lpInit(); return;
+  }
+  const s = dashStats(), trend = dashWeeklyTrend(), insights = dashInsights(s, trend), goal = dashWeeklyGoal(s);
+  h += `
+  <div class="card dash-goal lp-reveal d1">
+    <div class="dash-goal-head">
+      <div><div class="scorelabel">This week</div><div class="dash-goal-num"><b>${goal.done}</b><span> / ${goal.goal} completed</span></div></div>
+      <div class="dash-momentum"><div class="dash-mom-val tier-${scoutTier(s.momentum)}">${s.momentum}%</div><div class="scorelabel">Momentum</div></div>
+    </div>
+    <div class="bar dash-goalbar"><i style="width:${Math.min(100,Math.round(goal.done/goal.goal*100))}%"></i></div>
+    <div class="muted dash-goal-msg">${dashGoalMsg(goal)}</div>
+  </div>
+
+  <div class="card lp-reveal d1">
+    <h3 style="margin-top:0">Activity</h3>
+    <div class="muted" style="margin-bottom:10px;font-size:13px">Every square is a day — the more you completed, the brighter it is.</div>
+    ${contributionHTML(dashContribution())}
+    <div class="dash-legend muted">Less<span class="sq l0"></span><span class="sq l1"></span><span class="sq l2"></span><span class="sq l3"></span><span class="sq l4"></span>More</div>
+  </div>
+
+  <div class="card lp-reveal d2">
+    <h3 style="margin-top:0">Weekly trend</h3>
+    ${trendHTML(trend)}
+  </div>
+
+  <div class="dash-stats lp-reveal d2">
+    ${statTile("star","Ideas Saved",s.ideasSaved,"")}
+    ${statTile("clapper","Remaking",s.remaking,"")}
+    ${statTile("check","Completed",s.completed,"")}
+    ${statTile("zap","Completion Rate",s.completionRate,"%")}
+    ${statTile("folder","Creators Added",s.creatorsAdded,"")}
+    ${statTile("globe","Countries Explored",s.countriesExplored,"")}
+    ${statTile("chart","Avg / Week",s.avgPerWeek)}
+    ${statTile("flame","Longest Streak",s.longestStreak,"d")}
+  </div>
+
+  <div class="card lp-reveal d3">
+    <h3 style="margin-top:0">Insights</h3>
+    <div class="dash-insights">${insights.map(i=>`<div class="dash-insight">${ico(i.icon)}<span>${esc(i.text)}</span></div>`).join("")}</div>
+  </div>
+  </div>`;
+  view().innerHTML = h;
+  lpInit();
 }
 
 /* ---------- Creator page (custom topN + scan depth + cost estimate) ---------- */

@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-16 (creator profile pics in directory, deletion tombstones so removed saves stay removed, mobile Discover filters wrap; reverted bulk import back to single-add on purpose)
+**Last updated:** 2026-07-16 (Creator Dashboard — activity log, contribution graph, streaks/momentum, account dropdown; fixed floating-card & glow overflow at mid-range viewport widths)
 
 ## Product ambition — read this first
 
@@ -109,6 +109,13 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
 - **Bottom tab bar on mobile** (Discover/Directory/Remakes/Settings), inline top
   nav on desktop — driven by CSS media query on the single `<nav>`; `go()`/`data-v`
   unchanged. Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
+  **Main nav intentionally stays 4 items** — Dashboard is NOT a 5th tab (see below).
+- **Account control (`#authbox` → `.acctwrap`):** one avatar/icon button in the header
+  opens a small dropdown (`renderAuth`/`toggleAcctMenu`/`closeAcctMenu`) with
+  **Dashboard**, **Settings**, and Sign in/out (or "Local mode" if Firebase isn't
+  configured). Works identically signed-in or not — Dashboard reads local data either
+  way. Closes on outside click or Escape. The label hides at ≤860px (inline nav still
+  crowds the header there) leaving just the tappable avatar/icon.
 - **Branded dialogs** replace native `alert/confirm/prompt` — `uiAlert`/`uiConfirm`/
   `uiPrompt` (Promise-based) render into `#dialog`; destructive confirms use a red
   button. Escape = cancel, Enter = confirm. `uiPrompt` supports `{multiline:true}`
@@ -134,11 +141,60 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   over generated images on purpose: crisp at any DPI, theme-aware, zero network
   weight, and always matches the real UI. If you change a real component's look,
   glance at its `.lp-*` mock twin so they don't drift.
+- **Overflow gotcha (fixed once, don't reintroduce):** the mock app window
+  (`.lp-stage{max-width:940px}`) fills its column with **zero side margin** for
+  almost the entire 641–976px range (main's content width ≤ 940px there), so the
+  floating Scout Score / Saved cards' spill-outside-the-window effect
+  (`.lp-score{left:-26px}`/`.lp-saved{right:-22px}`) only has room to be negative
+  above **1181px**. Below that, a `@media (max-width:1180px)` rule pulls them to a
+  small **positive** inset (`left:6px`/`right:6px`) instead — never negative in that
+  range. `.lp-glow` is `position:absolute` sized `min(1200px,100%)` (not `100vw`,
+  which is wider than `clientWidth` whenever a vertical scrollbar is present —
+  classic scrollbar-gutter overflow bug). If you touch either, re-check overflow
+  across the full width range, not just the 3 preset breakpoints.
 - **Motion** (`lpInit`/`lpCount`/`lpParallax`, all `lp-`-prefixed): IntersectionObserver
   scroll-reveal, animated counters (computed live from `COUNTRIES.length`/`NICHES.length`
   — they can't drift), CSS float on the hero cards, and a gentle desktop-only pointer
   parallax. All gated behind `prefers-reduced-motion`; the mousemove listener is
   torn down in `go()` when leaving home. No emojis (SVG `ico()` only), no new deps.
+
+## Creator Dashboard (`dash` route / `renderDashboard`)
+
+- **Not YouTube Studio.** Deliberately tracks creative *consistency*, not channel
+  performance — no views/subs/revenue anywhere. Answers "am I making progress?", not
+  "how did I do?". Reached via the header account dropdown (see above), not the main
+  nav. Reuses the app's existing design tokens and the landing page's motion system
+  (`lpInit`/`lpCount`/`.lp-reveal`/`.lp-num`) — no new CSS framework, no new JS libs.
+- **Data source: 100% local, zero extra API calls.** Everything is computed from
+  `creators`, `library`, and a new **`activity` log** (`ss_activity`, array of
+  `{t:"saved"|"remaking"|"completed", id, at}`, appended by `logActivity()` inside
+  `vSet` on every real status change, capped at 2000 entries). Synced like the rest
+  (`mergeActivity` = union + dedupe by `t|id|at`, included in `cloudSave`/`persist`).
+  Creators also gained `addedAt` (set in `addCreator`/`addFromDisc`) for the
+  Countries Explored stat's provenance. **When adding any new trackable action,
+  call `logActivity(status, id)` — the Dashboard has no other way to see history.**
+- **Sections (top to bottom):** greeting → this-week goal + Momentum score → activity
+  contribution graph (`dashContribution`, 13 weeks × 7 days, Sunday-aligned, colored by
+  `color-mix(in srgb, var(--accent) N%, var(--bg2))` so it's theme-aware for free) →
+  6-week trend bar chart (`dashWeeklyTrend`) → 8 stat tiles (`dashStats`, `.dashtile`,
+  responsive `auto-fit` grid) → auto-generated insights (`dashInsights`, up to 5,
+  short sentences: most productive day, week-over-week delta, streak, average pace).
+  Empty state (no library entries and no activity) shows a single welcoming card
+  instead of a wall of zeros.
+- **Momentum score** (`momentumScore`, 0–100, reuses `scoutTier`'s good/mid/low
+  thresholds and colors): blend of completion rate (40%), pace/avgPerWeek (35%), and
+  current streak (25%) — modeled after `scoutScore`'s clamp-and-blend composite-index
+  pattern for consistency with the rest of the codebase.
+- **Streaks** (`computeStreaks`): current streak counts consecutive calendar days
+  with ≥1 completed video, walking back from today; if nothing's completed *yet*
+  today it still counts as alive through yesterday (breaks only after a full missed
+  day) — no Duolingo-style push notifications, just the number.
+- **Weekly goal**: rolling 7-day window, suggested goal = `max(3, round(avgPerWeek))`
+  — not user-editable (kept out of Settings on purpose, avoids feature bloat).
+- **Future scalability (built for, not built yet):** the section-by-section render
+  and the append-only `activity` log are intentionally generic enough to support
+  Year-in-Review, Weekly Review emails/summaries, or per-niche insights later without
+  a data-model change — don't add those now, just don't break the log shape.
 
 ## Features currently live
 
