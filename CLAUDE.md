@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-16 (Dashboard refinements — monthly calendar replaces the dot grid, user-editable weekly goal, removed the duplicate Settings entry from the account dropdown)
+**Last updated:** 2026-07-18 (Mobile: 2-up video/creator cards, tab-swipe navigation, Discover card redesign — inline + button to add a channel, removed the autoplay hint)
 
 ## Product ambition — read this first
 
@@ -236,6 +236,18 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   short-form content (comedy cluster, lifestyle, looks, food/fitness/travel,
   dance/music/art, DIY/hacks/ASMR, science/facts/motivation/money, tech/gaming/cars,
   pets/sports). Landing counters read these arrays' lengths automatically.
+- **Discover: adding a channel to your directory happens inline on the video card,
+  not in a separate list.** Used to show a "Channels in these results — tap to add"
+  chip row above the videos, aggregated by channel; this was confusing (which
+  chip belongs to which video?) and needed the user to cross-reference back to the
+  grid. Now each card's channel-name row (`.chrow`) carries its own small
+  `.chadd` **+** button next to the name, calling `addFromDisc(chId, chName, ...)`
+  directly — no aggregation step, no separate section. The button disappears once
+  that channel is already in the directory (`creators.some(c=>c.id===v.chId)`), and
+  `addFromDisc` removes any other matching `.chadd[data-ch]` buttons in place after
+  a successful add (a channel can appear on multiple video cards in one result set).
+  The old "they play muted as you scroll; tap the corner arrows for sound" hint
+  above the grid was also dropped — people already know tapping a video opens it.
 - **Video cards:** taller shorts-style ratio. On Discover they **autoplay muted +
   looped while on-screen and stop when scrolled out of view** — driven by an
   `IntersectionObserver` (`observePreviews`/`startPreview`/`stopPreview`/
@@ -253,6 +265,21 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   hidden horizontal scroll) so all controls — country, niche, result count, sort,
   time — are visible. Search placeholders are short ("Type your own search…",
   "@handle or channel link") so they fit small inputs; Enter submits both.
+- **Mobile: 2-up cards, not full-width.** At `≤560px`, `.vgrid` (video cards —
+  Discover, a creator's scouted Shorts, and the Saved/Remaking/Completed board all
+  share it) and `.grid` (the directory's creator list) switch from 1 column to 2,
+  with tightened font/padding/icon sizes so nothing feels cramped. One full-width
+  card per screen forced heavy scrolling just to compare a handful of ideas; 2-up
+  lets people scan and pick faster. Desktop is untouched — it already showed plenty
+  via the normal `auto-fill` grid.
+- **Mobile: swipe left/right between the 4 main tabs**, web-app equivalent of a
+  native tab swipe (`SWIPE_TABS = ["disc","dir","remake","set"]`, listeners in the
+  IIFE right after `render()`). Left = next tab, right = previous, clamped at both
+  ends (no wraparound). Only active at `≤720px` and only while on one of those 4
+  routes (not home/creator/dash/changelog); disabled whenever `.overlay` is present
+  in the DOM (video player, any branded dialog, the auth modal) so it can't fight
+  that UI. Threshold is 70px of horizontal movement and dx must dominate dy 1.5:1,
+  so normal vertical scrolling never triggers it.
 - **Creator workflow (progress model):** every video has one permanent status keyed
   by its YouTube id — **New / ⭐ Saved / 🎬 Remaking / ✅ Completed / 🚫 Skipped** —
   stored in the `library` map (`ss_library`, synced to Firestore). The pipeline is
