@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-18 (Mobile: 2-up video/creator cards, tab-swipe navigation, Discover card redesign — inline + button to add a channel, removed the autoplay hint)
+**Last updated:** 2026-07-18 (Mobile: 2-up video/creator cards; Discover card redesign — inline + button to add a channel, removed the autoplay hint; landing "Discover Worldwide" now a mesh creator-map)
 
 ## Product ambition — read this first
 
@@ -145,10 +145,22 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   workflow (Discover→Scout→Save→Remake→Publish) → final CTA. Global `<footer>` closes it.
 - **All product visuals are pure CSS/DOM mockups** built from the real design
   tokens (a mock "app window" with a Discover grid + floating Scout Score / Saved
-  cards, a world-pin map, a ranked Top-Shorts list, an idea-board grid). Chosen
-  over generated images on purpose: crisp at any DPI, theme-aware, zero network
-  weight, and always matches the real UI. If you change a real component's look,
-  glance at its `.lp-*` mock twin so they don't drift.
+  cards, a **worldwide creator mesh**, a ranked Top-Shorts list, an idea-board
+  grid). Chosen over generated images on purpose: crisp at any DPI, theme-aware,
+  zero network weight, and always matches the real UI. If you change a real
+  component's look, glance at its `.lp-*` mock twin so they don't drift.
+- **The "Discover worldwide" visual is a creator mesh** (`.lp-mesh`, built in
+  `renderHome` from `meshNodes`/`meshLinks`), not the old pulsing-pins map. It
+  reads as a live global network: gradient-avatar nodes (`.lp-node`, an `ico("user")`
+  silhouette on an `LP_G` gradient) placed in a rough continent layout — N/S
+  America, Europe, Africa, a central **hub** node, E-Asia, Oceania — joined by
+  animated dashed "connection" lines (`.lp-mline`, red accent, `lpflow` flowing
+  dash) over a masked dotted globe-surface texture. **Alignment trick:** node
+  `left/top` % and the SVG path coordinates share one 0–100 space because the SVG
+  is `preserveAspectRatio="none"`, so lines land exactly on avatar centers — keep
+  that if you move nodes. Deliberately **gradient avatars, not photos** (same
+  reason as every other mock: crisp, theme-aware, zero network weight, no external
+  asset). All animation is reduced-motion-gated.
 - **Overflow gotcha (fixed once, don't reintroduce):** the mock app window
   (`.lp-stage{max-width:940px}`) fills its column with **zero side margin** for
   almost the entire 641–976px range (main's content width ≤ 940px there), so the
@@ -272,14 +284,6 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   card per screen forced heavy scrolling just to compare a handful of ideas; 2-up
   lets people scan and pick faster. Desktop is untouched — it already showed plenty
   via the normal `auto-fill` grid.
-- **Mobile: swipe left/right between the 4 main tabs**, web-app equivalent of a
-  native tab swipe (`SWIPE_TABS = ["disc","dir","remake","set"]`, listeners in the
-  IIFE right after `render()`). Left = next tab, right = previous, clamped at both
-  ends (no wraparound). Only active at `≤720px` and only while on one of those 4
-  routes (not home/creator/dash/changelog); disabled whenever `.overlay` is present
-  in the DOM (video player, any branded dialog, the auth modal) so it can't fight
-  that UI. Threshold is 70px of horizontal movement and dx must dominate dy 1.5:1,
-  so normal vertical scrolling never triggers it.
 - **Creator workflow (progress model):** every video has one permanent status keyed
   by its YouTube id — **New / ⭐ Saved / 🎬 Remaking / ✅ Completed / 🚫 Skipped** —
   stored in the `library` map (`ss_library`, synced to Firestore). The pipeline is

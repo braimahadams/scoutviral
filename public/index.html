@@ -308,11 +308,23 @@ html{scroll-behavior:smooth}
 .lp-panelHd{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--line);background:var(--bg2);font-size:12.5px;font-weight:600;color:var(--ink2)}
 .lp-panelHd .i{width:15px;height:15px;color:var(--accent)}
 .lp-panelBd{padding:15px}
-/* discover visual — world map dots + niche chips */
-.lp-map{position:relative;height:150px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);overflow:hidden;margin-bottom:13px}
-.lp-pin{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent-bg);animation:lppin 2.6s ease-out infinite}
-.lp-pin::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid var(--accent);opacity:.35}
-@keyframes lppin{0%{box-shadow:0 0 0 0 rgba(242,85,90,.4)}70%,100%{box-shadow:0 0 0 12px rgba(242,85,90,0)}}
+/* discover visual — worldwide creator mesh (connected creators, globe surface) */
+.lp-mesh{position:relative;height:196px;border-radius:12px;background:radial-gradient(130% 100% at 50% 40%,var(--card2),var(--bg2));border:1px solid var(--line);overflow:hidden;margin-bottom:13px}
+.lp-mesh::before{content:"";position:absolute;inset:0;
+  background-image:radial-gradient(circle,var(--line) 1.1px,transparent 1.6px);background-size:15px 15px;
+  -webkit-mask:radial-gradient(120% 96% at 50% 44%,#000 38%,transparent 80%);mask:radial-gradient(120% 96% at 50% 44%,#000 38%,transparent 80%);
+  opacity:.85}
+.lp-mesh svg{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.lp-mline{fill:none;stroke:var(--accent);stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-dasharray:3 7;opacity:.55;animation:lpflow 3.4s linear infinite}
+@keyframes lpflow{to{stroke-dashoffset:-20}}
+.lp-node{position:absolute;transform:translate(-50%,-50%);width:33px;height:33px;z-index:2}
+.lp-node .lp-av{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.92);border:2px solid var(--card);box-shadow:0 4px 13px rgba(0,0,0,.42),0 0 0 1px var(--line)}
+.lp-node .lp-av .i{width:15px;height:15px}
+.lp-node.hub{width:44px;height:44px;z-index:4}
+.lp-node.hub .lp-av{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-bg),0 6px 18px rgba(0,0,0,.5)}
+.lp-node.hub .lp-av .i{width:20px;height:20px}
+.lp-ping{position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--accent);opacity:0;animation:lpping 2.9s ease-out infinite}
+@keyframes lpping{0%{transform:scale(.62);opacity:.55}80%,100%{transform:scale(1.55);opacity:0}}
 .lp-nichegrid{display:flex;flex-wrap:wrap;gap:7px}
 /* scout visual — ranked list */
 .lp-rankrow{display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid var(--line)}
@@ -385,7 +397,8 @@ html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   .lp-reveal{opacity:1!important;transform:none!important;transition:none}
-  .lp-float,.lp-pin{animation:none!important}
+  .lp-float,.lp-mline,.lp-ping{animation:none!important}
+  .lp-ping{display:none}
 }
 footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.6}
 /* ===================== Creator Dashboard ===================== */
@@ -1009,28 +1022,6 @@ function render(){
   else renderSet();
 }
 
-/* ---------- mobile: swipe left/right between the 4 main tabs ---------- */
-/* Web-app equivalent of a native app's tab-swipe. Only the 4 bottom-tab
-   routes participate (not home/creator/dash/changelog); disabled whenever a
-   modal/dialog/video player overlay is open so it can't fight that UI. */
-const SWIPE_TABS = ["disc","dir","remake","set"];
-(function swipeInit(){
-  let sx=0, sy=0, tracking=false;
-  document.addEventListener("touchstart", e=>{
-    tracking = innerWidth<=720 && !document.querySelector(".overlay") && e.touches.length===1;
-    if(!tracking) return;
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
-  },{passive:true});
-  document.addEventListener("touchend", e=>{
-    if(!tracking) return; tracking=false;
-    const idx = SWIPE_TABS.indexOf(route.v); if(idx===-1) return;
-    const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
-    if(Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.5) return;
-    if(dx<0 && idx<SWIPE_TABS.length-1) go(SWIPE_TABS[idx+1]);
-    else if(dx>0 && idx>0) go(SWIPE_TABS[idx-1]);
-  },{passive:true});
-})();
-
 /* ---------- Landing ---------- */
 const LP_G=["linear-gradient(158deg,#3a2b52,#d24a63)","linear-gradient(158deg,#123a4a,#1fae9c)","linear-gradient(158deg,#4a2a12,#f0a63e)","linear-gradient(158deg,#241a3a,#7a4bd0)","linear-gradient(158deg,#3a1220,#f2555a)","linear-gradient(158deg,#14233a,#3a7bd5)","linear-gradient(158deg,#123322,#3ec47a)","linear-gradient(158deg,#3a1430,#e0559a)"];
 function lpPoster(g,o){o=o||{};return `<div class="lp-poster" style="background-image:${g}">`+
@@ -1052,8 +1043,26 @@ function renderHome(){
 
   const nicheChips=["Silent comedy","Funny faces","Food & cooking","Dance","Fashion","Pets"]
     .map((n,i)=>`<span class="lp-fchip ${i===0?"on":""}">${n}</span>`).join("");
-  const pins=[[18,40],[31,30],[44,58],[52,34],[63,48],[71,28],[78,62],[86,42],[26,66],[58,72]]
-    .map(([l,t],i)=>`<span class="lp-pin" style="left:${l}%;top:${t}%;animation-delay:${(i*0.26).toFixed(2)}s"></span>`).join("");
+  /* Worldwide creator mesh: avatar nodes spread across the globe (a rough
+     continent layout — N/S America, Europe, Africa, a central hub, E-Asia,
+     Oceania), joined by animated "connection" lines like a live network.
+     Node left/top % and the SVG path coords share one 0–100 space (the SVG is
+     preserveAspectRatio="none"), so lines land exactly on the avatars. */
+  const meshNodes=[
+    {x:19,y:31,g:0},{x:29,y:74,g:4},{x:46,y:23,g:1},{x:54,y:61,g:2},
+    {x:63,y:42,g:5,hub:1},{x:80,y:29,g:6},{x:85,y:68,g:3}
+  ];
+  const meshLinks=[[4,0],[4,1],[4,2],[4,3],[4,5],[4,6],[0,2],[3,6],[1,5]];
+  const meshPaths=meshLinks.map(([a,b],i)=>{
+    const A=meshNodes[a],B=meshNodes[b], mx=(A.x+B.x)/2, my=(A.y+B.y)/2-8;
+    return `<path class="lp-mline" style="animation-delay:${(i*0.3).toFixed(2)}s" d="M${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}"/>`;
+  }).join("");
+  const meshDots=meshNodes.map((n,i)=>
+    `<span class="lp-node ${n.hub?"hub":""}" style="left:${n.x}%;top:${n.y}%">
+       <span class="lp-ping" style="animation-delay:${(i*0.42).toFixed(2)}s"></span>
+       <span class="lp-av" style="background:${LP_G[n.g]}">${ico("user")}</span>
+     </span>`).join("");
+  const mesh=`<div class="lp-mesh"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${meshPaths}</svg>${meshDots}</div>`;
 
   const rankRows=[
     {n:1,t:"POV: you finally tried it",v:"245M",thumb:LP_G[4],w:100},
@@ -1139,7 +1148,7 @@ function renderHome(){
       <div class="lp-visual lp-reveal d1"><div class="lp-panel" data-depth="4">
         <div class="lp-panelHd">${ico("search")} Discover · pick anywhere</div>
         <div class="lp-panelBd">
-          <div class="lp-map">${pins}</div>
+          ${mesh}
           <div class="lp-nichegrid">${["Silent comedy","Funny faces","Food","Fitness","Dance","Beauty","Pets","Travel","Gaming"].map((n,i)=>`<span class="lp-fchip ${i===0?"on":""}">${n}</span>`).join("")}</div>
         </div>
       </div></div>
@@ -1392,8 +1401,8 @@ function renderDir(){
     view().innerHTML = h; return;
   }
   h += `<div class="filters">
-    <input type="text" placeholder="Search creators…" value="${esc(dirF.q)}" oninput="dirF.q=this.value;renderDir()" style="max-width:240px">
-    <span class="muted">${list.length} creator${list.length!==1?"s":""}</span>
+    <input type="text" placeholder="Search creators…" value="${esc(dirF.q)}" oninput="dirF.q=this.value;renderDir()">
+    <span class="muted" style="margin-left:auto;flex:0 0 auto">${list.length} creator${list.length!==1?"s":""}</span>
   </div>`;
   h += `<div class="grid">`;
   list.forEach(c=>{
