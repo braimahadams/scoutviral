@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-16 (Creator Dashboard — activity log, contribution graph, streaks/momentum, account dropdown; fixed floating-card & glow overflow at mid-range viewport widths)
+**Last updated:** 2026-07-16 (Dashboard refinements — monthly calendar replaces the dot grid, user-editable weekly goal, removed the duplicate Settings entry from the account dropdown)
 
 ## Product ambition — read this first
 
@@ -112,9 +112,17 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   **Main nav intentionally stays 4 items** — Dashboard is NOT a 5th tab (see below).
 - **Account control (`#authbox` → `.acctwrap`):** one avatar/icon button in the header
   opens a small dropdown (`renderAuth`/`toggleAcctMenu`/`closeAcctMenu`) with
-  **Dashboard**, **Settings**, and Sign in/out (or "Local mode" if Firebase isn't
-  configured). Works identically signed-in or not — Dashboard reads local data either
-  way. Closes on outside click or Escape. The label hides at ≤860px (inline nav still
+  **Dashboard** and Sign in/out (or "Local mode" if Firebase isn't configured).
+  **Settings is deliberately NOT in this dropdown** — it only lives in the main nav /
+  mobile bottom tab bar. Reasoning: Settings is where every in-app nudge sends people
+  (trial ended, no API key yet, etc.), so it needs to stay a fast, always-visible,
+  one-tap destination, and it works with zero account at all (local mode) — putting
+  it only behind an avatar click would bury the single most-needed screen for a brand
+  new user. The dropdown is scoped purely to account-y things: your personal stats
+  and your sign-in state. Don't re-add Settings there; if it ever feels missing,
+  that's a sign the main nav access broke, not that the dropdown needs it back.
+  Works identically signed-in or not — Dashboard reads local data either way.
+  Closes on outside click or Escape. The label hides at ≤860px (inline nav still
   crowds the header there) leaving just the tappable avatar/icon.
 - **Branded dialogs** replace native `alert/confirm/prompt` — `uiAlert`/`uiConfirm`/
   `uiPrompt` (Promise-based) render into `#dialog`; destructive confirms use a red
@@ -173,14 +181,26 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   Creators also gained `addedAt` (set in `addCreator`/`addFromDisc`) for the
   Countries Explored stat's provenance. **When adding any new trackable action,
   call `logActivity(status, id)` — the Dashboard has no other way to see history.**
-- **Sections (top to bottom):** greeting → this-week goal + Momentum score → activity
-  contribution graph (`dashContribution`, 13 weeks × 7 days, Sunday-aligned, colored by
-  `color-mix(in srgb, var(--accent) N%, var(--bg2))` so it's theme-aware for free) →
-  6-week trend bar chart (`dashWeeklyTrend`) → 8 stat tiles (`dashStats`, `.dashtile`,
+- **Sections (top to bottom):** greeting → this-week goal + Momentum score →
+  **monthly calendar** (`dashCalendarData`/`calendarHTML`, id `#dashCal`) → 6-week
+  trend bar chart (`dashWeeklyTrend`) → 8 stat tiles (`dashStats`, `.dashtile`,
   responsive `auto-fit` grid) → auto-generated insights (`dashInsights`, up to 5,
   short sentences: most productive day, week-over-week delta, streak, average pace).
   Empty state (no library entries and no activity) shows a single welcoming card
   instead of a wall of zeros.
+- **Monthly calendar, not a GitHub-style dot grid.** The first version used a
+  91-day heat-map of tiny squares; real creators complete a handful of videos a
+  week (not hundreds of commits a day), so almost every square was empty/near-
+  invisible and it read as confusing rather than motivating. The calendar shows the
+  same "when was I productive" story with day numbers and checkmarks **always
+  visible** (no hover, no legend to decode): a checkmark = at least one completed
+  video that day, a small numbered badge if more than one, today gets an accent
+  ring, future days (this month, not yet happened) are dimmed and never show a
+  checkmark. `dashCalNav(±1)` browses past months in place (`#dashCal` innerHTML
+  swap, no full re-render) and can't navigate into the future; `dashCalMonth` resets
+  to the current month every time the Dashboard is opened. A one-line caption below
+  states the real numbers ("You completed videos on N of the last M days.") instead
+  of a Less→More legend.
 - **Momentum score** (`momentumScore`, 0–100, reuses `scoutTier`'s good/mid/low
   thresholds and colors): blend of completion rate (40%), pace/avgPerWeek (35%), and
   current streak (25%) — modeled after `scoutScore`'s clamp-and-blend composite-index
@@ -189,8 +209,15 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   with ≥1 completed video, walking back from today; if nothing's completed *yet*
   today it still counts as alive through yesterday (breaks only after a full missed
   day) — no Duolingo-style push notifications, just the number.
-- **Weekly goal**: rolling 7-day window, suggested goal = `max(3, round(avgPerWeek))`
-  — not user-editable (kept out of Settings on purpose, avoids feature bloat).
+- **Weekly goal is user-editable** (`weeklyGoal` state, `editWeeklyGoal`, pencil icon
+  on the goal card — NOT in Settings, edited inline where it's used). `null` = the
+  auto-suggested default (`max(3, round(avgPerWeek))`, a reasonable starting point);
+  once a creator sets their own number it's used verbatim — a lowball auto-suggestion
+  shouldn't be the ceiling on someone who wants real pressure to stay consistent.
+  Clearing the prompt back to blank returns to the auto-suggestion. Synced across
+  devices the same way `apiKey` is (`weeklyGoal` in the `cloudSave` payload; on
+  sign-in, cloud value is adopted only if this device hasn't set one — an explicit
+  local choice always wins over a synced default).
 - **Future scalability (built for, not built yet):** the section-by-section render
   and the append-only `activity` log are intentionally generic enough to support
   Year-in-Review, Weekly Review emails/summaries, or per-niche insights later without

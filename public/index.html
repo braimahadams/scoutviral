@@ -388,22 +388,36 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
 .dash{display:flex;flex-direction:column;gap:16px;max-width:900px}
 .dash-welcome h2{margin-bottom:3px}
 .dash-goal-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.dash-goal-num{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.dash-goal-num{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:4px}
 .dash-goal-num span{font-size:14px;font-weight:600;color:var(--ink3)}
+.dash-goal-edit{background:none;border:none;color:var(--ink3);cursor:pointer;display:flex;align-items:center;padding:4px;margin-left:2px;border-radius:7px;transition:.12s;align-self:center}
+.dash-goal-edit:hover{color:var(--accent);background:var(--accent-bg)}
+.dash-goal-edit .i{width:14px;height:14px}
 .dash-momentum{text-align:right}
 .dash-mom-val{font-size:24px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .dash-goalbar{margin-top:12px;height:8px}
 .dash-goalbar i{transition:width .5s cubic-bezier(.22,.61,.36,1)}
 .dash-goal-msg{margin-top:9px;font-size:13px}
-.dash-grid{display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;grid-auto-columns:13px;gap:3px;overflow-x:auto;padding-bottom:2px}
-.dash-grid .sq{width:13px;height:13px;border-radius:3px}
-.sq.l0{background:var(--bg2)}
-.sq.l1{background:color-mix(in srgb, var(--accent) 25%, var(--bg2))}
-.sq.l2{background:color-mix(in srgb, var(--accent) 50%, var(--bg2))}
-.sq.l3{background:color-mix(in srgb, var(--accent) 75%, var(--bg2))}
-.sq.l4{background:var(--accent)}
-.dash-legend{display:flex;align-items:center;gap:4px;font-size:11px;margin-top:10px}
-.dash-legend .sq{width:10px;height:10px;border-radius:2px;display:inline-block;margin:0 1px}
+.cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px}
+.cal-nav b{font-size:14px;font-weight:700;min-width:150px;text-align:center}
+.cal-navbtn{background:var(--bg2);border:1px solid var(--line);color:var(--ink2);width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.12s;flex:0 0 auto}
+.cal-navbtn:hover{border-color:var(--ink3);color:var(--ink)}
+.cal-navbtn:disabled{opacity:.35;cursor:default;pointer-events:none}
+.cal-navbtn .i{width:14px;height:14px}
+.cal-navbtn.prev .i{transform:scaleX(-1)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.cal-dow span{text-align:center;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;background:var(--bg2);gap:2px}
+.cal-day.blank{background:transparent}
+.cal-day.future{opacity:.4}
+.cal-day .cal-num{font-size:12px;font-weight:600;color:var(--ink2)}
+.cal-day.hit{background:var(--accent-bg)}
+.cal-day.hit .cal-num{color:var(--ink)}
+.cal-day .cal-mark{color:var(--accent);display:flex}
+.cal-day .cal-mark .i{width:11px;height:11px}
+.cal-day.today{box-shadow:0 0 0 2px var(--accent) inset}
+.cal-badge{position:absolute;top:2px;right:2px;background:var(--accent);color:#fff;font-size:8.5px;font-weight:800;border-radius:20px;min-width:13px;height:13px;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1}
 .dash-trend{display:flex;gap:10px;align-items:flex-end;height:140px;padding-top:8px}
 .dash-tbar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
 .dash-tval{font-size:12px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums}
@@ -655,6 +669,11 @@ function mergeActivity(local, cloud){
   return out.length>2000 ? out.slice(out.length-2000) : out;
 }
 function migrateRemakes(arr){ const lib={}; (arr||[]).forEach(r=>{ if(r&&r.id) lib[r.id]={s:"saved",t:r.title,th:r.thumb,v:r.views,ch:r.ch,at:r.at,d:r.dur,u:r.added||Date.now()}; }); return lib; }
+/* weekly goal: null = auto-suggested from pace (dashWeeklyGoal); a number = the
+   creator's own target. Synced like the API key — adopted on sign-in only when
+   this device hasn't set one yet, so an explicit local choice always wins. */
+let weeklyGoal = store.get("ss_weekly_goal", null); if(weeklyGoal!=null) weeklyGoal = +weeklyGoal || null;
+function saveWeeklyGoal(){ store.set("ss_weekly_goal", weeklyGoal); cloudSave(); }
 function vStat(id){ const e=library[id]; return e?e.s:"new"; }
 function vSet(v, s){
   const id=v.id; if(!id) return;
@@ -718,6 +737,7 @@ window.onFirebaseReady = function(api){
           /* the user's own API key follows their account — restored on any device,
              only ever adopted when this device doesn't already have one. */
           if(data.apiKey && !apiKey){ apiKey = data.apiKey; store.set("ss_key",apiKey); }
+          if(data.weeklyGoal!=null && weeklyGoal==null){ weeklyGoal = data.weeklyGoal; store.set("ss_weekly_goal",weeklyGoal); }
           applyingCloud = false;
           render();
         }
@@ -773,12 +793,16 @@ function pruneRemoved(rem, lib){
 function cloudSave(){
   if(!fb || !user || applyingCloud) return;
   clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,removed,activity,apiKey,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
+  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,removed,activity,apiKey,weeklyGoal,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
 }
 function persist(){ store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); store.set("ss_activity",activity); cloudSave(); }
 /* account control: one avatar/button in the header opens a small dropdown with
-   Dashboard + Settings + sign-in/out — the entry point for the personal workspace,
-   without adding a new item to the main nav. Works in local mode too (no fb). */
+   Dashboard + sign-in/out. Settings deliberately does NOT appear here — it
+   already lives in the main nav (and the mobile bottom tab bar), where it needs
+   to stay a fast, always-visible, one-tap destination: it's the screen every
+   nudge throughout the app (trial ended, no key yet, etc.) sends people to, and
+   it works with zero account at all in local mode. This dropdown is purely
+   account-scoped: your personal workspace stats and your sign-in state. */
 function renderAuth(){
   const box = document.getElementById("authbox");
   const label = user ? (user.displayName||user.email||"Account") : "Account";
@@ -794,7 +818,6 @@ function renderAuth(){
     </button>
     <div class="acctmenu" id="acctmenu">
       <button class="acctitem" onclick="closeAcctMenu();go('dash')">${ico("chart")} Dashboard</button>
-      <button class="acctitem" onclick="closeAcctMenu();go('set')">${ico("gear")} Settings</button>
       ${authItem}
     </div>
   </div>`;
@@ -1408,15 +1431,35 @@ function dashStats(){
   const momentum = momentumScore({completionRate, avgPerWeek, current});
   return {ideasSaved, remaking, completed, completionRate, creatorsAdded, countriesExplored, avgPerWeek, currentStreak:current, longestStreak:longest, momentum};
 }
-function dashContribution(){
+/* Monthly calendar — replaced an earlier GitHub-style dot grid, which read as an
+   unreadable wall of tiny near-invisible squares for the low daily volumes real
+   creators have (a few completions a week, not hundreds a day like commits).
+   A calendar shows the exact same "when was I productive" story with day
+   numbers and checkmarks always visible — no hover, no legend to decode. */
+let dashCalMonth = null;   // {y,m} currently viewed; reset to the current month each visit
+function dashCalendarData(y, m){
   const counts={};
   activity.filter(a=>a.t==="completed").forEach(a=>{ const k=dayKey(a.at); counts[k]=(counts[k]||0)+1; });
-  const end=new Date(); end.setHours(0,0,0,0);
-  const start=new Date(end); start.setDate(start.getDate()-90);         // ~13 weeks back
-  start.setDate(start.getDate()-start.getDay());                        // align to the previous Sunday for clean columns
-  const cells=[];
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) cells.push({date:new Date(d), count:counts[dayKey(d.getTime())]||0});
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const startDow = new Date(y, m, 1).getDay();
+  const todayKey = dayKey(Date.now());
+  const todayMid = new Date(); todayMid.setHours(0,0,0,0);
+  const cells = Array.from({length:startDow}, ()=>null);
+  for(let d=1; d<=daysInMonth; d++){
+    const dt = new Date(y, m, d);
+    const k = dayKey(dt.getTime());
+    cells.push({day:d, count:counts[k]||0, isToday:k===todayKey, isFuture: dt.getTime()>todayMid.getTime()});
+  }
   return cells;
+}
+function dashCalNav(delta){
+  const now=new Date();
+  const cur = dashCalMonth || {y:now.getFullYear(), m:now.getMonth()};
+  let m=cur.m+delta, y=cur.y;
+  if(m<0){ m=11; y--; } else if(m>11){ m=0; y++; }
+  if(y*12+m > now.getFullYear()*12+now.getMonth()) return;   // no browsing into the future
+  dashCalMonth = {y,m};
+  const box=document.getElementById("dashCal"); if(box) box.innerHTML = calendarHTML(y,m);
 }
 function dashWeeklyTrend(){
   const weeks=6, buckets=Array.from({length:weeks},()=>0), now=Date.now();
@@ -1430,8 +1473,26 @@ function dashWeeklyTrend(){
 function dashWeeklyGoal(s){
   const now=Date.now();
   const done = activity.filter(a=>a.t==="completed" && (now-a.at)/864e5<7).length;
-  const goal = Math.max(3, Math.round(s.avgPerWeek)||3);
-  return {done, goal};
+  const goal = weeklyGoal!=null ? weeklyGoal : Math.max(3, Math.round(s.avgPerWeek)||3);
+  return {done, goal, isCustom: weeklyGoal!=null};
+}
+/* the creator sets their own bar — a suggested default (from their pace) is only
+   a starting point; leaving the prompt blank goes back to that suggestion */
+async function editWeeklyGoal(){
+  const cur = weeklyGoal!=null ? String(weeklyGoal) : "";
+  const txt = await uiPrompt(
+    "How many completed videos are you aiming for each week? Leave it blank to let ScoutViral suggest one based on your pace.",
+    cur, {title:"Set your weekly goal", placeholder:"e.g. 5", okText:"Save"});
+  if(txt===null) return;
+  const trimmed = txt.trim();
+  if(!trimmed){ weeklyGoal=null; }
+  else{
+    const n = Math.round(+trimmed);
+    if(!n || n<1){ uiAlert("Enter a number of at least 1, or leave it blank to use the suggested goal."); return; }
+    weeklyGoal = Math.min(50, n);
+  }
+  saveWeeklyGoal();
+  renderDashboard();
 }
 function dashGoalMsg(g){
   if(g.done>=g.goal) return "Weekly goal reached — keep the momentum going.";
@@ -1464,9 +1525,29 @@ function dashGreeting(){
   const first = user&&user.displayName ? user.displayName.split(" ")[0] : "";
   return first ? `${time}, ${esc(first)}` : time;
 }
-function contributionHTML(cells){
-  const level=c=> c===0?0 : c===1?1 : c===2?2 : c<=4?3 : 4;
-  return `<div class="dash-grid">` + cells.map(c=>`<span class="sq l${level(c.count)}" title="${c.count} completed · ${esc(fmtD(c.date.toISOString()))}"></span>`).join("") + `</div>`;
+function calendarHTML(y, m){
+  const cells = dashCalendarData(y, m);
+  const now = new Date();
+  const atCurrentMonth = y===now.getFullYear() && m===now.getMonth();
+  const monthName = new Date(y,m,1).toLocaleDateString(undefined,{month:"long",year:"numeric"});
+  const hitDays = cells.filter(c=>c && c.count>0).length;
+  const pastDays = cells.filter(c=>c && !c.isFuture).length;
+  const dow = ["S","M","T","W","T","F","S"];
+  const dayCell = c=> c===null ? `<span class="cal-day blank"></span>` :
+    `<span class="cal-day${c.isFuture?" future":""}${c.count>0?" hit":""}${c.isToday?" today":""}" ${c.count>0?`title="${c.count} completed"`:""}>
+       <span class="cal-num">${c.day}</span>
+       ${c.count>0?`<span class="cal-mark">${ico("check")}</span>`:""}
+       ${c.count>1?`<span class="cal-badge">${c.count}</span>`:""}
+     </span>`;
+  return `
+    <div class="cal-nav">
+      <button class="cal-navbtn prev" onclick="dashCalNav(-1)" title="Previous month">${ico("arrowr")}</button>
+      <b>${esc(monthName)}</b>
+      <button class="cal-navbtn next" ${atCurrentMonth?"disabled":""} onclick="dashCalNav(1)" title="Next month">${ico("arrowr")}</button>
+    </div>
+    <div class="cal-dow">${dow.map(d=>`<span>${d}</span>`).join("")}</div>
+    <div class="cal-grid">${cells.map(dayCell).join("")}</div>
+    <div class="muted" style="margin-top:10px;font-size:13px">${pastDays>0?`You completed videos on ${hitDays} of the last ${pastDays} day${pastDays!==1?"s":""}.`:"This month hasn't started yet."}</div>`;
 }
 function trendHTML(trend){
   const max=Math.max(1,...trend.map(t=>t.count));
@@ -1484,6 +1565,7 @@ function statTile(icon,label,value,suffix){
   return `<div class="dashtile"><div class="dt-ic">${ico(icon)}</div>${val}<div class="dt-lbl">${esc(label)}</div></div>`;
 }
 function renderDashboard(){
+  dashCalMonth = null;   // always open on the current month
   const empty = Object.keys(library).length===0 && activity.length===0;
   let h = `<div class="dash">
   <div class="dash-welcome lp-reveal"><h2>${dashGreeting()}</h2><p class="muted">Here's how your creative momentum is building.</p></div>`;
@@ -1499,7 +1581,8 @@ function renderDashboard(){
   h += `
   <div class="card dash-goal lp-reveal d1">
     <div class="dash-goal-head">
-      <div><div class="scorelabel">This week</div><div class="dash-goal-num"><b>${goal.done}</b><span> / ${goal.goal} completed</span></div></div>
+      <div><div class="scorelabel">This week</div><div class="dash-goal-num"><b>${goal.done}</b><span> / ${goal.goal} completed</span>
+        <button class="dash-goal-edit" title="${goal.isCustom?'Change':'Set'} your weekly goal" onclick="editWeeklyGoal()">${ico("pencil")}</button></div></div>
       <div class="dash-momentum"><div class="dash-mom-val tier-${scoutTier(s.momentum)}">${s.momentum}%</div><div class="scorelabel">Momentum</div></div>
     </div>
     <div class="bar dash-goalbar"><i style="width:${Math.min(100,Math.round(goal.done/goal.goal*100))}%"></i></div>
@@ -1507,10 +1590,8 @@ function renderDashboard(){
   </div>
 
   <div class="card lp-reveal d1">
-    <h3 style="margin-top:0">Activity</h3>
-    <div class="muted" style="margin-bottom:10px;font-size:13px">Every square is a day — the more you completed, the brighter it is.</div>
-    ${contributionHTML(dashContribution())}
-    <div class="dash-legend muted">Less<span class="sq l0"></span><span class="sq l1"></span><span class="sq l2"></span><span class="sq l3"></span><span class="sq l4"></span>More</div>
+    <h3 style="margin-top:0">This month</h3>
+    <div id="dashCal">${calendarHTML(new Date().getFullYear(), new Date().getMonth())}</div>
   </div>
 
   <div class="card lp-reveal d2">
