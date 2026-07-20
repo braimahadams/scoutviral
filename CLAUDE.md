@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-18 (Mobile: 2-up video/creator cards; Discover card redesign — inline + button to add a channel, removed the autoplay hint; landing "Discover Worldwide" now a mesh creator-map)
+**Last updated:** 2026-07-20 (Desktop nav is now a left sidebar, Instagram-web style — icon-only 721–1099px, full labels ≥1100px, account flyout pinned to the sidebar bottom; mobile bottom tab bar unchanged)
 
 ## Product ambition — read this first
 
@@ -106,24 +106,48 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   `currentColor` so it's theme-aware, triangle = `var(--accent)`). Favicon is an SVG
   data-URI: the same mark in white on a red gradient app-icon tile (in `<head>`). Both
   are hand-built vectors — no raster assets. Keep them in sync if the mark changes.
-- **Bottom tab bar on mobile** (Discover/Directory/Remakes/Settings), inline top
-  nav on desktop — driven by CSS media query on the single `<nav>`; `go()`/`data-v`
-  unchanged. Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
+- **Bottom tab bar on mobile** (Discover/Directory/Remakes/Settings, `≤720px`);
+  **left sidebar on desktop** (`>720px`), Instagram-web style — the same single
+  `<header>`/`<nav>` markup is reused for all three layouts purely via CSS media
+  queries (`go()`/`data-v`/`render()` untouched, no duplicated DOM). Three states:
+  - `≤720px` — unchanged mobile: sticky top header (logo + account avatar only),
+    `nav` pulled out via `position:fixed;bottom:0` as the tab bar.
+  - `721–1099px` — **icon-only left sidebar**, `header{position:fixed;left:0;
+    width:76px;height:100vh}`, nav vertical, labels hidden (`nav button .lbl{
+    display:none}`), logo shows just the play-mark (the wordmark text is wrapped
+    in `<span class="word">` so it can be hidden without touching the SVG).
+  - `≥1100px` — **expanded sidebar**, `width:248px`, full nav labels and wordmark
+    back, matching Instagram's own icon→labeled-sidebar breakpoint behavior.
+  `body{padding-left:76px / 248px}` reserves the matching gutter so `main`/`footer`
+  (already `width:100%;margin:0 auto`) recenter themselves for free — no other
+  layout math needed. `.statusbar{left:76px / 248px}` keeps the scan-progress toast
+  from sliding under the sidebar. **Don't add `overflow-x`/`overflow-y` to `header`**
+  — it's a one-line trap: CSS forces the *other* overflow axis to clip too once either
+  is non-`visible`, which silently clips the account flyout menu (see below) whenever
+  it needs to render outside the 76px/248px column. Sidebar content is short and
+  fixed (logo + 4 nav + account) and doesn't need scrolling anyway.
+  Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
   **Main nav intentionally stays 4 items** — Dashboard is NOT a 5th tab (see below).
-- **Account control (`#authbox` → `.acctwrap`):** one avatar/icon button in the header
-  opens a small dropdown (`renderAuth`/`toggleAcctMenu`/`closeAcctMenu`) with
+- **Account control (`#authbox` → `.acctwrap`):** on mobile, one avatar/icon button
+  top-right of the header; **on desktop it's pinned to the bottom of the left
+  sidebar** (`margin-top:auto` inside the column-flex header) — the Instagram
+  profile-in-the-sidebar pattern. Opens a small flyout (`renderAuth`/
+  `toggleAcctMenu`/`closeAcctMenu`, same functions/DOM at every breakpoint) with
   **Dashboard** and Sign in/out (or "Local mode" if Firebase isn't configured).
-  **Settings is deliberately NOT in this dropdown** — it only lives in the main nav /
-  mobile bottom tab bar. Reasoning: Settings is where every in-app nudge sends people
-  (trial ended, no API key yet, etc.), so it needs to stay a fast, always-visible,
-  one-tap destination, and it works with zero account at all (local mode) — putting
-  it only behind an avatar click would bury the single most-needed screen for a brand
-  new user. The dropdown is scoped purely to account-y things: your personal stats
-  and your sign-in state. Don't re-add Settings there; if it ever feels missing,
-  that's a sign the main nav access broke, not that the dropdown needs it back.
-  Works identically signed-in or not — Dashboard reads local data either way.
-  Closes on outside click or Escape. The label hides at ≤860px (inline nav still
-  crowds the header there) leaving just the tappable avatar/icon.
+  The flyout's anchor flips with the sidebar state so it's never clipped by the
+  viewport edge: mobile → below-right (`top:100%;right:0`), icon-only sidebar →
+  beside it (`left:calc(100% + 10px);bottom:0`), expanded sidebar → above it
+  (`bottom:calc(100% + 8px);left:0`). **Settings is deliberately NOT in this
+  flyout** — it only lives in the main nav (sidebar or bottom tab bar). Reasoning:
+  Settings is where every in-app nudge sends people (trial ended, no API key yet,
+  etc.), so it needs to stay a fast, always-visible, one-tap destination, and it
+  works with zero account at all (local mode) — putting it only behind an avatar
+  click would bury the single most-needed screen for a brand new user. The flyout
+  is scoped purely to account-y things: your personal stats and your sign-in
+  state. Don't re-add Settings there; if it ever feels missing, that's a sign the
+  main nav access broke, not that the flyout needs it back. Works identically
+  signed-in or not — Dashboard reads local data either way. Closes on outside
+  click or Escape.
 - **Branded dialogs** replace native `alert/confirm/prompt` — `uiAlert`/`uiConfirm`/
   `uiPrompt` (Promise-based) render into `#dialog`; destructive confirms use a red
   button. Escape = cancel, Enter = confirm. `uiPrompt` supports `{multiline:true}`

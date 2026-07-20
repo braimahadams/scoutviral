@@ -63,14 +63,7 @@ nav button.on{color:var(--accent);background:var(--accent-bg);font-weight:600}
 .acctbtn .acct-ph{background:var(--bg2);color:var(--ink3);display:flex;align-items:center;justify-content:center}
 .acctbtn .acct-ph .i{width:15px;height:15px}
 .acctbtn .lbl{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* the inline top nav (Discover/Directory/Remakes/Settings) is tight with the
-   account button between ~721-860px, before nav drops to the mobile bottom bar
-   at 720px — hide the account label a bit earlier so nothing crowds off-screen */
-@media (max-width:860px){
-  .acctbtn .lbl{display:none}
-  .acctbtn{padding:5px}
-}
-.acctbtn .i:last-child{width:14px;height:14px;color:var(--ink3);flex:0 0 auto}
+.acctbtn>.i:last-child{width:14px;height:14px;color:var(--ink3);flex:0 0 auto}
 .acctmenu{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:200px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 50px -12px rgba(0,0,0,.45);padding:6px;z-index:60;animation:dlgpop .13s ease-out}
 .acctmenu.open{display:block}
 .acctitem{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;text-align:left;color:var(--ink);font-family:inherit;font-size:14px;font-weight:500;padding:9px 10px;border-radius:9px;cursor:pointer;transition:background .1s}
@@ -467,6 +460,45 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
   .statusbar{bottom:calc(var(--navh) + env(safe-area-inset-bottom))}
   footer{margin-bottom:calc(var(--navh) + env(safe-area-inset-bottom))}
 }
+/* desktop: left sidebar nav (Instagram-web style) instead of a top bar.
+   Two widths: icon-only from 721px, full labels once there's room at 1100px.
+   `header` becomes the fixed-height sidebar; `body` reserves the matching
+   left gutter so main/footer (already width:100%;margin:0 auto) recenter
+   themselves in the remaining space with zero other changes needed. */
+@media (min-width:721px){
+  body{padding-left:76px}
+  header{position:fixed;top:0;left:0;bottom:0;z-index:40;width:76px;height:100vh;
+    flex-direction:column;align-items:center;padding:20px 0 16px;gap:4px;
+    border-bottom:none;border-right:1px solid var(--line)}
+  header h1{padding:0 0 18px;justify-content:center}
+  header h1 .word{display:none}
+  nav{flex-direction:column;gap:4px;width:100%;align-items:center}
+  nav button{width:52px;height:52px;justify-content:center;padding:0;border-radius:14px}
+  nav button .lbl{display:none}
+  nav button .ico .i{width:22px;height:22px}
+  #authbox{margin-left:0;margin-top:auto;width:100%;display:flex;justify-content:center}
+  .acctwrap{width:auto}
+  .acctbtn{padding:8px;justify-content:center}
+  .acctbtn .lbl,.acctbtn>.i:last-child{display:none}
+  .acctmenu{top:auto;bottom:0;left:calc(100% + 10px);right:auto}
+  .statusbar{left:76px}
+}
+@media (min-width:1100px){
+  body{padding-left:248px}
+  header{width:248px;align-items:stretch;padding:22px 16px 18px}
+  header h1{justify-content:flex-start;padding:2px 8px 22px}
+  header h1 .word{display:inline}
+  nav{align-items:stretch}
+  nav button{width:100%;height:auto;justify-content:flex-start;padding:11px 13px;gap:13px;border-radius:12px}
+  nav button .lbl{display:inline;font-size:14.5px}
+  #authbox{justify-content:flex-start}
+  .acctwrap{width:100%}
+  .acctbtn{width:100%;justify-content:flex-start;padding:9px}
+  .acctbtn .lbl,.acctbtn>.i:last-child{display:block}
+  .acctbtn .lbl{max-width:none;flex:1}
+  .acctmenu{left:0;right:auto;bottom:calc(100% + 8px)}
+  .statusbar{left:248px}
+}
 @media (max-width:600px){
   /* wrap the Discover filters so every option (country, niche, count, sort, time)
      stays visible instead of hiding in a horizontal scroll strip */
@@ -508,12 +540,12 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
 </head>
 <body>
 <header>
-  <h1 onclick="go('home')"><svg class="i" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M30 20 C30 15,18 15,18 21 C18 26,30 27,30 32 C30 37,19 37.5,16 33" stroke="currentColor" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 20 L34 44 L50 32 Z" fill="var(--accent)"/></svg> Scout<span class="vv">Viral</span></h1>
+  <h1 onclick="go('home')"><svg class="i" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M30 20 C30 15,18 15,18 21 C18 26,30 27,30 32 C30 37,19 37.5,16 33" stroke="currentColor" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 20 L34 44 L50 32 Z" fill="var(--accent)"/></svg><span class="word"> Scout<span class="vv">Viral</span></span></h1>
   <nav>
-    <button data-v="disc" onclick="go('disc')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span><span class="lbl">Discover</span></button>
-    <button data-v="dir" onclick="go('dir')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span><span class="lbl">Directory</span></button>
-    <button data-v="remake" onclick="go('remake')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span class="lbl">Remakes</span></button>
-    <button data-v="set" onclick="go('set')"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="lbl">Settings</span></button>
+    <button data-v="disc" onclick="go('disc')" aria-label="Discover"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span><span class="lbl">Discover</span></button>
+    <button data-v="dir" onclick="go('dir')" aria-label="Directory"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span><span class="lbl">Directory</span></button>
+    <button data-v="remake" onclick="go('remake')" aria-label="Remakes"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span class="lbl">Remakes</span></button>
+    <button data-v="set" onclick="go('set')" aria-label="Settings"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="lbl">Settings</span></button>
   </nav>
   <div id="authbox"></div>
 </header>
