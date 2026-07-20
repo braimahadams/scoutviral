@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-20 (Desktop nav is now a left sidebar, Instagram-web style — icon-only 721–1099px, full labels ≥1100px, account flyout pinned to the sidebar bottom; mobile bottom tab bar unchanged)
+**Last updated:** 2026-07-20 (Desktop left-sidebar nav: Dashboard is now a 5th sidebar item under Settings, account moved back to the top-right corner, hover tooltips on the icon-only sidebar; mobile bottom bar stays 4 items + tightened)
 
 ## Product ambition — read this first
 
@@ -115,39 +115,48 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   - `721–1099px` — **icon-only left sidebar**, `header{position:fixed;left:0;
     width:76px;height:100vh}`, nav vertical, labels hidden (`nav button .lbl{
     display:none}`), logo shows just the play-mark (the wordmark text is wrapped
-    in `<span class="word">` so it can be hidden without touching the SVG).
+    in `<span class="word">` so it can be hidden without touching the SVG). Each
+    nav button gets a **hover tooltip** via `nav button::after{content:attr(
+    aria-label)}` (that's why every nav button carries an `aria-label`) — so the
+    collapsed icons are still discoverable, Instagram-web style.
   - `≥1100px` — **expanded sidebar**, `width:248px`, full nav labels and wordmark
-    back, matching Instagram's own icon→labeled-sidebar breakpoint behavior.
+    back (tooltips suppressed: `nav button::after{display:none}`), matching
+    Instagram's own icon→labeled-sidebar breakpoint behavior.
   `body{padding-left:76px / 248px}` reserves the matching gutter so `main`/`footer`
   (already `width:100%;margin:0 auto`) recenter themselves for free — no other
   layout math needed. `.statusbar{left:76px / 248px}` keeps the scan-progress toast
   from sliding under the sidebar. **Don't add `overflow-x`/`overflow-y` to `header`**
   — it's a one-line trap: CSS forces the *other* overflow axis to clip too once either
-  is non-`visible`, which silently clips the account flyout menu (see below) whenever
-  it needs to render outside the 76px/248px column. Sidebar content is short and
-  fixed (logo + 4 nav + account) and doesn't need scrolling anyway.
+  is non-`visible`, which would clip the hover tooltips and (on mobile) the account
+  flyout. Sidebar content is short and fixed and doesn't need scrolling anyway.
   Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
-  **Main nav intentionally stays 4 items** — Dashboard is NOT a 5th tab (see below).
-- **Account control (`#authbox` → `.acctwrap`):** on mobile, one avatar/icon button
-  top-right of the header; **on desktop it's pinned to the bottom of the left
-  sidebar** (`margin-top:auto` inside the column-flex header) — the Instagram
-  profile-in-the-sidebar pattern. Opens a small flyout (`renderAuth`/
-  `toggleAcctMenu`/`closeAcctMenu`, same functions/DOM at every breakpoint) with
-  **Dashboard** and Sign in/out (or "Local mode" if Firebase isn't configured).
-  The flyout's anchor flips with the sidebar state so it's never clipped by the
-  viewport edge: mobile → below-right (`top:100%;right:0`), icon-only sidebar →
-  beside it (`left:calc(100% + 10px);bottom:0`), expanded sidebar → above it
-  (`bottom:calc(100% + 8px);left:0`). **Settings is deliberately NOT in this
-  flyout** — it only lives in the main nav (sidebar or bottom tab bar). Reasoning:
-  Settings is where every in-app nudge sends people (trial ended, no API key yet,
-  etc.), so it needs to stay a fast, always-visible, one-tap destination, and it
-  works with zero account at all (local mode) — putting it only behind an avatar
-  click would bury the single most-needed screen for a brand new user. The flyout
-  is scoped purely to account-y things: your personal stats and your sign-in
-  state. Don't re-add Settings there; if it ever feels missing, that's a sign the
-  main nav access broke, not that the flyout needs it back. Works identically
-  signed-in or not — Dashboard reads local data either way. Closes on outside
-  click or Escape.
+- **Dashboard is a 5th nav item on the desktop sidebar** (last, under Settings —
+  `<button data-v="dash">` with a chart icon), but **hidden from the 4-item mobile
+  bottom bar** (`nav button[data-v="dash"]{display:none}` in the base rule; the
+  `≥721px` query flips it back to `display:flex`). A cramped 5-across bottom bar is
+  bad; a vertical sidebar has all the room in the world. On mobile, Dashboard is
+  still reached from the account flyout (below).
+- **Account control (`#authbox` → `.acctwrap`):** always **top-right** — on mobile
+  it sits at the right of the sticky top header; on desktop it's pulled OUT of the
+  sidebar to the viewport's top-right corner (`position:fixed;top:12px;right:18px`,
+  floating over the content) so nav lives on the left and account on the right, like
+  a conventional app chrome. Shows the signed-in user's avatar + name (or a generic
+  avatar + "Account" when logged out / in local mode) and opens a small flyout
+  (`renderAuth`/`toggleAcctMenu`/`closeAcctMenu`, same functions/DOM everywhere)
+  with **Dashboard** (mobile only — `.dash-only`, hidden on desktop by the `≥721px`
+  query since Dashboard is a sidebar item there) and Sign in/out (or "Local mode"
+  if Firebase isn't configured). The flyout drops down-right (`top:100%;right:0`)
+  at every breakpoint now that the button is always top-anchored. **Settings is
+  deliberately NOT in this flyout** — it only lives in the main nav (sidebar or
+  bottom tab bar). Reasoning: Settings is where every in-app nudge sends people
+  (trial ended, no API key yet, etc.), so it needs to stay a fast, always-visible,
+  one-tap destination, and it works with zero account at all (local mode) — putting
+  it only behind an avatar click would bury the single most-needed screen for a
+  brand new user. The flyout is scoped purely to account-y things: your personal
+  stats and your sign-in state. Don't re-add Settings there; if it ever feels
+  missing, that's a sign the main nav access broke, not that the flyout needs it
+  back. Works identically signed-in or not — Dashboard reads local data either way.
+  Closes on outside click or Escape.
 - **Branded dialogs** replace native `alert/confirm/prompt` — `uiAlert`/`uiConfirm`/
   `uiPrompt` (Promise-based) render into `#dialog`; destructive confirms use a red
   button. Escape = cancel, Enter = confirm. `uiPrompt` supports `{multiline:true}`
