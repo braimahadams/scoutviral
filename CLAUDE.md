@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-20 (Legal footer replaced by a one-time reverse-psychology consent gate on first visit; seamless "add API key → back to what you were doing" round-trip for Directory's add-creator flow; mobile nav is a floating glassy pill with all 5 tabs; directory creators are floating "bubble" cards)
+**Last updated:** 2026-07-21 (Rolled back the first-visit consent gate — legal is a quiet line at the bottom of Settings again; signed-out Dashboard is now an aspirational sign-in invite with locked teaser tiles instead of a wall of zeros)
 
 ## Product ambition — read this first
 
@@ -235,6 +235,21 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   short sentences: most productive day, week-over-week delta, streak, average pace).
   Empty state (no library entries and no activity) shows a single welcoming card
   instead of a wall of zeros.
+- **Signed-out Dashboard is an invite, not a report** (`renderDashboardSignedOut`,
+  taken when `fb && !user`). The Dashboard is framed as a personal progress
+  *profile*, so a signed-out visitor shouldn't see a "good morning, here's your
+  momentum" report over empty data — that read as broken. Instead they get an
+  aspirational sign-in CTA (what signing in unlocks: streaks, momentum, a calendar
+  of completed videos, synced across devices) plus a row of **dimmed "locked"
+  teaser tiles** (`.dash-teaser`, values shown as "—") to create pull. If they've
+  already saved/completed videos locally (used a key without signing in), the copy
+  names those real counts ("You've already saved 2 ideas and completed 1…") so
+  signing in feels like *claiming* work, not starting over, and the Saved/Completed
+  teaser tiles show those real numbers while the sign-in-locked ones (Streak,
+  Momentum) stay "—". Signed-IN users (or pure local mode with no `fb`) still get
+  the real dashboard, including the plain "wall of zeros"→welcome empty card when
+  they simply haven't saved anything yet — that empty card is only right once you're
+  in, not as a first impression for a logged-out newcomer.
 - **Monthly calendar, not a GitHub-style dot grid.** The first version used a
   91-day heat-map of tiny squares; real creators complete a handful of videos a
   week (not hundreds of commits a day), so almost every square was empty/near-
@@ -375,26 +390,18 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   sink to the bottom of an engagement ranking). Engagement mode shows "X% liked" on
   each card and the CSV export gains an `engagement_pct` column. This is what makes the
   landing's "ranked by views or engagement" true.
-- **No global footer, no persistent legal text anywhere in the UI.** The old
-  always-visible `<footer>` (Powered by YouTube + ToS/Privacy links + "your API
-  key stays in your browser") read as unpolished chrome on every screen, and
-  Braimah didn't want it repeated in Settings either. **The required YouTube API
-  attribution was NOT deleted** (that would risk the YouTube API ToS, which
-  requires client apps to link the YouTube Terms of Service and Google Privacy
-  Policy) — it moved into a **one-time consent gate** (`showConsentGate()` /
-  `acceptConsent()`, `CONSENT_KEY = "ss_consent_v1"`), a full-screen overlay shown
-  once, ever, on first visit, framed as **reverse psychology**: "accepting" just
-  confirms *we're* not tracking *you* ("No cookies. No tracking. No ads… accepting
-  just means confirming that: we won't be watching."), not the usual "let us
-  track you" cookie-banner ask. The three required links + the API-key note live
-  in small fine print at the bottom of that same gate. Independent of the
-  `_showDlg`/`uiAlert` dialog system on purpose (that system HTML-escapes `msg`,
-  which would break the real `<a>` tags) — renders raw HTML into its own
-  `#consentgate` div, `z-index:95` (above branded dialogs' `z-index:90`). **Not
-  dismissible via backdrop click or Escape** — intentional, since it's the app's
-  single required legal touchpoint substituting for the old persistent footer; it
-  needs an explicit accept, not an easy-to-miss dismiss. `main{min-height:60vh}`
-  now (was `calc(100vh - 162px)` to reserve footer space) since there's no footer.
+- **No global footer; legal lives quietly in Settings.** The old always-visible
+  `<footer>` (Powered by YouTube + ToS/Privacy links + "your API key stays in your
+  browser") read as unpolished chrome on every screen, so it was removed. A
+  **first-visit consent gate** was tried and **rejected** (it broke the seamless
+  first-run feel — don't re-add a startup modal for this). **The required YouTube
+  API attribution is NOT deleted** (the YouTube API ToS requires client apps to
+  link the YouTube Terms of Service + Google Privacy Policy): it's a small muted
+  line at the **bottom of Settings** ("No cookies, no tracking, no ads… Powered by
+  YouTube… YouTube Terms of Service / Google Privacy Policy") — present for
+  compliance, out of the way, seen only when someone opens Settings (which every
+  key-related nudge sends them to anyway). `main{min-height:60vh}` now (was
+  `calc(100vh - 162px)` to reserve footer space) since there's no footer.
 - **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
   Full history, or Custom #) sets how deep to look; "Show top N" sets how many
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing
