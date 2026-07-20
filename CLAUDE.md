@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-20 (Desktop left-sidebar nav: Dashboard is now a 5th sidebar item under Settings, account moved back to the top-right corner, hover tooltips on the icon-only sidebar; mobile bottom bar stays 4 items + tightened)
+**Last updated:** 2026-07-20 (Mobile nav = floating glassy pill with all 5 tabs incl. Dashboard; Dashboard is a nav tab at every breakpoint now; global footer removed and YouTube/Google legal moved into Settings; directory creators are floating "bubble" cards)
 
 ## Product ambition — read this first
 
@@ -106,12 +106,19 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   `currentColor` so it's theme-aware, triangle = `var(--accent)`). Favicon is an SVG
   data-URI: the same mark in white on a red gradient app-icon tile (in `<head>`). Both
   are hand-built vectors — no raster assets. Keep them in sync if the mark changes.
-- **Bottom tab bar on mobile** (Discover/Directory/Remakes/Settings, `≤720px`);
-  **left sidebar on desktop** (`>720px`), Instagram-web style — the same single
-  `<header>`/`<nav>` markup is reused for all three layouts purely via CSS media
-  queries (`go()`/`data-v`/`render()` untouched, no duplicated DOM). Three states:
-  - `≤720px` — unchanged mobile: sticky top header (logo + account avatar only),
-    `nav` pulled out via `position:fixed;bottom:0` as the tab bar.
+- **Main nav = 5 tabs** (Discover/Directory/Remakes/Settings/**Dashboard**) — the
+  same single `<header>`/`<nav>` markup is reused for all three layouts purely via
+  CSS media queries (`go()`/`data-v`/`render()` untouched, no duplicated DOM).
+  Dashboard is now a real nav tab at **every** breakpoint (last, under Settings —
+  `<button data-v="dash">` with a chart icon), so it's no longer in the account
+  flyout. Three states:
+  - `≤720px` — **floating pill tab bar**: `nav{position:fixed;bottom:10px;left/right:12px;
+    border-radius:24px;background:var(--glass);backdrop-filter:blur(...)}` — a
+    detached, rounded, glassy capsule that hovers above the bottom edge (thumb-
+    reachable but light/modern; ties into the floating creator bubbles). Sticky top
+    header still holds just the logo + account avatar. `--glass` is a theme-aware
+    translucent card colour (added to `:root` + the light block); it's ~80% opaque
+    so it still reads fine if `backdrop-filter` is unsupported.
   - `721–1099px` — **icon-only left sidebar**, `header{position:fixed;left:0;
     width:76px;height:100vh}`, nav vertical, labels hidden (`nav button .lbl{
     display:none}`), logo shows just the play-mark (the wordmark text is wrapped
@@ -122,20 +129,13 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   - `≥1100px` — **expanded sidebar**, `width:248px`, full nav labels and wordmark
     back (tooltips suppressed: `nav button::after{display:none}`), matching
     Instagram's own icon→labeled-sidebar breakpoint behavior.
-  `body{padding-left:76px / 248px}` reserves the matching gutter so `main`/`footer`
-  (already `width:100%;margin:0 auto`) recenter themselves for free — no other
-  layout math needed. `.statusbar{left:76px / 248px}` keeps the scan-progress toast
-  from sliding under the sidebar. **Don't add `overflow-x`/`overflow-y` to `header`**
-  — it's a one-line trap: CSS forces the *other* overflow axis to clip too once either
-  is non-`visible`, which would clip the hover tooltips and (on mobile) the account
-  flyout. Sidebar content is short and fixed and doesn't need scrolling anyway.
+  `body{padding-left:76px / 248px}` reserves the matching gutter so `main` (already
+  `width:100%;margin:0 auto`) recenters itself for free. `.statusbar{left:76px /
+  248px}` keeps the scan-progress toast from sliding under the sidebar. **Don't add
+  `overflow-x`/`overflow-y` to `header`** — it's a one-line trap: CSS forces the
+  *other* overflow axis to clip too once either is non-`visible`, which would clip
+  the hover tooltips. Sidebar content is short and fixed and doesn't need scrolling.
   Big rounded video cards are the hero (`.vgrid`, `.vid`, `.vid.tall`).
-- **Dashboard is a 5th nav item on the desktop sidebar** (last, under Settings —
-  `<button data-v="dash">` with a chart icon), but **hidden from the 4-item mobile
-  bottom bar** (`nav button[data-v="dash"]{display:none}` in the base rule; the
-  `≥721px` query flips it back to `display:flex`). A cramped 5-across bottom bar is
-  bad; a vertical sidebar has all the room in the world. On mobile, Dashboard is
-  still reached from the account flyout (below).
 - **Account control (`#authbox` → `.acctwrap`):** always **top-right** — on mobile
   it sits at the right of the sticky top header; on desktop it's pulled OUT of the
   sidebar to the viewport's top-right corner (`position:fixed;top:12px;right:18px`,
@@ -143,20 +143,16 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   a conventional app chrome. Shows the signed-in user's avatar + name (or a generic
   avatar + "Account" when logged out / in local mode) and opens a small flyout
   (`renderAuth`/`toggleAcctMenu`/`closeAcctMenu`, same functions/DOM everywhere)
-  with **Dashboard** (mobile only — `.dash-only`, hidden on desktop by the `≥721px`
-  query since Dashboard is a sidebar item there) and Sign in/out (or "Local mode"
-  if Firebase isn't configured). The flyout drops down-right (`top:100%;right:0`)
-  at every breakpoint now that the button is always top-anchored. **Settings is
-  deliberately NOT in this flyout** — it only lives in the main nav (sidebar or
+  with just Sign in/out (or "Local mode" if Firebase isn't configured) now that
+  Dashboard is a nav tab. The flyout drops down-right (`top:100%;right:0`). **Settings
+  is deliberately NOT in this flyout** — it only lives in the main nav (sidebar or
   bottom tab bar). Reasoning: Settings is where every in-app nudge sends people
   (trial ended, no API key yet, etc.), so it needs to stay a fast, always-visible,
   one-tap destination, and it works with zero account at all (local mode) — putting
   it only behind an avatar click would bury the single most-needed screen for a
-  brand new user. The flyout is scoped purely to account-y things: your personal
-  stats and your sign-in state. Don't re-add Settings there; if it ever feels
-  missing, that's a sign the main nav access broke, not that the flyout needs it
-  back. Works identically signed-in or not — Dashboard reads local data either way.
-  Closes on outside click or Escape.
+  brand new user. The flyout is scoped purely to sign-in state now. Don't re-add
+  Settings there; if it ever feels missing, that's a sign the main nav access
+  broke, not that the flyout needs it back. Closes on outside click or Escape.
 - **Branded dialogs** replace native `alert/confirm/prompt` — `uiAlert`/`uiConfirm`/
   `uiPrompt` (Promise-based) render into `#dialog`; destructive confirms use a red
   button. Escape = cancel, Enter = confirm. `uiPrompt` supports `{multiline:true}`
@@ -308,10 +304,19 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   (`addCreator`, confirmed live against YouTube; Enter submits). Bulk paste-import was
   built then **deliberately reverted** — Braimah wants to discourage over-importing;
   Discover already covers browsing many. **No starter pack** — we don't push any
-  creator (they don't pay for placement). Cards show the creator's **profile photo**
-  (`c.meta.thumb` → `.cr-av`, initial-letter placeholder when absent) beside the name
-  for at-a-glance recognition. Deliberately lean — no country input, no filter
-  dropdowns; a single grid **ranked by Scout Score** with a name search. `dirF = {q}`.
+  creator (they don't pay for placement). Cards are **floating "bubbles"** (`.creator`,
+  built in `renderDir`): a strongly-rounded, centered card (avatar `.cr-av` on top,
+  name, @handle, then a `.cr-tags` row with the Scout chip + style tags), that
+  **gently bobs** — each card carries inline `--fdur`/`--fdel` custom props so they
+  drift on independent cycles (`@keyframes crfloat`), and `:nth-child(even)` gets a
+  static `margin-top` stagger so the grid reads organic, not like a rigid table.
+  Deliberately creative per Braimah's ask, but still a scannable responsive grid
+  (`.grid` auto-fill, 2-up at ≤560px) **ranked by Scout Score** with a name search.
+  Hover pauses the float. All motion is **reduced-motion-gated** (`.creator{
+  animation:none}`); the stagger stays (it's static layout, not motion). `dirF = {q}`.
+  Note: the `.grid` and the add-creator `.card` above it share `main`'s full width,
+  so their left/right edges line up exactly — keep new directory rows inside `main`
+  (no extra insets) so nothing "extends past" the add-creator box.
 - **Mobile Discover filters wrap** (`.filterbar` at ≤600px is `flex-wrap:wrap`, NOT a
   hidden horizontal scroll) so all controls — country, niche, result count, sort,
   time — are visible. Search placeholders are short ("Type your own search…",
@@ -352,10 +357,14 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   sink to the bottom of an engagement ranking). Engagement mode shows "X% liked" on
   each card and the CSV export gains an `engagement_pct` column. This is what makes the
   landing's "ranked by views or engagement" true.
-- **Sticky footer:** the global `<footer>` sits at the page bottom on every view via
-  `main{min-height:calc(100vh - 162px)}` (NOT body flex — the trailing empty
-  #modal/#dialog/#sbar divs broke flex free-space distribution). If header/footer
-  height changes materially, retune the 162px reserve.
+- **No global footer.** The old always-visible `<footer>` (Powered by YouTube +
+  YouTube ToS / Google Privacy links + "your API key stays in your browser") was
+  removed — it read as unpolished chrome on every screen. **The required YouTube
+  API attribution was NOT deleted** (that would risk the YouTube API ToS, which
+  requires client apps to link the YouTube Terms of Service and Google Privacy
+  Policy): it moved to a small muted line at the bottom of **Settings** — still
+  present for compliance, just out of the way. `main{min-height:60vh}` now (was
+  `calc(100vh - 162px)` to reserve footer space); there's no footer to stick.
 - **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
   Full history, or Custom #) sets how deep to look; "Show top N" sets how many
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing

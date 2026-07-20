@@ -29,6 +29,7 @@
   --accent:#f2555a; --accent-h:#ff6b6f; --accent-bg:rgba(242,85,90,.15);
   --warn:#e0a93e; --warn-bg:#332a12; --ok:#4cc08c; --ok-bg:#102b1f;
   --danger:#f2555a; --gold:#eab13e;
+  --glass:rgba(22,22,27,.82);
   --radius:16px; --radius-sm:11px; --navh:62px;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.32);
 }
@@ -40,6 +41,7 @@
     --accent:#e5333a; --accent-h:#c92a30; --accent-bg:rgba(229,51,58,.09);
     --warn:#9a6700; --warn-bg:#fff3d6; --ok:#0d7a4f; --ok-bg:#e2f5ec;
     --danger:#e5333a; --gold:#d69700;
+    --glass:rgba(255,255,255,.8);
     --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.05);
   }
 }
@@ -55,10 +57,6 @@ nav button{display:flex;align-items:center;gap:7px;border:none;background:transp
 nav button .ico{font-size:16px;line-height:1}
 nav button:hover{color:var(--ink);background:var(--card2)}
 nav button.on{color:var(--accent);background:var(--accent-bg);font-weight:600}
-/* Dashboard is a nav item only on the desktop sidebar (shown by the ≥721px
-   media query); on mobile it stays out of the 4-item bottom bar and is reached
-   from the account flyout instead. */
-nav button[data-v="dash"]{display:none}
 #authbox{margin-left:auto;display:flex;align-items:center;font-size:13px;color:var(--ink2)}
 .acctwrap{position:relative}
 .acctbtn{display:flex;align-items:center;gap:8px;background:none;border:1px solid transparent;border-radius:11px;padding:5px 9px 5px 5px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink2);transition:background .12s,border-color .12s}
@@ -74,7 +72,7 @@ nav button[data-v="dash"]{display:none}
 .acctitem:hover{background:var(--card2)}
 .acctitem .i{width:16px;height:16px;color:var(--ink3);flex:0 0 auto}
 .acctitem-static{padding:9px 10px;font-size:12.5px}
-main{max-width:1180px;width:100%;margin:0 auto;padding:24px 18px 48px;min-height:calc(100vh - 162px)}
+main{max-width:1180px;width:100%;margin:0 auto;padding:24px 18px 48px;min-height:60vh}
 h2{font-size:23px;font-weight:700;letter-spacing:-.02em;margin:2px 0 6px}
 h3{font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin:26px 0 11px}
 .muted{color:var(--ink3);font-size:13px}
@@ -95,16 +93,25 @@ button.btn:disabled{opacity:.5;cursor:default}
 .tag.warn{background:var(--warn-bg);color:var(--warn)}
 .tag.ok{background:var(--ok-bg);color:var(--ok)}
 .tag.plain{background:var(--bg2);color:var(--ink3);border:1px solid var(--line);cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
-.creator{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px;cursor:pointer;position:relative;box-shadow:var(--shadow);transition:border-color .12s,transform .12s}
-.creator:hover{border-color:var(--accent);transform:translateY(-2px)}
-.cr-head{display:flex;align-items:center;gap:11px;padding-right:22px}
-.cr-av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--bg2);border:1px solid var(--line);flex:0 0 auto}
-.cr-av-ph{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:var(--ink2)}
-.cr-id{min-width:0;flex:1}
-.creator .nm{font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.creator .hd{font-size:12px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
-.creator .x{position:absolute;top:9px;right:11px;color:var(--ink3);font-size:16px;background:none;border:none;cursor:pointer;padding:2px 4px;line-height:1}
+/* directory creator cards — soft floating "bubbles": strongly rounded, gently
+   bobbing, and staggered so the grid feels alive/organic rather than a rigid
+   table. Each card's float timing comes from inline --fdur/--fdel (set per card
+   in renderDir) so they drift independently. All gated behind reduced-motion. */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px 12px;align-items:start}
+.creator{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;
+  background:var(--card);border:1px solid var(--line);border-radius:28px;padding:20px 16px 16px;
+  cursor:pointer;position:relative;box-shadow:var(--shadow);
+  animation:crfloat var(--fdur,7s) ease-in-out var(--fdel,0s) infinite;
+  transition:border-color .14s,box-shadow .2s}
+.creator:hover{border-color:var(--accent);box-shadow:0 14px 34px rgba(0,0,0,.42);animation-play-state:paused}
+.grid .creator:nth-child(even){margin-top:16px}
+@keyframes crfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.cr-av{width:60px;height:60px;border-radius:50%;object-fit:cover;background:var(--bg2);border:1px solid var(--line);flex:0 0 auto;box-shadow:0 4px 14px rgba(0,0,0,.26)}
+.cr-av-ph{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:23px;color:var(--ink2)}
+.creator .nm{font-weight:650;font-size:14.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.creator .hd{font-size:12px;color:var(--ink3);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr-tags{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;align-items:center;margin-top:3px}
+.creator .x{position:absolute;top:12px;right:14px;color:var(--ink3);font-size:16px;background:none;border:none;cursor:pointer;padding:2px 4px;line-height:1;z-index:2}
 .creator .x:hover{color:var(--danger)}
 /* video cards — the hero */
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:16px}
@@ -391,10 +398,9 @@ html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   .lp-reveal{opacity:1!important;transform:none!important;transition:none}
-  .lp-float,.lp-mline,.lp-ping{animation:none!important}
+  .lp-float,.lp-mline,.lp-ping,.creator{animation:none!important}
   .lp-ping{display:none}
 }
-footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.6}
 /* ===================== Creator Dashboard ===================== */
 .dash{display:flex;flex-direction:column;gap:16px;max-width:900px}
 .dash-welcome h2{margin-bottom:3px}
@@ -449,34 +455,36 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
   .dash-goal-head{align-items:flex-start}
   .dash-mom-val{font-size:20px}
 }
-/* mobile: bottom tab bar */
+/* mobile: floating pill tab bar (a detached, rounded, glassy capsule that hovers
+   above the bottom edge — thumb-reachable but feels light and modern, and ties
+   into the floating creator bubbles on the directory). Holds all 5 tabs incl.
+   Dashboard. Labels are KEPT (just small) — "Remakes"/"Directory" aren't
+   universally-recognized icons like Instagram's, so labels aid discoverability
+   for a young, non-technical audience. */
 @media (max-width:720px){
   header{padding:11px 15px}
-  main{padding:18px 14px calc(84px + env(safe-area-inset-bottom))}
+  main{padding:18px 14px calc(96px + env(safe-area-inset-bottom))}
   .acctbtn .lbl{display:none}
   .acctbtn{padding:4px}
   .acctmenu{right:-4px}
-  /* compact, native-feeling tab bar: tighter padding, a thin hairline instead of
-     a heavy shadow. Labels are KEPT (just small) — "Remakes"/"Directory" aren't
-     universally-recognized icons like Instagram's, so labels aid discoverability
-     for a young, non-technical audience. */
-  nav{position:fixed;bottom:0;left:0;right:0;z-index:45;gap:0;background:var(--card);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));justify-content:space-around;box-shadow:0 -1px 10px rgba(0,0,0,.16)}
-  nav button{flex-direction:column;gap:2px;flex:1;padding:5px 2px;border-radius:11px;font-size:9.5px;font-weight:500;letter-spacing:.005em}
-  nav button .ico{font-size:23px}
+  nav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:45;gap:0;
+    background:var(--glass);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+    border:1px solid var(--line);border-radius:24px;padding:7px 6px;justify-content:space-around;
+    box-shadow:0 10px 34px rgba(0,0,0,.34),0 2px 8px rgba(0,0,0,.18)}
+  nav button{flex-direction:column;gap:2px;flex:1;padding:5px 2px;border-radius:16px;font-size:9px;font-weight:600;letter-spacing:.005em}
+  nav button .ico{font-size:22px}
   nav button:hover{background:transparent}
   nav button.on{background:transparent;color:var(--accent)}
-  .statusbar{bottom:calc(var(--navh) + env(safe-area-inset-bottom))}
-  footer{margin-bottom:calc(var(--navh) + env(safe-area-inset-bottom))}
+  .statusbar{bottom:calc(84px + env(safe-area-inset-bottom))}
 }
 /* desktop: left sidebar nav (Instagram-web style) instead of a top bar.
    Two widths: icon-only sidebar 721–1099px (with hover tooltips built from each
    button's aria-label), full labels ≥1100px. `header` becomes the fixed sidebar;
-   `body` reserves the matching left gutter so main/footer (already
+   `body` reserves the matching left gutter so main (already
    width:100%;margin:0 auto) recenter in the remaining space. The account control
    is pulled OUT of the sidebar to the viewport's top-right corner
    (`position:fixed`) — nav on the left, account (avatar + name / sign-in) on the
-   right, like the original top-bar layout. Dashboard is a sidebar nav item here,
-   so it's hidden from the account flyout (`.acctmenu .dash-only`). */
+   right, like the original top-bar layout. */
 @media (min-width:721px){
   body{padding-left:76px}
   header{position:fixed;top:0;left:0;bottom:0;z-index:40;width:76px;height:100vh;
@@ -488,7 +496,6 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
   nav button{position:relative;width:52px;height:52px;justify-content:center;padding:0;border-radius:14px}
   nav button .lbl{display:none}
   nav button .ico .i{width:22px;height:22px}
-  nav button[data-v="dash"]{display:flex}
   /* hover tooltip for the icon-only sidebar — content = the button's aria-label */
   nav button::after{content:attr(aria-label);position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);
     background:var(--card);color:var(--ink);border:1px solid var(--line);padding:6px 10px;border-radius:9px;
@@ -497,7 +504,6 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
   nav button:hover::after{opacity:1}
   /* account restored to the top-right corner, floating over the content */
   #authbox{position:fixed;top:12px;right:18px;z-index:46;margin:0}
-  .acctmenu .dash-only{display:none}
   .statusbar{left:76px}
 }
 @media (min-width:1100px){
@@ -538,15 +544,16 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
   .dur{font-size:9.5px;padding:1px 5px;bottom:6px;right:6px}
   .vbadge{font-size:9.5px;padding:2px 6px}
   .vnote{font-size:11px;padding:6px 7px}
-  /* two-up creator directory cards, same reasoning */
-  .grid{grid-template-columns:1fr 1fr;gap:9px}
-  .creator{padding:10px}
-  .cr-head{gap:8px;padding-right:18px}
-  .cr-av{width:34px;height:34px}
-  .cr-av-ph{font-size:14px}
-  .creator .nm{font-size:13px}
-  .creator .hd{font-size:11px}
+  /* two-up floating creator bubbles */
+  .grid{grid-template-columns:1fr 1fr;gap:11px 9px}
+  .creator{padding:16px 10px 12px;border-radius:22px}
+  .grid .creator:nth-child(even){margin-top:12px}
+  .cr-av{width:48px;height:48px}
+  .cr-av-ph{font-size:18px}
+  .creator .nm{font-size:12.5px}
+  .creator .hd{font-size:10.5px}
   .scorechip{font-size:10px;padding:2px 6px}
+  .cr-tags{gap:4px}
 }
 </style>
 </head>
@@ -563,12 +570,6 @@ footer{max-width:1180px;width:100%;margin:0 auto;padding:22px 18px;border-top:1p
   <div id="authbox"></div>
 </header>
 <main id="view"></main>
-<footer>
-  Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a>. This site uses YouTube API Services with an API key you provide; your use is subject to the
-  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a> and
-  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
-  Your API key stays in your browser and is sent only to Google.
-</footer>
 <div class="statusbar" id="sbar">
   <span id="stext"></span>
   <div class="bar"><i id="sfill"></i></div>
@@ -905,7 +906,6 @@ function renderAuth(){
       ${avatar}<span class="lbl">${esc(label)}</span>${ico("chevdown")}
     </button>
     <div class="acctmenu" id="acctmenu">
-      <button class="acctitem dash-only" onclick="closeAcctMenu();go('dash')">${ico("chart")} Dashboard</button>
       ${authItem}
     </div>
   </div>`;
@@ -1470,21 +1470,24 @@ function renderDir(){
     <span class="muted" style="margin-left:auto;flex:0 0 auto">${list.length} creator${list.length!==1?"s":""}</span>
   </div>`;
   h += `<div class="grid">`;
-  list.forEach(c=>{
+  list.forEach((c,i)=>{
     const sc = c._sc;
     const av = c.meta&&c.meta.thumb
       ? `<img class="cr-av" src="${esc(c.meta.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
       : `<div class="cr-av cr-av-ph">${esc((c.name||"?").trim().charAt(0).toUpperCase()||"?")}</div>`;
-    h += `<div class="creator" onclick="go('creator',{c:${c._i}})">
+    // give each bubble its own gentle drift so the grid feels alive, not uniform
+    const fdur = (6.4 + (i%4)*0.6).toFixed(1), fdel = ((i%5)*0.8).toFixed(1);
+    h += `<div class="creator" style="--fdur:${fdur}s;--fdel:-${fdel}s" onclick="go('creator',{c:${c._i}})">
       <button class="x" title="Remove" onclick="event.stopPropagation();removeCreator(${c._i})">×</button>
-      <div class="cr-head">${av}<div class="cr-id">
-        <div class="nm">${esc(c.name)}</div>
-        <div class="hd">@${esc(c.handle||"")}${c.id?" ✓":""}</div>
-      </div></div>
-      ${sc?`<div style="margin-top:8px"><span class="scorechip tier-${scoutTier(sc.score)}" title="Scout Score — how worth studying this creator is">${ico("zap")} Scout <b>${sc.score}</b></span></div>`:""}
-      <div>${(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag plain" style="cursor:default" onclick="event.stopPropagation()">${esc(t)}</span>`).join("")}
-      ${c.verify&&!c.id?`<span class="tag warn">verify handle</span>`:""}
-      <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">${ico("pencil")} tags</span></div>
+      ${av}
+      <div class="nm">${esc(c.name)}</div>
+      <div class="hd">@${esc(c.handle||"")}${c.id?" ✓":""}</div>
+      <div class="cr-tags">
+        ${sc?`<span class="scorechip tier-${scoutTier(sc.score)}" title="Scout Score — how worth studying this creator is">${ico("zap")} Scout <b>${sc.score}</b></span>`:""}
+        ${(c.tag||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag plain" style="cursor:default" onclick="event.stopPropagation()">${esc(t)}</span>`).join("")}
+        ${c.verify&&!c.id?`<span class="tag warn">verify handle</span>`:""}
+        <span class="tag plain" title="Edit style tags" onclick="event.stopPropagation();editTags(${c._i})">${ico("pencil")} tags</span>
+      </div>
     </div>`;
   });
   h += `</div>`;
@@ -2291,6 +2294,12 @@ function renderSet(){
       <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
       <button class="btn sec" onclick="clearCaches()">Clear video caches</button>
     </div>
+  </div>
+  <div class="muted" style="margin-top:18px;font-size:12px;line-height:1.65;max-width:640px">
+    No cookies, no tracking, no ads. Your API key stays in your browser and is sent only to Google.
+    Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a> — ScoutViral uses YouTube API Services, so your use is subject to the
+    <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a> and the
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
   </div>`;
 }
 function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); cloudSave(); uiAlert(apiKey?"Key saved ✓":"Key cleared"); renderSet(); }
