@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-20 (Mobile nav = floating glassy pill with all 5 tabs incl. Dashboard; Dashboard is a nav tab at every breakpoint now; global footer removed and YouTube/Google legal moved into Settings; directory creators are floating "bubble" cards)
+**Last updated:** 2026-07-20 (Legal footer replaced by a one-time reverse-psychology consent gate on first visit; seamless "add API key → back to what you were doing" round-trip for Directory's add-creator flow; mobile nav is a floating glassy pill with all 5 tabs; directory creators are floating "bubble" cards)
 
 ## Product ambition — read this first
 
@@ -317,6 +317,24 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   Note: the `.grid` and the add-creator `.card` above it share `main`'s full width,
   so their left/right edges line up exactly — keep new directory rows inside `main`
   (no extra insets) so nothing "extends past" the add-creator box.
+- **Seamless "no API key yet" round-trip.** A first-time user typing a handle into
+  "Add creator" with no key set gets routed to Settings to add one — but they used
+  to have to manually navigate back and re-type the handle, which felt broken for
+  a beginner-friendly app. Now `ensureCanScout(resume)` accepts an optional
+  `{route, run}` descriptor, stored in module-level `pendingResume` right before
+  the "add a key" prompt fires; `addCreator()` registers one that restores the
+  typed handle into `#addIn` and calls itself again. Declining the prompt clears
+  `pendingResume` (so it can never fire later for an unrelated key save).
+  `saveKey()` checks `pendingResume` first: if set, it skips the normal "Key saved
+  ✓" alert (an extra click to dismiss right before navigating away would undercut
+  the seamlessness) and instead `go()`es straight back and calls `resume.run()` —
+  so saving the key finishes the exact add-creator attempt automatically, live API
+  call and all. `renderSet()` shows a one-line contextual banner ("we'll take you
+  straight back…") whenever `pendingResume` is active, so the redirect doesn't
+  feel like a random detour. Currently wired up for the Directory add-creator flow
+  only (the case this was built for) — Discover's own gated actions still redirect
+  to Settings but don't auto-resume; extend the same `resume` pattern there later
+  if the same friction shows up.
 - **Mobile Discover filters wrap** (`.filterbar` at ≤600px is `flex-wrap:wrap`, NOT a
   hidden horizontal scroll) so all controls — country, niche, result count, sort,
   time — are visible. Search placeholders are short ("Type your own search…",
@@ -357,14 +375,26 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   sink to the bottom of an engagement ranking). Engagement mode shows "X% liked" on
   each card and the CSV export gains an `engagement_pct` column. This is what makes the
   landing's "ranked by views or engagement" true.
-- **No global footer.** The old always-visible `<footer>` (Powered by YouTube +
-  YouTube ToS / Google Privacy links + "your API key stays in your browser") was
-  removed — it read as unpolished chrome on every screen. **The required YouTube
-  API attribution was NOT deleted** (that would risk the YouTube API ToS, which
+- **No global footer, no persistent legal text anywhere in the UI.** The old
+  always-visible `<footer>` (Powered by YouTube + ToS/Privacy links + "your API
+  key stays in your browser") read as unpolished chrome on every screen, and
+  Braimah didn't want it repeated in Settings either. **The required YouTube API
+  attribution was NOT deleted** (that would risk the YouTube API ToS, which
   requires client apps to link the YouTube Terms of Service and Google Privacy
-  Policy): it moved to a small muted line at the bottom of **Settings** — still
-  present for compliance, just out of the way. `main{min-height:60vh}` now (was
-  `calc(100vh - 162px)` to reserve footer space); there's no footer to stick.
+  Policy) — it moved into a **one-time consent gate** (`showConsentGate()` /
+  `acceptConsent()`, `CONSENT_KEY = "ss_consent_v1"`), a full-screen overlay shown
+  once, ever, on first visit, framed as **reverse psychology**: "accepting" just
+  confirms *we're* not tracking *you* ("No cookies. No tracking. No ads… accepting
+  just means confirming that: we won't be watching."), not the usual "let us
+  track you" cookie-banner ask. The three required links + the API-key note live
+  in small fine print at the bottom of that same gate. Independent of the
+  `_showDlg`/`uiAlert` dialog system on purpose (that system HTML-escapes `msg`,
+  which would break the real `<a>` tags) — renders raw HTML into its own
+  `#consentgate` div, `z-index:95` (above branded dialogs' `z-index:90`). **Not
+  dismissible via backdrop click or Escape** — intentional, since it's the app's
+  single required legal touchpoint substituting for the old persistent footer; it
+  needs an explicit accept, not an easy-to-miss dismiss. `main{min-height:60vh}`
+  now (was `calc(100vh - 162px)` to reserve footer space) since there's no footer.
 - **Channel view:** "Scout range" control (Last 50/100/200/500/1,000 uploads,
   Full history, or Custom #) sets how deep to look; "Show top N" sets how many
   ranked Shorts to display; "Scout"/"Rescout" runs it; export CSV. (User-facing

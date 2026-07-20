@@ -195,6 +195,17 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
 .player iframe{width:100%;height:100%;border:0}
 .closex{position:absolute;top:-4px;right:0;transform:translateY(-110%);background:none;border:none;color:#fff;font-size:28px;cursor:pointer}
 .dlg{z-index:90}
+/* one-time consent gate (shown once, ever, on first visit) — sits above
+   everything including branded dialogs since it's the app's single required
+   legal touchpoint (replaces the old always-visible footer). Not dismissible
+   via backdrop/Escape on purpose: it's one tap, once, and then it's gone for
+   good — see showConsentGate(). */
+.consent-ov{z-index:95}
+.consent-box{width:min(460px,92vw);padding:26px}
+.consent-ic{width:44px;height:44px;border-radius:13px;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.consent-ic .i{width:22px;height:22px}
+.consent-fine{font-size:11.5px;color:var(--ink3);line-height:1.6;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.consent-fine a{color:var(--ink3);text-decoration:underline}
 .dlgbox{width:min(440px,92vw);padding:24px;border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.55);animation:dlgpop .14s ease-out}
 @keyframes dlgpop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
 .dlgtitle{font-size:19px;font-weight:800;letter-spacing:-.015em;margin-bottom:8px}
@@ -577,6 +588,7 @@ html{scroll-behavior:smooth}
 </div>
 <div id="modal"></div>
 <div id="dialog"></div>
+<div id="consentgate"></div>
 
 <script src="config.js"></script>
 <script>
@@ -697,9 +709,17 @@ const trialRemaining  = ()=> Math.max(0, TRIAL_LIMIT - (+store.get("ss_trial_use
 const usingTrial      = ()=> !apiKey && trialConfigured() && trialRemaining()>0;
 const effectiveKey    = ()=> apiKey || (usingTrial() ? TRIAL_KEY : "");
 function noteTrialUse(){ if(!apiKey && trialConfigured()){ store.set("ss_trial_used",(+store.get("ss_trial_used",0)||0)+1); } }
-/* gate before any live call: returns false (and nudges) when there's no way to scout */
-async function ensureCanScout(){
+/* seamless return-trip: when a gated action (like adding a creator) sends someone
+   to Settings for a key, we remember what they were doing so saveKey() can send
+   them straight back and finish it — no re-typing, no re-navigating. Cleared
+   whenever the user declines the "add a key" prompt, so a stale resume can never
+   fire later for an unrelated key save. */
+let pendingResume = null;
+/* gate before any live call: returns false (and nudges) when there's no way to scout.
+   Pass {route, run} to auto-continue the action once a key is saved. */
+async function ensureCanScout(resume){
   if(apiKey || usingTrial()) return true;
+  if(resume) pendingResume = resume;
   if(trialConfigured()) await trialEndedPrompt(); else await needKeyPrompt();
   return false;
 }
@@ -707,13 +727,13 @@ async function trialEndedPrompt(){
   const yes = await uiConfirm(
     "Loving it? You've used up your free preview. Add your own free key to keep scouting — it refreshes a big batch of searches every single day, it's completely free, and everything you've saved stays right here. Sign in too and your ideas follow you to every device.",
     {title:"Keep scouting — free", okText:"Get my free key"});
-  if(yes) go("set");
+  if(yes) go("set"); else pendingResume = null;
 }
 async function needKeyPrompt(){
   const yes = await uiConfirm(
     "To scout live from YouTube you'll add your own free key. It takes about two minutes and it's completely free.",
     {title:"Add your free key", okText:"Open Settings"});
-  if(yes) go("set");
+  if(yes) go("set"); else pendingResume = null;
 }
 const isTrialGate = e => !apiKey && trialConfigured() && /quota|limit|__trial/i.test(e&&e.message||"");
 function refreshTrialNote(){ const el=document.getElementById("trialNote"); if(el) el.innerHTML=trialNoteHTML(); }
@@ -986,6 +1006,7 @@ const ICONS = {
   chevdown:'<path d="m6 9 6 6 6-6"/>',
   logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
   flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 17a2.5 2.5 0 0 0 2.5-2.5c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7.5 7.5 0 1 1-15 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
 };
 function ico(name, cls){ return `<svg class="i${cls?" "+cls:""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||""}</svg>`; }
 
@@ -1502,7 +1523,11 @@ async function addCreator(){
   const inp = document.getElementById("addIn").value.trim();
   const country = "Uncategorized";
   if(!inp) return;
-  if(!(await ensureCanScout())) return;
+  // registered once so BOTH the proactive gate below and the reactive
+  // trial-gate catch (if the trial runs out mid-request) resume the same way:
+  // back to Directory, handle restored, add re-attempted automatically.
+  const resume = {route:"dir", run:()=>{ const el=document.getElementById("addIn"); if(el) el.value=inp; addCreator(); }};
+  if(!(await ensureCanScout(resume))) return;
   const parsed = parseChannelInput(inp);
   try{
     sbar(true,"Verifying channel…",30);
@@ -1511,7 +1536,7 @@ async function addCreator(){
     creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta, addedAt:Date.now()});
     persist(); sbar(false); renderDir();
   }catch(e){ sbar(false);
-    if(isTrialGate(e)){ trialEndedPrompt(); return; }
+    if(isTrialGate(e)){ pendingResume=resume; trialEndedPrompt(); return; }
     uiAlert(e.message, {title:"Couldn't add creator"});
   }
 }
@@ -2210,6 +2235,35 @@ function uiAlert(msg,o={}){ return _showDlg({msg,title:o.title,okText:o.okText,c
 function uiConfirm(msg,o={}){ return _showDlg({msg,title:o.title,okText:o.okText||"OK",cancelText:o.cancelText||"Cancel",danger:o.danger}); }
 function uiPrompt(msg,def,o={}){ return _showDlg({msg,title:o.title,input:true,multiline:o.multiline,def,placeholder:o.placeholder,okText:o.okText||"OK",cancelText:o.cancelText||"Cancel"}); }
 
+/* ---------- one-time consent gate (replaces the old always-visible footer) ----------
+   Required attribution (YouTube API Services notice, YouTube ToS + Google Privacy
+   links, "key stays in your browser") shown once, ever, on first visit — framed as
+   reverse psychology ("accept" = confirming we DON'T track you) instead of a
+   nagging cookie banner repeated on every page. Independent of the #dialog system
+   (raw HTML so the legal links can be real <a> tags; _showDlg escapes msg). Not
+   dismissible via backdrop/Escape on purpose — it's one tap, once, then gone
+   for good. */
+const CONSENT_KEY = "ss_consent_v1";
+function showConsentGate(){
+  if(store.get(CONSENT_KEY,false)) return;
+  document.getElementById("consentgate").innerHTML = `
+  <div class="overlay consent-ov">
+    <div class="card dlgbox consent-box" role="dialog" aria-modal="true">
+      <div class="consent-ic">${ico("lock")}</div>
+      <div class="dlgtitle">You're in control here</div>
+      <div class="dlgmsg">No cookies. No tracking. No ads. There's nothing of yours we collect or sell — so accepting just means confirming that: we won't be watching.</div>
+      <div class="row" style="justify-content:flex-end;margin-top:18px">
+        <button class="btn" onclick="acceptConsent()">Sounds good — let's go</button>
+      </div>
+      <div class="consent-fine">Your API key stays in your browser and is sent only to Google. Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a> — ScoutViral uses YouTube API Services, so your use is subject to the <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a> and the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.</div>
+    </div>
+  </div>`;
+}
+function acceptConsent(){
+  store.set(CONSENT_KEY, true);
+  document.getElementById("consentgate").innerHTML = "";
+}
+
 /* ---------- Sign-in modal (Google + email/password) ---------- */
 function openAuthModal(){
   document.getElementById("modal").innerHTML = `
@@ -2269,6 +2323,7 @@ async function doResetPassword(){
 function renderSet(){
   const nCache = (()=>{ let n=0; for(let i=0;i<localStorage.length;i++){ if((localStorage.key(i)||"").startsWith("ss_vids_")) n++; } return n; })();
   view().innerHTML = `<h2>Settings</h2>
+  ${pendingResume?`<div class="notice" style="margin-bottom:12px">${ico("arrowr")} Add your key below and save — we'll take you straight back to finish what you were doing.</div>`:""}
   <div class="card" style="margin-bottom:12px">
     <b>Your YouTube Data API v3 key</b>
     <div class="row" style="margin-top:8px">
@@ -2294,15 +2349,20 @@ function renderSet(){
       <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
       <button class="btn sec" onclick="clearCaches()">Clear video caches</button>
     </div>
-  </div>
-  <div class="muted" style="margin-top:18px;font-size:12px;line-height:1.65;max-width:640px">
-    No cookies, no tracking, no ads. Your API key stays in your browser and is sent only to Google.
-    Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a> — ScoutViral uses YouTube API Services, so your use is subject to the
-    <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a> and the
-    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
   </div>`;
 }
-function saveKey(){ apiKey = document.getElementById("keyIn").value.trim(); store.set("ss_key",apiKey); cloudSave(); uiAlert(apiKey?"Key saved ✓":"Key cleared"); renderSet(); }
+function saveKey(){
+  apiKey = document.getElementById("keyIn").value.trim();
+  store.set("ss_key",apiKey); cloudSave();
+  if(apiKey && pendingResume){
+    // seamless round-trip: skip the modal (it would just be another click to
+    // dismiss right before we navigate away) and pick up exactly where they left off
+    const r = pendingResume; pendingResume = null;
+    go(r.route); r.run();
+    return;
+  }
+  uiAlert(apiKey?"Key saved ✓":"Key cleared"); renderSet();
+}
 async function removeKey(){
   const ok = await uiConfirm("Remove your saved API key? Your creators and ideas stay exactly where they are, and you can add a new key anytime.", {title:"Remove key", okText:"Remove", danger:true});
   if(!ok) return;
@@ -2340,6 +2400,7 @@ if(location.pathname !== "/" && !/index\.html$/.test(location.pathname)){
 } else {
   render();
 }
+showConsentGate();
 </script>
 <script type="module">
 /* Optional Firebase layer — activates only when config.js is filled in */
