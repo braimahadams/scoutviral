@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-21 (Rolled back the first-visit consent gate — legal is a quiet line at the bottom of Settings again; signed-out Dashboard is now an aspirational sign-in invite with locked teaser tiles instead of a wall of zeros)
+**Last updated:** 2026-07-21 (Landing page now hides the app nav — it's a marketing front door, and the sidebar/pill nav appears only once you step inside via a CTA, no sign-in required; real Natural-Earth dotted world map on the hero mesh; Settings "Data" is a collapsible dropdown)
 
 ## Product ambition — read this first
 
@@ -172,6 +172,19 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
 - A premium **storytelling landing** — Linear/Vercel-tier — is the `home` route.
   Flow: hero → Discover Worldwide → Scout a Creator → Build Your Board → 5-step
   workflow (Discover→Scout→Save→Remake→Publish) → final CTA. Global `<footer>` closes it.
+- **The app nav is hidden on the landing** (`body.landing`, toggled in `render()`
+  for the `home` route). The landing is a marketing *front door*, not the app:
+  showing all five nav tabs there made the door and the house look like one room
+  and killed curiosity. At every width the nav is `display:none` on home; on
+  desktop the left sidebar reverts to a simple sticky **top bar** (logo left,
+  account/sign-in right, `padding-left` gutter removed so the page is full-width),
+  and on mobile the bottom pill is just hidden (the top header already reads as a
+  marketing bar). Stepping inside — the hero's **"Start discovering"** CTA
+  (`go('disc')`) or any other route — drops the class and the sidebar/pill nav
+  returns. **This is deliberately NOT sign-in-gated**: the free trial key + local
+  mode still let a first-timer try instantly with no account (that no-signup
+  onboarding is a core advantage — don't regress it into a forced-login wall).
+  Sign-in stays for what it's for: cross-device sync + the personal Dashboard.
 - **All product visuals are pure CSS/DOM mockups** built from the real design
   tokens (a mock "app window" with a Discover grid + floating Scout Score / Saved
   cards, a **worldwide creator mesh**, a ranked Top-Shorts list, an idea-board

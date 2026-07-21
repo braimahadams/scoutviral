@@ -523,6 +523,22 @@ html{scroll-behavior:smooth}
   nav button::after{display:none}   /* labels are visible → no tooltip needed */
   .statusbar{left:248px}
 }
+/* Landing page = marketing front door: no app nav. `body.landing` is toggled in
+   render() for the home route. The nav is hidden at every width, and on desktop
+   the sidebar reverts to a simple top bar (logo left, account/sign-in right) with
+   the left gutter removed, so the landing is full-width. Stepping into the app
+   (any other route) drops the class and the sidebar/pill nav returns. */
+body.landing nav{display:none}
+@media (min-width:721px){
+  body.landing{padding-left:0}
+  body.landing header{position:sticky;top:0;left:auto;bottom:auto;width:auto;height:auto;
+    flex-direction:row;align-items:center;gap:16px;padding:11px 22px;
+    border-right:none;border-bottom:1px solid var(--line)}
+  body.landing header h1{padding:0;justify-content:flex-start}
+  body.landing header h1 .word{display:inline}
+  body.landing #authbox{position:static;margin:0 0 0 auto;top:auto;right:auto}
+  body.landing .statusbar{left:0}
+}
 @media (max-width:600px){
   /* wrap the Discover filters so every option (country, niche, count, sort, time)
      stays visible instead of hiding in a horizontal scroll strip */
@@ -1069,6 +1085,10 @@ function go(v,extra){ route={v,...(extra||{})};
   render(); window.scrollTo(0,0); }
 const view = ()=>document.getElementById("view");
 function render(){
+  // Landing page hides the app nav — it's a marketing front door, not the app.
+  // The full sidebar/pill nav appears the moment you step inside (any other route),
+  // e.g. the hero's "Start discovering" CTA. Sign-in is NOT required to enter.
+  document.body.classList.toggle("landing", route.v==="home");
   if(route.v==="home") renderHome();
   else if(route.v==="dir") renderDir();
   else if(route.v==="creator") renderCreator(route.c);
