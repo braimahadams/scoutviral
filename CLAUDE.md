@@ -180,21 +180,31 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   component's look, glance at its `.lp-*` mock twin so they don't drift.
 - **The "Discover worldwide" visual is a creator mesh** (`.lp-mesh`, built in
   `renderHome` from `meshNodes`/`meshLinks`), not the old pulsing-pins map. It
-  reads as a live global network **over a dotted world map**: gradient-avatar
-  nodes (`.lp-node`, an `ico("user")` silhouette on an `LP_G` gradient) sit on
-  their home continent — N/S America, Europe, Africa, a central **hub** node,
+  reads as a live global network **over a real dotted world map**: gradient-
+  avatar nodes (`.lp-node`, an `ico("user")` silhouette on an `LP_G` gradient) sit
+  on their home continent — N/S America, Europe, Africa, a central **hub** node,
   E-Asia, Oceania — joined by animated dashed "connection" lines (`.lp-mline`,
-  red accent, `lpflow` flowing dash). The world map is **generated, not an asset**:
-  `CONT` is a list of continent ellipses `[cx,cy,rx,ry]` and a grid scan keeps a
-  faint dot (`.lp-mdots circle`) wherever it falls inside one — so a creator from
-  any continent sees themselves placed on it. **Coordinate trick:** the SVG is
-  `viewBox="0 0 210 100" preserveAspectRatio="none"` over the ~2.1:1 box (so units
-  are ≈square → dots render round); a node's HTML `left/top` is a %, and its SVG
-  point is `(xPct*2.1, yPct)` — lines, dots, and avatars all share that space, so
-  endpoints land exactly on avatar centers (verified 0px). Move a node → its
-  continent ellipse must move too, or it floats off the land. Deliberately
-  **gradient avatars, not photos** (same reason as every other mock: crisp,
-  theme-aware, zero network weight, no external asset). All animation is
+  red accent, `lpflow` flowing dash). **The map is real, not hand-drawn**: an
+  earlier version approximated continents as CSS ellipses and it looked visibly
+  wrong ("the sketch of the continent doesn't match"). `WORLD_DOTS` is now a
+  precomputed `"x,y x,y …"` string generated *once* (see
+  `/tmp/.../scratchpad/gen_map.js` if you ever need to regenerate it) by
+  ray-casting real coastlines from Natural Earth's public-domain 110m land
+  dataset (`world-atlas@2/land-110m.json`) against a grid in this same
+  coordinate space — so the continents are geographically accurate, not a guess.
+  Still baked in statically (no fetch, no runtime cost, same "generated not
+  asset" spirit as everything else here). **Coordinate trick:** the SVG is
+  `viewBox="0 0 210 100" preserveAspectRatio="none"`, and `.lp-mesh` uses
+  `aspect-ratio:2.1/1` (not a fixed pixel height — a fixed height stretched the
+  map/dots at column widths other than the one it was tuned for) so the 2.1:1
+  space is exact at every viewport, which is what keeps dots perfectly round and
+  the coastlines undistorted. A node's HTML `left/top` is a %, and its SVG point
+  is `(xPct*2.1, yPct)` — lines, dots, and avatars all share that space, so line
+  endpoints land exactly on avatar centers (verified ~0px). If you regenerate
+  `WORLD_DOTS` or move a node, re-run the same near-dots/endpoint checks — a node
+  off the coastline or a stretched dot is an easy regression to miss visually.
+  Deliberately **gradient avatars, not photos** (same reason as every other mock:
+  crisp, theme-aware, zero network weight, no external asset). All animation is
   reduced-motion-gated.
 - **Overflow gotcha (fixed once, don't reintroduce):** the mock app window
   (`.lp-stage{max-width:940px}`) fills its column with **zero side margin** for
