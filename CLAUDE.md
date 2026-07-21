@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-21 (Landing page now hides the app nav — it's a marketing front door, and the sidebar/pill nav appears only once you step inside via a CTA, no sign-in required; real Natural-Earth dotted world map on the hero mesh; Settings "Data" is a collapsible dropdown)
+**Last updated:** 2026-07-21 (Discover on mobile: selector-card deck + branded bottom-sheet pickers replace the raw dropdowns, plus a 3-suggestion starter card before the first search; landing mesh got depth — tiered dots, neon glow arcs, travelling light pulses; mock-window pill no longer clips on phones)
 
 ## Product ambition — read this first
 
@@ -219,6 +219,21 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   Deliberately **gradient avatars, not photos** (same reason as every other mock:
   crisp, theme-aware, zero network weight, no external asset). All animation is
   reduced-motion-gated.
+  **Depth pass (2026-07-21):** dots sit in 3 size/opacity tiers via a
+  shader-style scatter hash (`sin(x*12.9898+y*78.233)` — a *linear* hash
+  collapses on this regular grid, don't swap one back in); each connection is a
+  blurred neon underlay (`.lp-mglow`, `#lpBlur` filter) + the crisp dash + a
+  light pulse travelling the arc (SMIL `animateMotion`, zero JS, `.lp-pulse` —
+  hidden under reduced-motion); the hub gets an ambient red glow baked into
+  `.lp-mesh`'s background stack. Braimah asked for a *generated image* here —
+  the image workspace was out of credits at the time, so this in-code depth pass
+  shipped instead; if he asks again and credits exist, generate a dark 2:1
+  dotted-world-map hero (charcoal #101012, red #f2555a accents) and layer the
+  existing nodes/lines on top.
+- **Mock-window bar on phones (≤640px):** the fake Discover/Directory/Remakes
+  tab strip (`.lp-winnav`) is hidden — it's decoration and it was shoving the
+  "Worldwide × Silent comedy" pill (`.lp-winpill`) out of the window — and the
+  pill becomes an ellipsizing block capped at 70% width so it can never clip.
 - **Overflow gotcha (fixed once, don't reintroduce):** the mock app window
   (`.lp-stage{max-width:940px}`) fills its column with **zero side margin** for
   almost the entire 641–976px range (main's content width ≤ 940px there), so the
@@ -373,10 +388,23 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   only (the case this was built for) — Discover's own gated actions still redirect
   to Settings but don't auto-resume; extend the same `resume` pattern there later
   if the same friction shows up.
-- **Mobile Discover filters wrap** (`.filterbar` at ≤600px is `flex-wrap:wrap`, NOT a
-  hidden horizontal scroll) so all controls — country, niche, result count, sort,
-  time — are visible. Search placeholders are short ("Type your own search…",
-  "@handle or channel link") so they fit small inputs; Enter submits both.
+- **Mobile Discover = selector-card deck + bottom sheets, not dropdowns.** At
+  ≤720px the raw `<select>` row (`.filterbar`) is hidden and replaced by
+  `.disc-deck`: a 2×2 grid of tappable selector cards (Country/Niche/Sort/Time —
+  icon, label, current value, chevron) plus a full-width results stepper
+  (`discCount(±5)`). Tapping a card opens a **branded bottom sheet**
+  (`discSheet(kind)` → `#modal`, `.sheet-ov`/`.sheet`, slide-up animation,
+  drag-grip, searchable list for the 48 countries / 28 niches, checkmark on the
+  selected row; backdrop tap or Escape closes; ≥721px it centers as a modal but
+  desktop keeps the plain select row — don't remove that). Picking re-renders
+  Discover with the new value. **Both UIs read/write the same `disc` state**, so
+  adding a filter means updating the selects AND the deck/sheet. Reduced-motion
+  disables the slide. Search placeholders stay short; Enter submits.
+- **Discover starter card (blank-page killer):** before the first search,
+  `#dres` isn't empty — `discStarterHTML()` renders three one-tap starts
+  ("US × Silent comedy", "Worldwide × Food", "Surprise me" → `discQuick`/
+  `randomDiscover`) so a first-timer's first ten seconds produce a result, not a
+  form. It naturally disappears once a search fills `#dres`.
 - **Mobile: 2-up cards, not full-width.** At `≤560px`, `.vgrid` (video cards —
   Discover, a creator's scouted Shorts, and the Saved/Remaking/Completed board all
   share it) and `.grid` (the directory's creator list) switch from 1 column to 2,

@@ -220,6 +220,42 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
 .filters input[type=text]{flex:1 1 140px;min-width:140px}
 .filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+/* Discover mobile "deck": the row of raw <select>s reads dated on a phone, so
+   ≤720px it's replaced by tappable selector cards that open a branded bottom
+   sheet (native-app pattern). Desktop keeps the compact select row. */
+.disc-deck{display:none}
+@media (max-width:720px){
+  .filterbar{display:none}
+  .disc-deck{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+  .dpick{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:10px 11px;font-family:inherit;cursor:pointer;text-align:left;min-width:0;transition:border-color .12s,background .12s}
+  .dpick:active{border-color:var(--accent);background:var(--accent-bg)}
+  .dp-ic{width:30px;height:30px;border-radius:9px;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .dp-ic .i{width:15px;height:15px}
+  .dp-tx{flex:1;min-width:0}
+  .dp-tx small{display:block;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3)}
+  .dp-tx b{display:block;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+  .dpick>.i{width:14px;height:14px;color:var(--ink3);flex:0 0 auto}
+  .dp-count{grid-column:1/-1;cursor:default}
+  .dp-step{display:flex;gap:7px}
+  .dp-step button{width:36px;height:36px;border-radius:11px;background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:18px;font-weight:600;font-family:inherit;cursor:pointer;line-height:1}
+  .dp-step button:active{border-color:var(--accent);color:var(--accent)}
+}
+/* bottom-sheet picker */
+.sheet-ov{z-index:85;align-items:flex-end;padding:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px)}
+.sheet{width:100%;max-height:76vh;background:var(--card);border:1px solid var(--line);border-bottom:none;border-radius:22px 22px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;animation:sheetup .24s cubic-bezier(.22,.61,.36,1)}
+@keyframes sheetup{from{transform:translateY(48px);opacity:.4}to{transform:none;opacity:1}}
+.sheet.closing{animation:sheetdown .15s ease-in forwards}
+@keyframes sheetdown{to{transform:translateY(60px);opacity:0}}
+.sheet-grip{width:40px;height:4px;border-radius:3px;background:var(--line);margin:2px auto 12px;flex:0 0 auto}
+.sheet-hd{font-size:16px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px}
+.sheet-q{margin-bottom:10px;flex:0 0 auto}
+.sheet-list{overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding-bottom:4px;overscroll-behavior:contain}
+.sheet-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:none;text-align:left;font-family:inherit;color:var(--ink);font-size:14.5px;font-weight:500;padding:11px 10px;border-radius:11px;cursor:pointer;flex:0 0 auto}
+.sheet-row:hover{background:var(--card2)}
+.sheet-row.on{color:var(--accent);background:var(--accent-bg);font-weight:600}
+.sheet-row .i{width:16px;height:16px;flex:0 0 auto}
+@media (min-width:721px){ .sheet-ov{align-items:center;padding:16px} .sheet{max-width:420px;border-radius:20px;border-bottom:1px solid var(--line)} }
+@media (prefers-reduced-motion: reduce){ .sheet{animation:none} }
 a{color:var(--accent);text-decoration-color:var(--accent-bg)}
 .empty{padding:48px 18px;text-align:center;color:var(--ink3);font-size:14.5px;background:var(--card);border:1px dashed var(--line);border-radius:var(--radius)}
 .bk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
@@ -313,16 +349,20 @@ html{scroll-behavior:smooth}
 .lp-panelHd .i{width:15px;height:15px;color:var(--accent)}
 .lp-panelBd{padding:15px}
 /* discover visual — worldwide creator mesh (connected creators, globe surface) */
-.lp-mesh{position:relative;width:100%;aspect-ratio:2.1/1;border-radius:12px;background:radial-gradient(130% 100% at 50% 40%,var(--card2),var(--bg2));border:1px solid var(--line);overflow:hidden;margin-bottom:13px}
+.lp-mesh{position:relative;width:100%;aspect-ratio:2.1/1;border-radius:12px;overflow:hidden;margin-bottom:13px;border:1px solid var(--line);
+  background:radial-gradient(34% 46% at 62% 37%,var(--accent-bg),transparent 72%),radial-gradient(130% 120% at 50% 32%,var(--card2),var(--bg2) 78%)}
+.lp-mesh::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 44px rgba(0,0,0,.25);border-radius:inherit}
 .lp-mesh svg{position:absolute;inset:0;width:100%;height:100%;z-index:1}
-.lp-mdots circle{fill:var(--ink3);opacity:.34}
-.lp-mline{fill:none;stroke:var(--accent);stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-dasharray:3 7;opacity:.55;animation:lpflow 3.4s linear infinite}
+.lp-mdots circle{fill:var(--ink3)}
+.lp-mglow{fill:none;stroke:var(--accent);stroke-width:2.6;vector-effect:non-scaling-stroke;stroke-linecap:round;opacity:.16;filter:url(#lpBlur)}
+.lp-mline{fill:none;stroke:var(--accent);stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-dasharray:3 7;opacity:.6;animation:lpflow 3.4s linear infinite}
+.lp-pulse{fill:var(--accent-h);opacity:.9}
 @keyframes lpflow{to{stroke-dashoffset:-20}}
 .lp-node{position:absolute;transform:translate(-50%,-50%);width:33px;height:33px;z-index:2}
-.lp-node .lp-av{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.92);border:2px solid var(--card);box-shadow:0 4px 13px rgba(0,0,0,.42),0 0 0 1px var(--line)}
+.lp-node .lp-av{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.92);border:2px solid var(--card);box-shadow:0 4px 13px rgba(0,0,0,.42),0 0 0 1px var(--line),0 0 20px rgba(242,85,90,.10)}
 .lp-node .lp-av .i{width:15px;height:15px}
 .lp-node.hub{width:44px;height:44px;z-index:4}
-.lp-node.hub .lp-av{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-bg),0 6px 18px rgba(0,0,0,.5)}
+.lp-node.hub .lp-av{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-bg),0 6px 18px rgba(0,0,0,.5),0 0 30px rgba(242,85,90,.28)}
 .lp-node.hub .lp-av .i{width:20px;height:20px}
 .lp-ping{position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--accent);opacity:0;animation:lpping 2.9s ease-out infinite}
 @keyframes lpping{0%{transform:scale(.62);opacity:.55}80%,100%{transform:scale(1.55);opacity:0}}
@@ -386,6 +426,12 @@ html{scroll-behavior:smooth}
 @media (max-width:640px){
   .lp-hero{padding:30px 0 4px}
   .lp-stage{margin-top:36px}
+  /* mock window bar: the fake Discover/Directory/Remakes tab strip doesn't fit
+     next to the "Worldwide × Silent comedy" pill on a phone — drop the strip
+     (it's decoration) and let the pill ellipsize instead of clipping */
+  .lp-winnav{display:none}
+  .lp-winpill{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
+  .lp-winpill .i{vertical-align:-.18em}
   .lp-vrow{grid-template-columns:repeat(3,1fr)}
   .lp-vrow .lp-vcard:nth-child(4){display:none}
   .lp-floatwrap{display:none}
@@ -399,7 +445,7 @@ html{scroll-behavior:smooth}
   html{scroll-behavior:auto}
   .lp-reveal{opacity:1!important;transform:none!important;transition:none}
   .lp-float,.lp-mline,.lp-ping,.creator{animation:none!important}
-  .lp-ping{display:none}
+  .lp-ping,.lp-pulse{display:none}
 }
 /* ===================== Creator Dashboard ===================== */
 .dash{display:flex;flex-direction:column;gap:16px;max-width:900px}
@@ -1016,6 +1062,7 @@ const ICONS = {
   chevdown:'<path d="m6 9 6 6 6-6"/>',
   logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
   flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 17a2.5 2.5 0 0 0 2.5-2.5c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7.5 7.5 0 1 1-15 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
 };
 function ico(name, cls){ return `<svg class="i${cls?" "+cls:""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||""}</svg>`; }
 
@@ -1140,19 +1187,33 @@ function renderHome(){
      an approximation. Static and baked in: zero runtime cost, no fetch, no
      network weight, same "generated not asset" spirit as everything else here. */
   const WORLD_DOTS="57.5,4 60.5,4 63.5,4 66.5,4 78.5,4 81.5,4 84.5,4 87.5,4 90.5,4 56,7 68,7 71,7 74,7 77,7 80,7 83,7 86,7 89,7 92,7 33.5,10 36.5,10 39.5,10 42.5,10 48.5,10 54.5,10 57.5,10 60.5,10 75.5,10 78.5,10 81.5,10 84.5,10 87.5,10 90.5,10 135.5,10 150.5,10 153.5,10 156.5,10 159.5,10 162.5,10 165.5,10 168.5,10 171.5,10 174.5,10 177.5,10 186.5,10 189.5,10 8,13 11,13 14,13 17,13 20,13 23,13 26,13 29,13 32,13 35,13 38,13 41,13 44,13 47,13 50,13 53,13 56,13 59,13 62,13 65,13 68,13 71,13 74,13 77,13 80,13 83,13 86,13 89,13 92,13 95,13 98,13 101,13 104,13 107,13 110,13 125,13 9.5,16 12.5,16 15.5,16 18.5,16 21.5,16 24.5,16 27.5,16 30.5,16 33.5,16 36.5,16 39.5,16 42.5,16 45.5,16 48.5,16 60.5,16 78.5,16 108.5,16 111.5,16 114.5,16 120.5,16 123.5,16 126.5,16 129.5,16 132.5,16 135.5,16 138.5,16 141.5,16 144.5,16 147.5,16 150.5,16 153.5,16 156.5,16 159.5,16 162.5,16 165.5,16 168.5,16 171.5,16 174.5,16 177.5,16 180.5,16 183.5,16 186.5,16 189.5,16 192.5,16 195.5,16 198.5,16 201.5,16 204.5,16 11,19 29,19 32,19 35,19 38,19 41,19 44,19 47,19 50,19 53,19 62,19 65,19 68,19 110,19 113,19 119,19 122,19 125,19 128,19 131,19 134,19 137,19 140,19 143,19 146,19 149,19 152,19 155,19 158,19 161,19 164,19 167,19 170,19 173,19 176,19 179,19 182,19 197,19 30.5,22 33.5,22 36.5,22 39.5,22 42.5,22 45.5,22 48.5,22 51.5,22 54.5,22 57.5,22 60.5,22 63.5,22 66.5,22 69.5,22 102.5,22 108.5,22 111.5,22 114.5,22 117.5,22 120.5,22 123.5,22 126.5,22 129.5,22 132.5,22 135.5,22 138.5,22 141.5,22 144.5,22 147.5,22 150.5,22 153.5,22 156.5,22 159.5,22 162.5,22 165.5,22 168.5,22 171.5,22 174.5,22 177.5,22 180.5,22 183.5,22 186.5,22 35,25 38,25 41,25 44,25 47,25 50,25 53,25 56,25 59,25 62,25 65,25 68,25 107,25 110,25 116,25 119,25 122,25 125,25 128,25 131,25 137,25 140,25 143,25 146,25 149,25 152,25 155,25 158,25 161,25 164,25 167,25 170,25 173,25 176,25 179,25 182,25 188,25 33.5,28 36.5,28 39.5,28 42.5,28 45.5,28 48.5,28 51.5,28 54.5,28 57.5,28 60.5,28 102.5,28 114.5,28 117.5,28 120.5,28 123.5,28 126.5,28 129.5,28 132.5,28 138.5,28 141.5,28 144.5,28 147.5,28 150.5,28 153.5,28 156.5,28 159.5,28 162.5,28 165.5,28 168.5,28 171.5,28 174.5,28 38,31 41,31 44,31 47,31 50,31 53,31 56,31 59,31 104,31 107,31 110,31 128,31 131,31 134,31 137,31 140,31 143,31 146,31 149,31 152,31 155,31 158,31 161,31 164,31 167,31 170,31 173,31 182,31 42.5,34 45.5,34 48.5,34 57.5,34 99.5,34 102.5,34 105.5,34 108.5,34 111.5,34 114.5,34 117.5,34 120.5,34 123.5,34 126.5,34 129.5,34 132.5,34 135.5,34 138.5,34 141.5,34 144.5,34 147.5,34 150.5,34 153.5,34 156.5,34 159.5,34 162.5,34 165.5,34 168.5,34 171.5,34 174.5,34 41,37 44,37 47,37 98,37 101,37 104,37 107,37 110,37 113,37 116,37 119,37 122,37 125,37 128,37 131,37 134,37 137,37 146,37 149,37 152,37 155,37 158,37 161,37 164,37 167,37 170,37 173,37 45.5,40 48.5,40 51.5,40 60.5,40 66.5,40 96.5,40 99.5,40 102.5,40 105.5,40 108.5,40 111.5,40 114.5,40 117.5,40 120.5,40 123.5,40 126.5,40 129.5,40 132.5,40 135.5,40 150.5,40 153.5,40 162.5,40 165.5,40 56,43 98,43 101,43 104,43 107,43 110,43 113,43 116,43 119,43 122,43 125,43 128,43 149,43 167,43 60.5,46 63.5,46 66.5,46 69.5,46 99.5,46 102.5,46 105.5,46 108.5,46 111.5,46 114.5,46 117.5,46 120.5,46 123.5,46 126.5,46 129.5,46 132.5,46 177.5,46 62,49 65,49 68,49 71,49 74,49 113,49 116,49 119,49 122,49 125,49 128,49 131,49 164,49 170,49 173,49 60.5,52 63.5,52 66.5,52 69.5,52 72.5,52 75.5,52 78.5,52 81.5,52 111.5,52 114.5,52 117.5,52 120.5,52 123.5,52 126.5,52 165.5,52 183.5,52 186.5,52 62,55 65,55 68,55 71,55 74,55 77,55 80,55 83,55 113,55 116,55 119,55 122,55 125,55 128,55 188,55 191,55 63.5,58 66.5,58 69.5,58 72.5,58 75.5,58 78.5,58 81.5,58 114.5,58 117.5,58 120.5,58 123.5,58 126.5,58 180.5,58 183.5,58 65,61 68,61 71,61 74,61 77,61 80,61 113,61 116,61 119,61 122,61 125,61 131,61 176,61 179,61 182,61 185,61 188,61 191,61 66.5,64 69.5,64 72.5,64 75.5,64 114.5,64 117.5,64 120.5,64 123.5,64 171.5,64 174.5,64 177.5,64 180.5,64 183.5,64 186.5,64 189.5,64 192.5,64 65,67 68,67 71,67 74,67 116,67 119,67 122,67 173,67 176,67 179,67 182,67 185,67 188,67 191,67 194,67 63.5,70 66.5,70 69.5,70 186.5,70 189.5,70 192.5,70 62,73 65,73 191,73 206,73 63.5,76 62,79 65,79";
+  /* organic dot shading: a deterministic position hash puts every dot in one of
+     three size/opacity tiers, so the map reads like a living halftone surface
+     instead of a flat uniform grid */
   let dots="";
-  WORLD_DOTS.split(" ").forEach(p=>{ const [x,y]=p.split(","); dots+=`<circle cx="${x}" cy="${y}" r="1.15"/>`; });
+  WORLD_DOTS.split(" ").forEach(p=>{
+    const [x,y]=p.split(",");
+    const t=Math.abs(Math.sin(+x*12.9898 + +y*78.233))*3|0;   // shader-style scatter hash — a plain linear hash collapses on this regular grid
+    dots+=`<circle cx="${x}" cy="${y}" r="${t===0?1.0:t===1?1.2:1.35}" opacity="${t===0?.42:t===1?.68:1}"/>`;
+  });
   const meshLinks=[[4,0],[4,1],[4,2],[4,3],[4,5],[4,6],[0,2],[3,6],[1,5]];
-  const meshPaths=meshLinks.map(([a,b],i)=>{
+  /* each connection = neon glow underlay + crisp flowing dash + a pulse of light
+     travelling the arc (SMIL animateMotion — zero JS, hidden for reduced motion) */
+  let meshPaths="",meshPulses="";
+  meshLinks.forEach(([a,b],i)=>{
     const A=meshNodes[a],B=meshNodes[b], AX=sx(A.x),BX=sx(B.x), mx=(AX+BX)/2, my=(A.y+B.y)/2-8;
-    return `<path class="lp-mline" style="animation-delay:${(i*0.3).toFixed(2)}s" d="M${AX} ${A.y} Q ${mx} ${my} ${BX} ${B.y}"/>`;
-  }).join("");
+    const d=`M${AX} ${A.y} Q ${mx} ${my} ${BX} ${B.y}`;
+    meshPaths+=`<path class="lp-mglow" d="${d}"/><path class="lp-mline" style="animation-delay:${(i*0.3).toFixed(2)}s" d="${d}"/>`;
+    meshPulses+=`<circle class="lp-pulse" r="1.5"><animateMotion dur="${(3.2+i*0.55).toFixed(2)}s" begin="${(i*0.9).toFixed(2)}s" repeatCount="indefinite" path="${d}"/></circle>`;
+  });
   const meshDots=meshNodes.map((n,i)=>
     `<span class="lp-node ${n.hub?"hub":""}" style="left:${n.x}%;top:${n.y}%">
        <span class="lp-ping" style="animation-delay:${(i*0.42).toFixed(2)}s"></span>
        <span class="lp-av" style="background:${LP_G[n.g]}">${ico("user")}</span>
      </span>`).join("");
-  const mesh=`<div class="lp-mesh"><svg viewBox="0 0 ${MW} 100" preserveAspectRatio="none" aria-hidden="true"><g class="lp-mdots">${dots}</g>${meshPaths}</svg>${meshDots}</div>`;
+  const mesh=`<div class="lp-mesh"><svg viewBox="0 0 ${MW} 100" preserveAspectRatio="none" aria-hidden="true">
+    <defs><filter id="lpBlur" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.6"/></filter></defs>
+    <g class="lp-mdots">${dots}</g>${meshPaths}${meshPulses}</svg>${meshDots}</div>`;
 
   const rankRows=[
     {n:1,t:"POV: you finally tried it",v:"245M",thumb:LP_G[4],w:100},
@@ -1330,6 +1391,10 @@ function renderDisc(){
   if(ni.localizable && c.local){
     chips = c.local.map(([label,q])=>`<span class="qchip" onclick="discSearch('${esc(q).replace(/'/g,"&#39;")}')">${esc(label)}<small>${esc(q)}</small></span>`).join("");
   }
+  const ORDERS=[["viewCount","Biggest hits first"],["relevance","Best match first"],["date","Newest first"]];
+  const WHENS=[["","All time"],["7","Hot this week"],["30","Past month"],["90","Past 3 months"],["365","Past year"]];
+  const orderLbl=(ORDERS.find(o=>o[0]===disc.order)||ORDERS[0])[1];
+  const whenLbl=(WHENS.find(w=>w[0]===disc.when)||WHENS[0])[1];
   view().innerHTML = `<h2>Discover</h2>
   <div class="muted" style="margin-bottom:12px">Pick a country and a niche, and see what's already going viral.</div>
   <div class="card" style="margin-bottom:12px">
@@ -1341,17 +1406,19 @@ function renderDisc(){
           oninput="disc.max=Math.max(1,Math.min(500,+this.value||1));store.set('ss_disc',disc)">
         <label class="muted">results</label></span>
       <select onchange="disc.order=this.value;store.set('ss_disc',disc)">
-        <option value="viewCount" ${disc.order==="viewCount"?"selected":""}>Biggest hits first</option>
-        <option value="relevance" ${disc.order==="relevance"?"selected":""}>Best match first</option>
-        <option value="date" ${disc.order==="date"?"selected":""}>Newest first</option>
+        ${ORDERS.map(([v,l])=>`<option value="${v}" ${disc.order===v?"selected":""}>${l}</option>`).join("")}
       </select>
       <select onchange="disc.when=this.value;store.set('ss_disc',disc)">
-        <option value="" ${disc.when===""?"selected":""}>All time</option>
-        <option value="7" ${disc.when==="7"?"selected":""}>Hot this week</option>
-        <option value="30" ${disc.when==="30"?"selected":""}>Past month</option>
-        <option value="90" ${disc.when==="90"?"selected":""}>Past 3 months</option>
-        <option value="365" ${disc.when==="365"?"selected":""}>Past year</option>
+        ${WHENS.map(([v,l])=>`<option value="${v}" ${disc.when===v?"selected":""}>${l}</option>`).join("")}
       </select>
+    </div>
+    <div class="disc-deck">
+      <button class="dpick" onclick="discSheet('country')"><span class="dp-ic">${ico("globe")}</span><span class="dp-tx"><small>Country</small><b>${esc(c.n)}</b></span>${ico("chevdown")}</button>
+      <button class="dpick" onclick="discSheet('niche')"><span class="dp-ic">${ico("flame")}</span><span class="dp-tx"><small>Niche</small><b>${esc(ni.n)}</b></span>${ico("chevdown")}</button>
+      <button class="dpick" onclick="discSheet('order')"><span class="dp-ic">${ico("chart")}</span><span class="dp-tx"><small>Sort</small><b>${orderLbl}</b></span>${ico("chevdown")}</button>
+      <button class="dpick" onclick="discSheet('when')"><span class="dp-ic">${ico("clock")}</span><span class="dp-tx"><small>Time</small><b>${whenLbl}</b></span>${ico("chevdown")}</button>
+      <div class="dpick dp-count"><span class="dp-ic">${ico("eye")}</span><span class="dp-tx"><small>Results to show</small><b id="dcountVal">${disc.max}</b></span>
+        <span class="dp-step"><button aria-label="Fewer results" onclick="discCount(-5)">−</button><button aria-label="More results" onclick="discCount(5)">+</button></span></div>
     </div>
     <div class="row">
       <input type="text" id="dq" placeholder="Type your own search…" onkeydown="if(event.key==='Enter')discSearch(this.value||null)">
@@ -1361,8 +1428,69 @@ function renderDisc(){
     ${chips?`<div style="margin-top:10px">${chips}</div>`:""}
     <div id="trialNote">${trialNoteHTML()}</div>
   </div>
-  <div id="dres"></div>`;
+  <div id="dres">${discStarterHTML()}</div>`;
 }
+/* blank-page killer: before the first search, #dres shows three one-tap starts
+   instead of empty space — a person's first 10 seconds should produce a win */
+function discStarterHTML(){
+  return `<div class="card" style="text-align:center;padding:26px 18px">
+    <b>Not sure where to start?</b>
+    <div class="muted" style="margin-top:6px">One tap — see what's blowing up right now.</div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button class="btn sec small" onclick="discQuick(1,0)">${ico("globe")} US × Silent comedy</button>
+      <button class="btn sec small" onclick="discQuick(0,10)">${ico("flame")} Worldwide × Food</button>
+      <button class="btn sec small" onclick="randomDiscover()">${ico("dice")} Surprise me</button>
+    </div></div>`;
+}
+function discQuick(ci,ni){ disc.c=ci; disc.n=ni; store.set("ss_disc",disc); renderDisc(); discSearch(null); }
+function discCount(d){
+  disc.max=Math.max(1,Math.min(500,(+disc.max||10)+d)); store.set("ss_disc",disc);
+  const el=document.getElementById("dcountVal"); if(el) el.textContent=disc.max;
+  const inp=document.getElementById("maxN"); if(inp) inp.value=disc.max;
+}
+/* ---- branded bottom-sheet picker (mobile Discover filters) ---- */
+function discSheet(kind){
+  const ORDERS=[["viewCount","Biggest hits first"],["relevance","Best match first"],["date","Newest first"]];
+  const WHENS=[["","All time"],["7","Hot this week"],["30","Past month"],["90","Past 3 months"],["365","Past year"]];
+  const cfg =
+    kind==="country" ? {title:"Country", items:COUNTRIES.map(x=>x.n), sel:disc.c, search:true, pick:i=>{disc.c=i;}}
+  : kind==="niche"   ? {title:"Niche", items:NICHES.map(x=>x.n), sel:disc.n, search:true, pick:i=>{disc.n=i;}}
+  : kind==="order"   ? {title:"Sort by", items:ORDERS.map(o=>o[1]), sel:Math.max(0,ORDERS.findIndex(o=>o[0]===disc.order)), pick:i=>{disc.order=ORDERS[i][0];}}
+  :                    {title:"Time range", items:WHENS.map(w=>w[1]), sel:Math.max(0,WHENS.findIndex(w=>w[0]===disc.when)), pick:i=>{disc.when=WHENS[i][0];}};
+  window._sheetCfg=cfg;
+  document.getElementById("modal").innerHTML = `
+  <div class="overlay sheet-ov" onclick="if(event.target===this)closeSheet()">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(cfg.title)}">
+      <div class="sheet-grip"></div>
+      <div class="sheet-hd">${esc(cfg.title)}</div>
+      ${cfg.search?`<input type="text" class="sheet-q" placeholder="Search…" oninput="sheetFilter(this.value)">`:""}
+      <div class="sheet-list" id="sheetList">${sheetRows(cfg.items.map((t,i)=>[i,t]),cfg.sel)}</div>
+    </div>
+  </div>`;
+}
+function sheetRows(pairs, sel){
+  return pairs.map(([i,t])=>`<button class="sheet-row ${i===sel?"on":""}" onclick="sheetPick(${i})">${esc(t)}${i===sel?ico("check"):""}</button>`).join("")
+    || `<div class="muted" style="padding:14px 10px">No match.</div>`;
+}
+function sheetFilter(q){
+  const cfg=window._sheetCfg; if(!cfg) return;
+  q=(q||"").toLowerCase();
+  const pairs=cfg.items.map((t,i)=>[i,t]).filter(([,t])=>t.toLowerCase().includes(q));
+  document.getElementById("sheetList").innerHTML=sheetRows(pairs,cfg.sel);
+}
+function sheetPick(i){
+  const cfg=window._sheetCfg; if(!cfg) return;
+  cfg.pick(i); store.set("ss_disc",disc);
+  closeSheet(); renderDisc();
+}
+function closeSheet(){
+  window._sheetCfg=null;
+  const sh=document.querySelector("#modal .sheet"), m=document.getElementById("modal");
+  if(sh && !window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    sh.classList.add("closing"); setTimeout(()=>{ m.innerHTML=""; },150);
+  } else if(m) m.innerHTML="";
+}
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && window._sheetCfg) closeSheet(); });
 function randomDiscover(){
   disc.c = 1 + Math.floor(Math.random()*(COUNTRIES.length-1)); // skip "Worldwide"
   disc.n = Math.floor(Math.random()*NICHES.length);
