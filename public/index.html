@@ -2329,16 +2329,15 @@ function renderSet(){
     <li><b>Recommended:</b> click the key → Application restrictions → Websites → add this site's address. That locks your key so it only works here.</li>
     <li>Paste it above and you're ready to scout.</li>
   </ol></div></details></div>
-  <div class="card" style="margin-bottom:12px">
-    <b>Data</b>
-    <div class="muted" style="margin:6px 0 10px">${creators.length} creators · ${Object.values(library).filter(e=>e.s==="saved").length} saved · ${Object.values(library).filter(e=>e.s==="remaking").length} remaking · ${Object.values(library).filter(e=>e.s==="completed").length} completed · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
+  <div class="bk"><details><summary>Data</summary><div class="in">
+    <div class="muted" style="margin:2px 0 12px">${creators.length} creators · ${Object.values(library).filter(e=>e.s==="saved").length} saved · ${Object.values(library).filter(e=>e.s==="remaking").length} remaking · ${Object.values(library).filter(e=>e.s==="completed").length} completed · ${nCache} channels cached on this device ${user?`· synced to ${esc(user.email||"your account")}`:""}</div>
     <div class="row">
       <button class="btn sec" onclick="exportAll()">${ico("download")} Backup (JSON)</button>
       <button class="btn sec" onclick="document.getElementById('impF').click()">${ico("upload")} Restore backup</button>
       <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
       <button class="btn sec" onclick="clearCaches()">Clear video caches</button>
     </div>
-  </div>
+  </div></details></div>
   <div class="muted" style="margin-top:18px;font-size:12px;line-height:1.65;max-width:640px">
     No cookies, no tracking, no ads. Your API key stays in your browser and is sent only to Google.
     Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a> — ScoutViral uses YouTube API Services, so your use is subject to the
