@@ -16,6 +16,23 @@
 <meta name="theme-color" content="#f6f6f7" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-title" content="ScoutViral">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="canonical" href="https://scoutviral.com/">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ScoutViral",
+  "url": "https://scoutviral.com",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web",
+  "description": "Find your next viral video idea. Discover proven Shorts from creators worldwide and save the best ones to remake in your own style.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23ff7d5c'/><stop offset='1' stop-color='%23f2555a'/></linearGradient></defs><rect width='64' height='64' rx='15' fill='url(%23g)'/><path d='M30 20 C30 15,18 15,18 21 C18 26,30 27,30 32 C30 37,19 37.5,16 33' fill='none' stroke='%23fff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round'/><path d='M34 20 L34 44 L50 32 Z' fill='%23fff'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +65,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 ::selection{background:var(--accent-bg);color:var(--ink)}
+/* visible keyboard focus (mouse clicks stay clean via :focus-visible) */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:5px}
 /* header + nav */
 header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line);padding:11px 18px;display:flex;align-items:center;gap:16px}
 header h1{font-size:18px;font-weight:800;letter-spacing:-.02em;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
@@ -627,7 +646,7 @@ body.landing nav{display:none}
 </head>
 <body>
 <header>
-  <h1 onclick="go('home')"><svg class="i" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M30 20 C30 15,18 15,18 21 C18 26,30 27,30 32 C30 37,19 37.5,16 33" stroke="currentColor" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 20 L34 44 L50 32 Z" fill="var(--accent)"/></svg><span class="word"> Scout<span class="vv">Viral</span></span></h1>
+  <h1 onclick="go('home')" role="button" tabindex="0" aria-label="ScoutViral home" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();go('home')}"><svg class="i" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M30 20 C30 15,18 15,18 21 C18 26,30 27,30 32 C30 37,19 37.5,16 33" stroke="currentColor" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 20 L34 44 L50 32 Z" fill="var(--accent)"/></svg><span class="word"> Scout<span class="vv">Viral</span></span></h1>
   <nav>
     <button data-v="disc" onclick="go('disc')" aria-label="Discover"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span><span class="lbl">Discover</span></button>
     <button data-v="dir" onclick="go('dir')" aria-label="Directory"><span class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span><span class="lbl">Directory</span></button>
@@ -654,6 +673,7 @@ body.landing nav{display:none}
    No custom backend. Firebase Auth + Firestore sync optional.
 ========================================================= */
 const SCAN_CAP = 6000;
+const FEEDBACK_EMAIL = "braimahadams01@gmail.com";   // where the Settings "Send feedback" button goes — swap for a dedicated address anytime
 
 /* ---------- Discover: countries (regionCode + language + optional local silent-comedy queries) ---------- */
 /* Ordered by how well creators get paid in each market (strongest monetization
@@ -1143,6 +1163,15 @@ function render(){
   else if(route.v==="remake") renderRemake();
   else if(route.v==="dash") renderDashboard();
   else renderSet();
+  a11yLabels();
+}
+/* accessibility: the app's icon-only buttons carry a `title`; mirror it into an
+   aria-label so screen readers announce a real name instead of just "button".
+   One pass after every render covers the whole app without touching each template. */
+function a11yLabels(root){
+  (root||document).querySelectorAll("button[title]:not([aria-label]), a[title]:not([aria-label])").forEach(el=>{
+    const t=el.getAttribute("title"); if(t) el.setAttribute("aria-label", t);
+  });
 }
 
 /* ---------- Landing ---------- */
@@ -1399,8 +1428,8 @@ function renderDisc(){
   <div class="muted" style="margin-bottom:12px">Pick a country and a niche, and see what's already going viral.</div>
   <div class="card" style="margin-bottom:12px">
     <div class="filterbar">
-      <select onchange="disc.c=+this.value;store.set('ss_disc',disc);renderDisc()">${countryOpts(disc.c)}</select>
-      <select onchange="disc.n=+this.value;store.set('ss_disc',disc);renderDisc()">${nicheOpts(disc.n)}</select>
+      <select onchange="disc.c=+this.value;store.set('ss_disc',disc);renderDisc()" aria-label="Country">${countryOpts(disc.c)}</select>
+      <select onchange="disc.n=+this.value;store.set('ss_disc',disc);renderDisc()" aria-label="Niche">${nicheOpts(disc.n)}</select>
       <span class="numfield"><label class="muted">Show</label>
         <input type="number" id="maxN" min="1" max="500" value="${disc.max}" style="width:76px"
           oninput="disc.max=Math.max(1,Math.min(500,+this.value||1));store.set('ss_disc',disc)">
@@ -1816,6 +1845,21 @@ function dashGreeting(){
   const first = user&&user.displayName ? user.displayName.split(" ")[0] : "";
   return first ? `${time}, ${esc(first)}` : time;
 }
+/* warm, non-naggy re-engagement: only speaks when they've actually been away a
+   while, and it only appears because they just opened the app themselves */
+function dashWelcomeSub(){
+  if(activity.length){
+    const last = Math.max(...activity.map(a=>a.at));
+    const days = Math.floor((Date.now()-last)/864e5);
+    if(days>=7){
+      const savedN = Object.values(library).filter(e=>e.s==="saved").length;
+      return savedN
+        ? `Welcome back — it's been ${days} days. You've got ${savedN} saved idea${savedN!==1?"s":""} waiting to remake.`
+        : `Welcome back — it's been ${days} days. Discover a fresh idea and get back in the flow.`;
+    }
+  }
+  return "Here's how your creative momentum is building.";
+}
 function calendarHTML(y, m){
   const cells = dashCalendarData(y, m);
   const now = new Date();
@@ -1893,7 +1937,7 @@ function renderDashboard(){
   if(fb && !user){ renderDashboardSignedOut(); return; }
   const empty = Object.keys(library).length===0 && activity.length===0;
   let h = `<div class="dash">
-  <div class="dash-welcome lp-reveal"><h2>${dashGreeting()}</h2><p class="muted">Here's how your creative momentum is building.</p></div>`;
+  <div class="dash-welcome lp-reveal"><h2>${dashGreeting()}</h2><p class="muted">${dashWelcomeSub()}</p></div>`;
   if(empty){
     h += `<div class="card lp-reveal d1" style="text-align:center;padding:34px 24px">
       <b>Your workspace is just getting started.</b>
@@ -2376,18 +2420,19 @@ function _showDlg(cfg){
     const okStyle = cfg.danger ? ' style="background:var(--danger)"' : "";
     document.getElementById("dialog").innerHTML = `
     <div class="overlay dlg" onclick="if(event.target===this)_dlgCancel()">
-      <div class="card dlgbox" role="dialog" aria-modal="true">
-        ${cfg.title?`<div class="dlgtitle">${esc(cfg.title)}</div>`:""}
+      <div class="card dlgbox" role="dialog" aria-modal="true" ${cfg.title?'aria-labelledby="dlgTitle"':""}>
+        ${cfg.title?`<div class="dlgtitle" id="dlgTitle">${esc(cfg.title)}</div>`:""}
         <div class="dlgmsg">${esc(cfg.msg)}</div>
         ${cfg.input?(cfg.multiline
-          ?`<textarea id="dlgInput" placeholder="${esc(cfg.placeholder||"")}"></textarea>`
-          :`<input type="text" id="dlgInput" placeholder="${esc(cfg.placeholder||"")}" style="width:100%">`):""}
+          ?`<textarea id="dlgInput" aria-label="${esc(cfg.title||"Your answer")}" placeholder="${esc(cfg.placeholder||"")}"></textarea>`
+          :`<input type="text" id="dlgInput" aria-label="${esc(cfg.title||"Your answer")}" placeholder="${esc(cfg.placeholder||"")}" style="width:100%">`):""}
         <div class="row" style="justify-content:flex-end">
           ${cfg.cancelText!==null?`<button class="btn sec" onclick="_dlgCancel()">${esc(cfg.cancelText||"Cancel")}</button>`:""}
           <button class="btn"${okStyle} onclick="_dlgOk()">${esc(cfg.okText||"OK")}</button>
         </div>
       </div>
     </div>`;
+    const box = document.querySelector(".dlgbox"); if(box) trapFocus(box);
     const inEl = document.getElementById("dlgInput");
     if(inEl){
       inEl.value = cfg.def||""; inEl.focus(); if(!cfg.multiline) inEl.select();
@@ -2395,6 +2440,18 @@ function _showDlg(cfg){
     } else {
       const btn = document.querySelector(".dlgbox .btn:last-child"); if(btn) btn.focus();
     }
+  });
+}
+/* keep keyboard focus inside an open overlay (dialog/modal) until it closes */
+function trapFocus(container){
+  container.addEventListener("keydown", e=>{
+    if(e.key!=="Tab") return;
+    const list=[...container.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+      .filter(el=>!el.disabled && el.offsetParent!==null);
+    if(!list.length) return;
+    const first=list[0], last=list[list.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
   });
 }
 function uiAlert(msg,o={}){ return _showDlg({msg,title:o.title,okText:o.okText,cancelText:null}); }
@@ -2405,15 +2462,15 @@ function uiPrompt(msg,def,o={}){ return _showDlg({msg,title:o.title,input:true,m
 function openAuthModal(){
   document.getElementById("modal").innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeAuthModal()">
-    <div class="card" style="width:min(340px,92vw)">
+    <div class="card" style="width:min(340px,92vw)" role="dialog" aria-modal="true" aria-labelledby="authTitle">
       <div class="row" style="justify-content:space-between;margin-bottom:12px">
-        <b style="font-size:16px">Sign in to sync</b>
-        <button onclick="closeAuthModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">×</button>
+        <b style="font-size:16px" id="authTitle">Sign in to sync</b>
+        <button onclick="closeAuthModal()" aria-label="Close" title="Close" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">×</button>
       </div>
       <button class="btn" style="width:100%;margin-bottom:12px" onclick="doGoogleSignIn()">Continue with Google</button>
       <div class="muted" style="text-align:center;margin:4px 0 10px">or use email</div>
-      <input type="text" id="authEmail" placeholder="Email" style="width:100%;margin-bottom:8px">
-      <input type="password" id="authPass" placeholder="Password (6+ characters)" style="width:100%;margin-bottom:8px">
+      <input type="text" id="authEmail" placeholder="Email" aria-label="Email" style="width:100%;margin-bottom:8px">
+      <input type="password" id="authPass" placeholder="Password (6+ characters)" aria-label="Password" style="width:100%;margin-bottom:8px">
       <div id="authMsg" class="muted" style="margin-bottom:8px"></div>
       <div class="row">
         <button class="btn sec" style="flex:1" onclick="doEmailSignIn()">Sign in</button>
@@ -2422,6 +2479,8 @@ function openAuthModal(){
       <button class="crumb" style="margin-top:10px" onclick="doResetPassword()">Forgot password?</button>
     </div>
   </div>`;
+  const card = document.querySelector("#modal .card"); if(card) trapFocus(card);
+  const em = document.getElementById("authEmail"); if(em) em.focus();
 }
 function closeAuthModal(){ const m=document.getElementById("modal"); if(m) m.innerHTML=""; }
 function authMsg(t,isErr){ const el=document.getElementById("authMsg"); if(el){ el.textContent=t; el.style.color = isErr?"var(--danger)":"var(--ok)"; } }
@@ -2486,6 +2545,11 @@ function renderSet(){
       <button class="btn sec" onclick="clearCaches()">Clear video caches</button>
     </div>
   </div></details></div>
+  <div class="card">
+    <b>Feedback</b>
+    <div class="muted" style="margin:6px 0 10px">Something broken, confusing, or an idea to make ScoutViral better? I read every message.</div>
+    <a class="btn sec" href="mailto:${FEEDBACK_EMAIL}?subject=ScoutViral%20feedback" style="display:inline-flex;align-items:center;gap:7px;text-decoration:none">${ico("note")} Send feedback</a>
+  </div>
   <div class="muted" style="margin-top:18px;font-size:12px;line-height:1.65;max-width:640px">
     No cookies, no tracking, no ads. Your API key stays in your browser and is sent only to Google.
     Powered by <a href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a> — ScoutViral uses YouTube API Services, so your use is subject to the
@@ -2534,6 +2598,8 @@ function importAll(inp){
 }
 
 /* ---------- init ---------- */
+/* Installable PWA: register the service worker (home-screen icon + offline shell). */
+if("serviceWorker" in navigator){ window.addEventListener("load", ()=>{ navigator.serviceWorker.register("/sw.js").catch(()=>{}); }); }
 /* Friendly landing for mistyped URLs (hosting sends every path here) */
 if(location.pathname !== "/" && !/index\.html$/.test(location.pathname)){
   history.replaceState(null, "", "/");

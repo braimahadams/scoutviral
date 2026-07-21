@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-21 (Discover on mobile: selector-card deck + branded bottom-sheet pickers replace the raw dropdowns, plus a 3-suggestion starter card before the first search; landing mesh got depth — tiered dots, neon glow arcs, travelling light pulses; mock-window pill no longer clips on phones)
+**Last updated:** 2026-07-21 (platform hygiene — installable PWA, SEO/canonical/JSON-LD, welcome-back line, feedback door, app-wide accessibility — merged on top of the mobile Discover deck + bottom-sheet pickers and landing mesh depth pass)
 
 ## Product ambition — read this first
 
@@ -94,6 +94,42 @@ GitHub Actions (`.github/workflows/firebase-hosting-merge.yml`) auto-deploys `ma
 to the live site. Pull requests get their own preview URL first. **You normally do
 NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
 `firebase deploy --only hosting` still works for quick local checks.)
+
+## Platform hygiene: PWA, SEO, onboarding, a11y
+
+- **Installable PWA.** `public/manifest.json` (standalone, S+Play icons), a
+  network-first service worker `public/sw.js` (same-origin only; cross-origin —
+  YouTube API / Firebase / fonts — is left untouched; cache is offline fallback
+  only, so deploys never go stale), registered in `init`. Real PNG icons
+  `icon-192/512.png` + `apple-touch-icon.png` (180) were **rasterized from the SVG
+  mark via canvas** — regenerate the same way if the logo changes. `firebase.json`
+  has `headers`: `sw.js`/`manifest.json` are `no-cache`, images cache a week.
+  **Static files (manifest, sw, robots, sitemap, icons) live in `public/` and are
+  served directly — Firebase serves real files before the SPA rewrite, so they
+  bypass the `** → /index.html` rewrite and the app's 404 handler.**
+- **SEO:** `robots.txt` + `sitemap.xml`, a `<link rel="canonical">` to
+  `https://scoutviral.com/` (the .web.app mirror must not dilute ranking), and a
+  `SoftwareApplication` JSON-LD block in `<head>`.
+- **First-run coaching = the Discover starter card** (`discStarterHTML`, built on
+  the other laptop): before the first search, `#dres` shows three one-tap starts
+  ("US × Silent comedy", "Worldwide × Food", "Surprise me") instead of blank space.
+  An instructional 3-step intro card was built in parallel here and **deliberately
+  dropped during the merge** — action-first beats explanation, and two coaching
+  cards stacked on one screen is clutter. Don't re-add a second intro card.
+- **Welcome-back (`dashWelcomeSub`):** if the newest `activity` entry is ≥7 days
+  old, the Dashboard greeting subline becomes a warm "Welcome back — it's been N
+  days…" pointing at saved ideas or Discover. Purely client-side, no push, only
+  ever seen because they opened the app themselves.
+- **Feedback door:** Settings has a "Send feedback" mailto button →
+  `FEEDBACK_EMAIL` constant (currently Braimah's personal gmail — swap for a
+  dedicated address before heavy promotion to avoid spam exposure).
+- **Accessibility:** `a11yLabels()` runs after every `render()` and mirrors every
+  icon button's `title` into an `aria-label` (so SR announce a real name, not just
+  "button") — app-wide, no per-template edits. Dialogs + auth modal have
+  `role="dialog"`/`aria-modal`/`aria-labelledby` + `trapFocus()` (Tab cycles inside)
+  + autofocus + Escape-to-close (Escape already existed). Header logo is a
+  keyboard-activatable `role="button"`. Global `:focus-visible` outline. **When you
+  add a new icon-only button, give it a `title` and a11yLabels handles the rest.**
 
 ## Look & feel (redesigned 2026-07-13)
 

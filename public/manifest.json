@@ -1,0 +1,17 @@
+{
+  "name": "ScoutViral",
+  "short_name": "ScoutViral",
+  "description": "Find your next viral video idea. Discover proven Shorts from creators worldwide and save the best ones to remake in your own style.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101012",
+  "theme_color": "#101012",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities", "multimedia"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
