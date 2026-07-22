@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-21 (platform hygiene — installable PWA, SEO/canonical/JSON-LD, welcome-back line, feedback door, app-wide accessibility — merged on top of the mobile Discover deck + bottom-sheet pickers and landing mesh depth pass)
+**Last updated:** 2026-07-22 (Board: prominent count pills + ad-hoc self-managing Collections for Saved/Remaking; creator deletions now sync via tombstones; Copy link shares an in-app deep link that auto-plays via the YouTube embed; app resumes your last route instead of always showing the landing, returning/signed-in users skip it — on top of platform hygiene: installable PWA, SEO/canonical/JSON-LD, welcome-back line, feedback door, app-wide accessibility)
 
 ## Product ambition — read this first
 
@@ -81,6 +81,15 @@ no build step, no framework, no npm). This is deliberate. Edit it directly.
   so a removed video **doesn't come back after refresh/sync**; re-adding it (newer
   `u`) wins and clears the tombstone (`pruneRemoved` forgets stale ones). Restoring a
   backup clears tombstones for its ids. `vSet` sets/clears the tombstone.
+- **Creators have the SAME tombstone system** (`removedCreators` = `{key: removedAt}`,
+  `ss_removed_creators`, synced) — added because removing a creator used to reappear
+  after syncing from another device (the plain `mergeCreators` union re-added it).
+  Keyed by channel **id AND @handle** (`creatorKeys(c)`, either can match).
+  `removeCreator` calls `markCreatorRemoved`; the cloud-load path runs
+  `applyCreatorTombstones` (drops any merged creator whose key is tombstoned at/after
+  its `addedAt`) then `pruneRemovedCreators`. Re-adding (`addCreator`/`addFromDisc`,
+  fresh `addedAt`) and restoring a backup call `clearCreatorRemoved`, so re-add always
+  wins. Any new "add creator" path MUST set `addedAt` and clear the tombstone.
 - **Firestore:** `(default)` db, region nam5. Rules in `firestore.rules` lock each
   user to `/users/{uid}` only.
 - **GitHub repo:** https://github.com/braimahadams/scoutviral (branch `main`).
@@ -221,6 +230,15 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   mode still let a first-timer try instantly with no account (that no-signup
   onboarding is a core advantage — don't regress it into a forced-login wall).
   Sign-in stays for what it's for: cross-device sync + the personal Dashboard.
+- **The app resumes where you left off; only genuinely new visitors see the landing.**
+  `go()` writes the current route to `ss_route` (creator detail → `"dir"`, since its
+  index goes stale), and init restores it (`RESUMABLE` set). So a refresh — or the
+  app reloading itself — no longer dumps a returning user on the marketing page (that
+  was a real friction point). A brand-new visitor has no `ss_route` → lands on home.
+  Fresh-device signed-in case: `bootRedirect` (true only when there's no saved route)
+  makes the `onUser` handler send a restored session into the app (`go("disc")`)
+  instead of the landing; any deliberate nav or a deep link cancels it. Don't persist
+  transient/overlay state here — only the six main routes resume.
 - **All product visuals are pure CSS/DOM mockups** built from the real design
   tokens (a mock "app window" with a Discover grid + floating Scout Score / Saved
   cards, a **worldwide creator mesh**, a ranked Top-Shorts list, an idea-board
@@ -458,10 +476,31 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   Save / Remaking / Completed / Skip (+ a notes pencil once actioned), updated in
   place by `vSetCreator`. Autoplay-in-view is on except **Completed + Skipped**.
 - **Board tab (`renderRemake`) = the workflow hub:** three tabs **Saved / Remaking /
-  Completed** (NOT a Notes tab — notes belong to a video, not a category). Cards carry
-  contextual actions: Saved → [Start remaking, Notes, Remove]; Remaking → [Mark
-  completed, Notes, Back to Saved]; Completed → [Reopen, Notes]. Saved+Remaking
-  autoplay; Completed is static. `libFilter` = saved|remaking|completed.
+  Completed** (NOT a Notes tab — notes belong to a video, not a category), each chip
+  showing a clear count pill (`.vchip small` styled as a real badge, not faint
+  superscript). Cards carry contextual actions: Saved → [Start remaking, Collection,
+  Notes, Remove]; Remaking → [Mark completed, Collection, Notes, Back to Saved];
+  Completed → [Reopen, Notes]. Saved+Remaking autoplay; Completed is static.
+  `libFilter` = saved|remaking|completed.
+- **Collections = ad-hoc, self-managing groups within Saved/Remaking** (`library[id].g`,
+  a free-text label like "Gym"/"Park"/"Kitchen"). Purpose: a creator can only film
+  some ideas in some contexts, so they group by what a shoot *needs* and focus on
+  what's doable right now. **Derived, never declared:** the filter chip row
+  (`.grpbar`, only on Saved+Remaking, not Completed) is computed from the `g` tags
+  present, so an emptied collection just disappears — nothing to delete by hand.
+  `libGroup` filters (null=all, `"__none__"`=Unsorted, or a name); a stale filter
+  auto-resets so the view never blanks. `groupPicker(id)` is a branded dialog:
+  existing collections as one-tap chips + a "new collection" field; `setGroup`
+  assigns/clears and touches `u` so the tag rides the newest-wins sync merge. `g` is
+  preserved through status changes (`vSet`) and merged like notes (`mergeLibrary`).
+  `_grpNames` holds the current tab's names for index-based onclicks (avoids escaping
+  labels into inline handlers).
+- **Shareable deep links play in-app** (`copyLink` → `location.origin+"/?v=ID"`, not a
+  youtube.com URL). On load, `?v=ID` (validated by `validVid` = 11-ish safe chars,
+  which also hardens the id that flows into the player iframe src) opens the branded
+  player over the resumed base view and cleans the URL. **Legal:** it's the official
+  YouTube IFrame embed (same one used everywhere here), not a re-host — and it pulls
+  whoever clicks a shared link onto ScoutViral instead of straight to YouTube.
 - **Per-video notes = "Production Notes":** pencil on any actioned video opens the
   `editNote` modal (title "Production Notes", "Write down anything you'll need to
   recreate this video.", Save button). Note stored as `library[id].n`, survives

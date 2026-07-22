@@ -179,8 +179,31 @@ button.btn:disabled{opacity:.5;cursor:default}
 .vchip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--ink2);border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
 .vchip:hover{border-color:var(--ink3);color:var(--ink)}
 .vchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.vchip small{opacity:.7;font-size:11px;font-weight:700}
-.vchip.on small{opacity:.95}
+/* the per-category count is a clear pill, not faint superscript, so you can see
+   at a glance how many ideas sit in Saved / Remaking / Completed */
+.vchip small{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:20px;background:var(--card);border:1px solid var(--line);color:var(--ink2);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.vchip.on small{background:rgba(255,255,255,.22);border-color:transparent;color:#fff}
+/* collection filter chips (a sub-row under Saved/Remaking) */
+.grpbar{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 14px}
+.grp-fchip{display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px dashed var(--line);color:var(--ink2);border-radius:20px;padding:6px 11px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
+.grp-fchip:hover{border-color:var(--ink3);color:var(--ink)}
+.grp-fchip.on{background:var(--accent-bg);border:1px solid var(--accent);color:var(--accent);font-weight:600}
+.grp-fchip .i{width:12px;height:12px}
+.grp-fchip small{font-size:10.5px;font-weight:800;opacity:.75;font-variant-numeric:tabular-nums}
+/* the collection tag shown on a card */
+.vgroup{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;background:var(--accent-bg);color:var(--accent);border:none;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;transition:.12s}
+.vgroup:hover{filter:brightness(1.1)}
+.vgroup .i{width:11px;height:11px}
+/* collection picker dialog */
+.grp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.grp-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);border-radius:20px;padding:8px 13px;font-size:13.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:.12s}
+.grp-chip:hover{border-color:var(--accent);color:var(--accent)}
+.grp-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.grp-chip small{font-size:11px;font-weight:800;opacity:.7}
+.grp-chip .i{width:14px;height:14px}
+.grp-remove{display:inline-flex;align-items:center;gap:7px;margin-top:14px;background:none;border:none;color:var(--ink3);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;padding:4px 0}
+.grp-remove:hover{color:var(--danger)}
+.grp-remove .i{width:14px;height:14px}
 .acts{display:flex;gap:6px}
 .act{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:8px 0;font-size:15px;font-family:inherit;cursor:pointer;line-height:1;transition:.12s}
 .act:hover{border-color:var(--ink3)}
@@ -835,6 +858,28 @@ normalizeLib(library);
 /* tombstones: {id: removedAt} — so a delete on one device isn't re-added by the
    cloud merge (a plain union can't represent a removal). Synced like the library. */
 let removed = store.get("ss_removed", {}); if(!removed || typeof removed!=="object") removed={};
+/* creator tombstones: same idea for the directory. A plain union merge can't
+   represent "this creator was removed", so deleting one on device A used to be
+   undone the moment device B (still holding it) synced. Keyed by channel id AND
+   @handle (either can match), value = removedAt. */
+let removedCreators = store.get("ss_removed_creators", {}); if(!removedCreators || typeof removedCreators!=="object") removedCreators={};
+const creatorKeys = c => [c&&(c.id||(c.meta&&c.meta.id)), c&&String(c.handle||"").toLowerCase().replace(/^@/,"")].filter(Boolean);
+function markCreatorRemoved(c){ const t=Date.now(); creatorKeys(c).forEach(k=>removedCreators[k]=t); }
+function clearCreatorRemoved(c){ creatorKeys(c).forEach(k=>delete removedCreators[k]); }
+/* drop any creator whose id/handle is tombstoned at or after it was added */
+function applyCreatorTombstones(list, rem){
+  return (list||[]).filter(c=>{
+    let rt=0; creatorKeys(c).forEach(k=>{ const t=(rem&&rem[k])||0; if(t>rt) rt=t; });
+    return !(rt && (c.addedAt||0) <= rt);
+  });
+}
+/* forget tombstones that are stale (re-added since, or older than a year) */
+function pruneRemovedCreators(rem, list){
+  const out={}, now=Date.now(), YEAR=365*864e5, alive={};
+  (list||[]).forEach(c=>creatorKeys(c).forEach(k=>{ const a=c.addedAt||1; if(a>(alive[k]||0)) alive[k]=a; }));
+  Object.entries(rem||{}).forEach(([k,t])=>{ t=+t||0; if(now-t>YEAR) return; if(alive[k] && alive[k]>t) return; out[k]=t; });
+  return out;
+}
 /* activity log — append-only history of workflow events, powers the Dashboard
    (contribution graph, streaks, trends). Never affects current state, so it
    doesn't need tombstones; a simple union on sync is enough. Capped to stay small. */
@@ -864,9 +909,10 @@ function vSet(v, s){
   const id=v.id; if(!id) return;
   if(vStat(id)===s || s==="new"){ delete library[id]; removed[id]=Date.now(); }   // removed → tombstone so it stays gone after sync
   else{
-    const note=(library[id]||{}).n;
+    const prev=library[id]||{};
     library[id]={s, t:v.title||"", th:v.thumb||"", v:+v.views||0, ch:v.ch||v.channelTitle||"", at:v.at||"", d:v.dur||0, u:Date.now()};
-    if(note) library[id].n=note;                                 // keep your note through status changes
+    if(prev.n) library[id].n=prev.n;                             // keep your note through status changes
+    if(prev.g) library[id].g=prev.g;                             // keep your collection tag too
     delete removed[id];                                          // it's back — clear any tombstone
     logActivity(s, id);                                          // feeds the Dashboard's activity graph
   }
@@ -913,19 +959,23 @@ window.onFirebaseReady = function(api){
              signed out (or on another device) is kept; removals are honored via
              tombstones so a deleted idea doesn't come back. */
           applyingCloud = true;
-          creators = mergeCreators(creators, data.creators||[]);
+          removedCreators = mergeRemoved(removedCreators, data.removedCreators||{});
+          creators = applyCreatorTombstones(mergeCreators(creators, data.creators||[]), removedCreators);
+          removedCreators = pruneRemovedCreators(removedCreators, creators);
           removed  = mergeRemoved(removed, data.removed||{});
           library  = applyTombstones(normalizeLib(mergeLibrary(library, data.library || (data.remakes?migrateRemakes(data.remakes):{}))), removed);
           removed  = pruneRemoved(removed, library);
           activity = mergeActivity(activity, data.activity||[]);
-          store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); store.set("ss_activity",activity);
+          store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); store.set("ss_removed_creators",removedCreators); store.set("ss_activity",activity);
           /* the user's own API key follows their account — restored on any device,
              only ever adopted when this device doesn't already have one. */
           if(data.apiKey && !apiKey){ apiKey = data.apiKey; store.set("ss_key",apiKey); }
           if(data.weeklyGoal!=null && weeklyGoal==null){ weeklyGoal = data.weeklyGoal; store.set("ss_weekly_goal",weeklyGoal); }
           applyingCloud = false;
-          render();
-        }
+          // fresh device / no saved route: a returning signed-in user shouldn't
+          // be dropped on the marketing landing — send them into the app.
+          if(bootRedirect && route.v==="home"){ bootRedirect=false; go("disc"); } else render();
+        } else if(bootRedirect && route.v==="home"){ bootRedirect=false; go("disc"); }
         cloudSave(); // push the merged state back up
       }catch(e){ applyingCloud=false; console.warn("cloud load:",e.message); }
     }
@@ -957,6 +1007,7 @@ function mergeLibrary(local, cloud){
     if(!c){ out[id]=e; return; }
     const winner=( (e.u||0) >= (c.u||0) ) ? {...e} : {...c};
     const note=e.n||c.n; if(note && !winner.n) winner.n=note;
+    const grp=e.g||c.g; if(grp && !winner.g) winner.g=grp;
     out[id]=winner;
   });
   return out;
@@ -978,9 +1029,9 @@ function pruneRemoved(rem, lib){
 function cloudSave(){
   if(!fb || !user || applyingCloud) return;
   clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,removed,activity,apiKey,weeklyGoal,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
+  cloudTimer = setTimeout(()=>{ fb.save(user.uid,{creators,library,removed,removedCreators,activity,apiKey,weeklyGoal,updated:Date.now()}).catch(e=>console.warn("cloud save:",e.message)); }, 800);
 }
-function persist(){ store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); store.set("ss_activity",activity); cloudSave(); }
+function persist(){ store.set("ss_creators",creators); store.set("ss_library",library); store.set("ss_removed",removed); store.set("ss_removed_creators",removedCreators); store.set("ss_activity",activity); cloudSave(); }
 /* account control: one avatar/button in the header opens a small dropdown with
    Dashboard + sign-in/out. Settings deliberately does NOT appear here — it
    already lives in the main nav (and the mobile bottom tab bar), where it needs
@@ -1145,10 +1196,15 @@ async function scanChannel(meta, depth){
 
 /* ---------- routing ---------- */
 let route = {v:"home"};
+const RESUMABLE = new Set(["home","disc","dir","remake","set","dash"]);
 function go(v,extra){ route={v,...(extra||{})};
   if(typeof stopAllPreviews==="function") stopAllPreviews();
   if(v!=="home" && window._lpMove){ window.removeEventListener("mousemove",window._lpMove); window._lpMove=null; }
-  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  bootRedirect=false;                                    // any deliberate nav cancels the one-time signed-in auto-resume
+  // remember where you are so a refresh (or coming back later) resumes here
+  // instead of always dumping you on the landing page. Creator detail resolves
+  // to the directory (its index can go stale), everything else resumes exactly.
+  store.set("ss_route", RESUMABLE.has(v) ? v : "dir");
   render(); window.scrollTo(0,0); }
 const view = ()=>document.getElementById("view");
 function render(){
@@ -1156,6 +1212,7 @@ function render(){
   // The full sidebar/pill nav appears the moment you step inside (any other route),
   // e.g. the hero's "Start discovering" CTA. Sign-in is NOT required to enter.
   document.body.classList.toggle("landing", route.v==="home");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===route.v));
   if(route.v==="home") renderHome();
   else if(route.v==="dir") renderDir();
   else if(route.v==="creator") renderCreator(route.c);
@@ -1602,8 +1659,11 @@ async function batchVideoDetails(ids){
   }
   return out;
 }
+/* Share links open the video inside ScoutViral (auto-plays in our embedded
+   YouTube player — legal: it's an official IFrame embed, not a re-host), which
+   also brings whoever clicks it onto the platform instead of straight to YouTube. */
 function copyLink(id, btn){
-  const url = "https://www.youtube.com/shorts/"+id;
+  const url = location.origin + "/?v=" + id;
   const done = ok=>{ const orig=btn.innerHTML; btn.innerHTML = ok?ico("check")+" Copied":"Copy failed"; setTimeout(()=>{ btn.innerHTML=orig; },1500); };
   if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(()=>done(true)).catch(()=>done(false));
   else done(false);
@@ -1615,7 +1675,9 @@ async function addFromDisc(chId, chName, btn){
   try{
     sbar(true,"Verifying channel…",30);
     const meta = await resolveChannel({id:chId});
-    creators.push({name:meta.title, handle:chId, id:meta.id, country:country.trim()||"Uncategorized", tag:(NICHES[disc.n]||{}).n||"", meta, addedAt:Date.now()});
+    const nc={name:meta.title, handle:chId, id:meta.id, country:country.trim()||"Uncategorized", tag:(NICHES[disc.n]||{}).n||"", meta, addedAt:Date.now()};
+    clearCreatorRemoved(nc);                     // re-adding wins over any old tombstone
+    creators.push(nc);
     persist(); sbar(false);
     document.querySelectorAll('.chadd[data-ch="'+chId+'"]').forEach(b=>b.remove());
     uiAlert("Added "+meta.title+" ✓ — it's in My directory.", {title:"Added"});
@@ -1694,7 +1756,9 @@ async function addCreator(){
     sbar(true,"Verifying channel…",30);
     const meta = await resolveChannel(parsed);
     if(creators.some(c=>c.id===meta.id)){ sbar(false); await uiAlert("Already in your directory: "+meta.title); return; }
-    creators.push({name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta, addedAt:Date.now()});
+    const nc={name:meta.title, handle:parsed.handle||meta.id, id:meta.id, country, tag:"", meta, addedAt:Date.now()};
+    clearCreatorRemoved(nc);                     // re-adding wins over any old tombstone
+    creators.push(nc);
     persist(); sbar(false); renderDir();
   }catch(e){ sbar(false);
     if(isTrialGate(e)){ pendingResume=resume; trialEndedPrompt(); return; }
@@ -1704,6 +1768,7 @@ async function addCreator(){
 async function removeCreator(i){
   if(!(await uiConfirm("Remove "+creators[i].name+" from your directory?", {title:"Remove creator", okText:"Remove", danger:true}))) return;
   const c = creators.splice(i,1)[0];
+  markCreatorRemoved(c);                       // tombstone so the delete syncs and won't come back
   if(c.id) store.del("ss_vids_"+c.id);
   persist(); renderDir();
 }
@@ -2293,6 +2358,8 @@ function exportCSV(i){
 
 /* ---------- Board: Saved -> Remaking -> Completed (global, from the library) ---------- */
 let libFilter = "saved";  // saved | remaking | completed
+let libGroup = null;      // active collection filter (null=all, "__none__"=unsorted, or a name)
+let _grpNames = [];       // current tab's collection names, referenced by index from onclick
 async function vSetById(id, s){
   const e=library[id]; if(!e) return;
   if(s==="completed" && e.s!=="completed" && !(await confirmCompleted(id))) return;
@@ -2313,12 +2380,28 @@ function renderRemake(){
   const remaking  = byStat("remaking");
   const completed = byStat("completed");
   const src = libFilter==="remaking"?remaking : libFilter==="completed"?completed : saved;
-  const active = src.map(([id,e])=>({id,...e})).sort((a,b)=>(b.u||0)-(a.u||0));
   const autoplay = libFilter!=="completed";
   const heading = libFilter==="remaking"?"Remaking" : libFilter==="completed"?"Completed" : "Saved ideas";
   const sub = libFilter==="remaking"?"Ideas you're actively working on — plan them, note what you need, and film."
     :libFilter==="completed"?"Videos you've finished and posted — kept as your track record."
     :"Your inspiration board. Ready to make one? Start remaking it.";
+
+  /* Collections (Saved + Remaking only): ad-hoc, user-made groups like "Gym" or
+     "Park" so you can zero in on what you're able to film right now. They're
+     derived purely from each idea's `g` tag, so an emptied collection just
+     disappears — no category to delete by hand. */
+  const groupsOn = libFilter!=="completed";
+  const grpCounts={}; if(groupsOn) src.forEach(([,e])=>{ const g=(e.g||"").trim(); if(g) grpCounts[g]=(grpCounts[g]||0)+1; });
+  _grpNames = Object.keys(grpCounts).sort((a,b)=>a.localeCompare(b));
+  const ungrouped = groupsOn ? src.filter(([,e])=>!((e.g||"").trim())).length : 0;
+  // drop a stale filter (its collection emptied out) so the view never goes blank
+  if(libGroup && libGroup!=="__none__" && !grpCounts[libGroup]) libGroup=null;
+  if(libGroup==="__none__" && !ungrouped) libGroup=null;
+
+  let list = src.map(([id,e])=>({id,...e}));
+  if(groupsOn && libGroup) list = list.filter(v=> libGroup==="__none__" ? !((v.g||"").trim()) : (v.g||"").trim()===libGroup);
+  const active = list.sort((a,b)=>(b.u||0)-(a.u||0));
+
   let h = `<h2>${heading}</h2>
   <div class="muted" style="margin-bottom:12px">${sub} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
   <div class="vfilters">
@@ -2326,18 +2409,32 @@ function renderRemake(){
     <button class="vchip ${libFilter==="remaking"?"on":""}" onclick="libFilter='remaking';renderRemake()">${ico("clapper")} Remaking <small>${remaking.length}</small></button>
     <button class="vchip ${libFilter==="completed"?"on":""}" onclick="libFilter='completed';renderRemake()">${ico("check")} Completed <small>${completed.length}</small></button>
   </div>`;
-  if(!active.length){ view().innerHTML = h + `<div class="empty">${libFilter==="remaking"?"Nothing in progress yet — open a saved idea and tap Start remaking."
-    :libFilter==="completed"?"Nothing completed yet. Finish a remake and mark it done to build your track record."
-    :"Nothing saved yet — tap the star on any video in Discover or on a creator's page."}</div>`; return; }
+  if(groupsOn && _grpNames.length){
+    h += `<div class="grpbar">
+      <button class="grp-fchip ${!libGroup?"on":""}" onclick="setLibGroup('all')">All <small>${src.length}</small></button>
+      ${_grpNames.map((n,gi)=>`<button class="grp-fchip ${libGroup===n?"on":""}" onclick="setLibGroup(_grpNames[${gi}])">${ico("folder")} ${esc(n)} <small>${grpCounts[n]}</small></button>`).join("")}
+      ${ungrouped?`<button class="grp-fchip ${libGroup==="__none__"?"on":""}" onclick="setLibGroup('__none__')">Unsorted <small>${ungrouped}</small></button>`:""}
+    </div>`;
+  }
+  if(!active.length){
+    const emptyMsg = libGroup ? "Nothing in this collection right now."
+      : libFilter==="remaking"?"Nothing in progress yet — open a saved idea and tap Start remaking."
+      : libFilter==="completed"?"Nothing completed yet. Finish a remake and mark it done to build your track record."
+      : "Nothing saved yet — tap the star on any video in Discover or on a creator's page.";
+    view().innerHTML = h + `<div class="empty">${emptyMsg}</div>`; return;
+  }
   h += `<div class="vgrid">` + active.map(v=>{
     const twOpen = autoplay ? `<div class="thumbwrap" data-vid="${v.id}">` : `<div class="thumbwrap">`;
+    const grpBtn = groupsOn ? `<button class="act" title="Move to a collection" onclick="groupPicker('${v.id}')">${ico("folder")}</button>` : "";
     const acts =
       v.s==="saved" ?
         `<button class="act" title="Start remaking" onclick="vSetById('${v.id}','remaking')">${ico("clapper")}</button>
+         ${grpBtn}
          <button class="act" title="Production notes" onclick="editNote('${v.id}')">${ico("pencil")}</button>
          <button class="act" title="Remove from board" onclick="vSetById('${v.id}','saved')">${ico("x")}</button>`
       : v.s==="remaking" ?
         `<button class="act" title="Mark completed" onclick="vSetById('${v.id}','completed')">${ico("check")}</button>
+         ${grpBtn}
          <button class="act" title="Production notes" onclick="editNote('${v.id}')">${ico("pencil")}</button>
          <button class="act" title="Back to Saved" onclick="vSetById('${v.id}','saved')">${ico("undo")}</button>`
       :
@@ -2352,6 +2449,7 @@ function renderRemake(){
       <div class="b">
         <div class="t">${esc(v.t)}</div>
         <div class="muted" style="font-size:12px">${esc(v.ch||"")}</div>
+        ${(groupsOn && (v.g||"").trim())?`<button class="vgroup" title="Change collection" onclick="groupPicker('${v.id}')">${ico("folder")} ${esc(v.g.trim())}</button>`:""}
         <div class="acts">${acts}</div>
         ${noteHTML(v.id)}
         <button class="cp" onclick="copyLink('${v.id}',this)">${ico("link")} Copy link</button>
@@ -2361,6 +2459,41 @@ function renderRemake(){
   view().innerHTML = h;
   if(autoplay) observePreviews();
 }
+function setLibGroup(g){ libGroup = (g==="all")?null:g; renderRemake(); }
+/* collection picker — existing collections as one-tap chips + a "new" field.
+   Assigning to a fresh name creates it; emptying one lets it vanish on its own. */
+function groupPicker(id){
+  const e=library[id]; if(!e) return;
+  const all={}; Object.values(library).forEach(x=>{ const g=(x.g||"").trim(); if(g) all[g]=(all[g]||0)+1; });
+  const names=Object.keys(all).sort((a,b)=>a.localeCompare(b));
+  const cur=(e.g||"").trim();
+  const chips = names.length
+    ? names.map(n=>`<button class="grp-chip ${n===cur?"on":""}" onclick="setGroup('${esc(id)}',this.dataset.g)" data-g="${esc(n)}">${esc(n)} <small>${all[n]}</small>${n===cur?ico("check"):""}</button>`).join("")
+    : `<div class="muted" style="font-size:13px">No collections yet — make your first one below.</div>`;
+  document.getElementById("modal").innerHTML = `
+  <div class="overlay dlg" onclick="if(event.target===this)closeGroup()">
+    <div class="card dlgbox" role="dialog" aria-modal="true">
+      <div class="dlgtitle">Move to a collection</div>
+      <div class="dlgmsg">Group ideas by what you need to film them — a place, a prop, a moment. Pick one, or make a new one. When a collection empties, it disappears on its own.</div>
+      <div class="grp-chips">${chips}</div>
+      <div class="row" style="margin-top:14px">
+        <input type="text" id="grpNew" placeholder="New collection — e.g. Gym, Park, Kitchen" onkeydown="if(event.key==='Enter'){event.preventDefault();setGroupNew('${esc(id)}')}">
+        <button class="btn" onclick="setGroupNew('${esc(id)}')">Add</button>
+      </div>
+      ${cur?`<button class="grp-remove" onclick="setGroup('${esc(id)}','')">${ico("x")} Take out of “${esc(cur)}”</button>`:""}
+    </div>
+  </div>`;
+  setTimeout(()=>{ const el=document.getElementById("grpNew"); if(el) el.focus(); },30);
+}
+function setGroup(id, g){
+  const e=library[id]; if(!e) return;
+  g=(g||"").trim();
+  if(g) e.g=g; else delete e.g;
+  e.u=Date.now();                               // touch so the tag rides the newest-wins sync merge
+  persist(); closeGroup(); renderRemake();
+}
+function setGroupNew(id){ const el=document.getElementById("grpNew"); if(el) setGroup(id, el.value); }
+function closeGroup(){ document.getElementById("modal").innerHTML=""; }
 
 /* ---------- inline preview: muted autoplay while on-screen, stop when scrolled past ---------- */
 let _io = null;
@@ -2392,7 +2525,9 @@ function stopAllPreviews(){
 }
 
 /* ---------- player ---------- */
+const validVid = id => /^[A-Za-z0-9_-]{6,15}$/.test(id||"");   // guards the shared-link param that flows into the iframe src
 function playVid(id){
+  if(!validVid(id)) return;
   document.getElementById("modal").innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeVid()">
     <div class="player">
@@ -2588,7 +2723,7 @@ function importAll(inp){
   const r = new FileReader();
   r.onload = ()=>{ try{
     const d = JSON.parse(r.result);
-    if(d.creators) creators = d.creators;
+    if(d.creators){ creators = d.creators; creators.forEach(clearCreatorRemoved); }   // restore un-removes its creators
     if(d.library) library = normalizeLib(d.library);
     else if(d.remakes) library = migrateRemakes(d.remakes);
     Object.keys(library).forEach(id=>delete removed[id]);   // a restored backup un-removes its videos
@@ -2600,11 +2735,26 @@ function importAll(inp){
 /* ---------- init ---------- */
 /* Installable PWA: register the service worker (home-screen icon + offline shell). */
 if("serviceWorker" in navigator){ window.addEventListener("load", ()=>{ navigator.serviceWorker.register("/sw.js").catch(()=>{}); }); }
+/* Resume where the user last was. A brand-new visitor (no saved route) lands on
+   the marketing home; a returning user reopens straight into the app instead of
+   the landing page every time. `bootRedirect` covers the fresh-device signed-in
+   case: if there's no saved route but Firebase restores a session, we send them
+   into the app (see onUser) rather than showing them the front door. */
+const savedRoute = store.get("ss_route", null);
+route = {v: (savedRoute && RESUMABLE.has(savedRoute)) ? savedRoute : "home"};
+let bootRedirect = !savedRoute;                 // only auto-resume signed-in users who have no local route yet
+const deepVid = new URLSearchParams(location.search).get("v");
 /* Friendly landing for mistyped URLs (hosting sends every path here) */
 if(location.pathname !== "/" && !/index\.html$/.test(location.pathname)){
   history.replaceState(null, "", "/");
   render();
   uiAlert("That page doesn't exist, so we brought you home.", {title:"Page not found"});
+} else if(deepVid && validVid(deepVid)){
+  // shared link → open the video in our embedded player over the base view
+  bootRedirect = false;
+  history.replaceState(null, "", "/");          // clean the URL so a later refresh doesn't force it again
+  render();
+  playVid(deepVid);
 } else {
   render();
 }
