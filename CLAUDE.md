@@ -7,7 +7,7 @@
 > **Keep it current:** whenever a meaningful change ships, update the relevant
 > section and the "Last updated" line below, then commit it with the change.
 
-**Last updated:** 2026-07-22 (Board: prominent count pills + ad-hoc self-managing Collections for Saved/Remaking; creator deletions now sync via tombstones; Copy link shares an in-app deep link that auto-plays via the YouTube embed; app resumes your last route instead of always showing the landing, returning/signed-in users skip it — on top of platform hygiene: installable PWA, SEO/canonical/JSON-LD, welcome-back line, feedback door, app-wide accessibility)
+**Last updated:** 2026-07-22 (Board redesign: Instagram-Edits-style status tab cards that never wrap on mobile; Collections are now true folders — a filed idea leaves "All" and lives only in its collection, counts add up; creator deletions sync via tombstones; Copy link shares an in-app deep link that auto-plays via the YouTube embed; app resumes your last route instead of the landing, returning/signed-in users skip it — on top of platform hygiene: installable PWA, SEO/canonical/JSON-LD, welcome-back line, feedback door, app-wide accessibility)
 
 ## Product ambition — read this first
 
@@ -475,22 +475,28 @@ NOT run `firebase deploy` by hand** — pushing is the deploy. (Manual
   plus Saved / Remaking / Completed / Skipped / All); the per-card action row is
   Save / Remaking / Completed / Skip (+ a notes pencil once actioned), updated in
   place by `vSetCreator`. Autoplay-in-view is on except **Completed + Skipped**.
-- **Board tab (`renderRemake`) = the workflow hub:** three tabs **Saved / Remaking /
-  Completed** (NOT a Notes tab — notes belong to a video, not a category), each chip
-  showing a clear count pill (`.vchip small` styled as a real badge, not faint
-  superscript). Cards carry contextual actions: Saved → [Start remaking, Collection,
-  Notes, Remove]; Remaking → [Mark completed, Collection, Notes, Back to Saved];
-  Completed → [Reopen, Notes]. Saved+Remaking autoplay; Completed is static.
-  `libFilter` = saved|remaking|completed.
-- **Collections = ad-hoc, self-managing groups within Saved/Remaking** (`library[id].g`,
-  a free-text label like "Gym"/"Park"/"Kitchen"). Purpose: a creator can only film
-  some ideas in some contexts, so they group by what a shoot *needs* and focus on
-  what's doable right now. **Derived, never declared:** the filter chip row
-  (`.grpbar`, only on Saved+Remaking, not Completed) is computed from the `g` tags
-  present, so an emptied collection just disappears — nothing to delete by hand.
-  `libGroup` filters (null=all, `"__none__"`=Unsorted, or a name); a stale filter
-  auto-resets so the view never blanks. `groupPicker(id)` is a branded dialog:
-  existing collections as one-tap chips + a "new collection" field; `setGroup`
+- **Board tab (`renderRemake`) = the workflow hub:** three status tabs **Saved /
+  Remaking / Completed** (NOT a Notes tab — notes belong to a video, not a category),
+  rendered as **Instagram-Edits-style cards** (`.boardtabs`/`.btab`: icon on top,
+  name, big count) in a fixed `repeat(3,1fr)` grid **capped at 460px** so they always
+  sit on one line and never wrap on mobile (a real bug before — a flex-wrap row broke
+  onto two lines on phones). Cards carry contextual actions: Saved → [Start remaking,
+  Collection, Notes, Remove]; Remaking → [Mark completed, Collection, Notes, Back to
+  Saved]; Completed → [Reopen, Notes]. Saved+Remaking autoplay; Completed is static.
+  `libFilter` = saved|remaking|completed; switching tabs resets `libGroup` to null.
+- **Collections = ad-hoc folders within Saved/Remaking** (`library[id].g`, a free-text
+  label like "Gym"/"Park"/"Kitchen"). Purpose: a creator can only film some ideas in
+  some contexts, so they file ideas by what a shoot *needs* and focus on what's doable
+  now. **A filed idea lives in exactly ONE place** — it leaves the loose "All" pile
+  and shows only inside its collection (Braimah's explicit ask: no point hunting "All"
+  for something you already filed). So the bucket counts add up to the tab total with
+  no double-listing: `All (loose) + Σcollections = Saved`. **Derived, never declared:**
+  the `Collections` chip row (`.grplabel`+`.grpbar`, Saved+Remaking only) is computed
+  from the `g` tags present, so an emptied collection just disappears — nothing to
+  delete by hand. `libGroup` = `null` (All = loose/unfiled) or a collection name; a
+  stale filter auto-resets to All. Empty-All-but-collections-exist shows a "tap a
+  collection above" hint, not a scary "nothing saved". `groupPicker(id)` is a branded
+  dialog: existing collections as one-tap chips + a "new collection" field; `setGroup`
   assigns/clears and touches `u` so the tag rides the newest-wins sync merge. `g` is
   preserved through status changes (`vSet`) and merged like notes (`mergeLibrary`).
   `_grpNames` holds the current tab's names for index-based onclicks (avoids escaping

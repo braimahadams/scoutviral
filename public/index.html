@@ -179,10 +179,19 @@ button.btn:disabled{opacity:.5;cursor:default}
 .vchip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--ink2);border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
 .vchip:hover{border-color:var(--ink3);color:var(--ink)}
 .vchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-/* the per-category count is a clear pill, not faint superscript, so you can see
-   at a glance how many ideas sit in Saved / Remaking / Completed */
-.vchip small{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:20px;background:var(--card);border:1px solid var(--line);color:var(--ink2);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
-.vchip.on small{background:rgba(255,255,255,.22);border-color:transparent;color:#fff}
+/* Board status tabs — Instagram-Edits-style cards: icon on top, name, then the
+   count. A 3-col grid so they always sit on one line (never wrap on mobile). */
+.boardtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px;max-width:460px}
+.btab{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 6px 11px;border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);cursor:pointer;font-family:inherit;color:var(--ink2);transition:transform .13s,border-color .13s,background .13s,color .13s}
+.btab:hover{border-color:var(--ink3);transform:translateY(-2px)}
+.btab.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.btab-ic{display:flex;align-items:center;justify-content:center}
+.btab-ic .i{width:23px;height:23px}
+.btab-n{font-size:12px;font-weight:600;letter-spacing:-.01em}
+.btab-c{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;color:var(--ink)}
+.btab.on .btab-c{color:var(--accent)}
+@media (max-width:400px){ .btab-n{font-size:11px} .btab-c{font-size:19px} .btab{padding:11px 4px 10px} }
+.grplabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin:0 0 8px 2px}
 /* collection filter chips (a sub-row under Saved/Remaking) */
 .grpbar{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 14px}
 .grp-fchip{display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px dashed var(--line);color:var(--ink2);border-radius:20px;padding:6px 11px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
@@ -2386,38 +2395,41 @@ function renderRemake(){
     :libFilter==="completed"?"Videos you've finished and posted — kept as your track record."
     :"Your inspiration board. Ready to make one? Start remaking it.";
 
-  /* Collections (Saved + Remaking only): ad-hoc, user-made groups like "Gym" or
-     "Park" so you can zero in on what you're able to film right now. They're
-     derived purely from each idea's `g` tag, so an emptied collection just
-     disappears — no category to delete by hand. */
+  /* Collections (Saved + Remaking only): ad-hoc, user-made folders like "Gym" or
+     "Park" so you can zero in on what you're able to film right now. A filed idea
+     lives ONLY in its collection — it leaves the "All" (loose) pile — so every
+     idea sits in exactly one place and the bucket counts add up to the tab total.
+     Collections are derived purely from the `g` tags present, so an emptied one
+     just disappears; no category to delete by hand. */
   const groupsOn = libFilter!=="completed";
-  const grpCounts={}; if(groupsOn) src.forEach(([,e])=>{ const g=(e.g||"").trim(); if(g) grpCounts[g]=(grpCounts[g]||0)+1; });
+  const grpCounts={}; let loose=0;
+  if(groupsOn) src.forEach(([,e])=>{ const g=(e.g||"").trim(); if(g) grpCounts[g]=(grpCounts[g]||0)+1; else loose++; });
   _grpNames = Object.keys(grpCounts).sort((a,b)=>a.localeCompare(b));
-  const ungrouped = groupsOn ? src.filter(([,e])=>!((e.g||"").trim())).length : 0;
-  // drop a stale filter (its collection emptied out) so the view never goes blank
-  if(libGroup && libGroup!=="__none__" && !grpCounts[libGroup]) libGroup=null;
-  if(libGroup==="__none__" && !ungrouped) libGroup=null;
+  // libGroup: null = "All" (loose/unfiled), or a collection name. Reset a filter
+  // whose collection just emptied so the view never lands on a dead bucket.
+  if(libGroup && !grpCounts[libGroup]) libGroup=null;
 
   let list = src.map(([id,e])=>({id,...e}));
-  if(groupsOn && libGroup) list = list.filter(v=> libGroup==="__none__" ? !((v.g||"").trim()) : (v.g||"").trim()===libGroup);
+  if(groupsOn) list = list.filter(v=> libGroup ? (v.g||"").trim()===libGroup : !((v.g||"").trim()));
   const active = list.sort((a,b)=>(b.u||0)-(a.u||0));
 
   let h = `<h2>${heading}</h2>
-  <div class="muted" style="margin-bottom:12px">${sub} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
-  <div class="vfilters">
-    <button class="vchip ${libFilter==="saved"?"on":""}" onclick="libFilter='saved';renderRemake()">${ico("star")} Saved <small>${saved.length}</small></button>
-    <button class="vchip ${libFilter==="remaking"?"on":""}" onclick="libFilter='remaking';renderRemake()">${ico("clapper")} Remaking <small>${remaking.length}</small></button>
-    <button class="vchip ${libFilter==="completed"?"on":""}" onclick="libFilter='completed';renderRemake()">${ico("check")} Completed <small>${completed.length}</small></button>
+  <div class="muted" style="margin-bottom:14px">${sub} ${fb&&!user?'<b>Sign in</b> (top right) to sync across devices.':""}</div>
+  <div class="boardtabs">
+    ${[["saved","star","Saved",saved.length],["remaking","clapper","Remaking",remaking.length],["completed","check","Completed",completed.length]]
+      .map(([f,ic,nm,n])=>`<button class="btab ${libFilter===f?"on":""}" onclick="libFilter='${f}';libGroup=null;renderRemake()">
+        <span class="btab-ic">${ico(ic)}</span><span class="btab-n">${nm}</span><span class="btab-c">${n}</span></button>`).join("")}
   </div>`;
   if(groupsOn && _grpNames.length){
-    h += `<div class="grpbar">
-      <button class="grp-fchip ${!libGroup?"on":""}" onclick="setLibGroup('all')">All <small>${src.length}</small></button>
+    h += `<div class="grplabel">Collections</div>
+    <div class="grpbar">
+      <button class="grp-fchip ${!libGroup?"on":""}" onclick="setLibGroup(null)">All <small>${loose}</small></button>
       ${_grpNames.map((n,gi)=>`<button class="grp-fchip ${libGroup===n?"on":""}" onclick="setLibGroup(_grpNames[${gi}])">${ico("folder")} ${esc(n)} <small>${grpCounts[n]}</small></button>`).join("")}
-      ${ungrouped?`<button class="grp-fchip ${libGroup==="__none__"?"on":""}" onclick="setLibGroup('__none__')">Unsorted <small>${ungrouped}</small></button>`:""}
     </div>`;
   }
   if(!active.length){
     const emptyMsg = libGroup ? "Nothing in this collection right now."
+      : (groupsOn && _grpNames.length) ? "Everything here is filed into a collection above — tap one to open it."
       : libFilter==="remaking"?"Nothing in progress yet — open a saved idea and tap Start remaking."
       : libFilter==="completed"?"Nothing completed yet. Finish a remake and mark it done to build your track record."
       : "Nothing saved yet — tap the star on any video in Discover or on a creator's page.";
@@ -2459,7 +2471,7 @@ function renderRemake(){
   view().innerHTML = h;
   if(autoplay) observePreviews();
 }
-function setLibGroup(g){ libGroup = (g==="all")?null:g; renderRemake(); }
+function setLibGroup(g){ libGroup = g; renderRemake(); }   // null = All (loose), or a collection name
 /* collection picker — existing collections as one-tap chips + a "new" field.
    Assigning to a fresh name creates it; emptying one lets it vanish on its own. */
 function groupPicker(id){
